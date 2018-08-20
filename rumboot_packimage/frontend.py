@@ -9,13 +9,6 @@ class RumbootPackimage:
     def __init__(self, opts):
         print("hello")
 
-
-
-# --info
-# --checksum
-# --inject
-# --set
-
 def guessImageFormat(file):
     formats = [ imageFormatLegacy.ImageFormatLegacy,
                 imageFormatV2.ImageFormatV2
