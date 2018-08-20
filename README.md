@@ -16,7 +16,24 @@ python3
     pip3 install rumboot-packimage
 ```
 
-# Usage
+
+# Commandline options
+
+```
+    rumboot-packimage -f file.bin [operations]
+    -f FILE  - specifies image filename
+
+    Operations:
+
+    -i            - Show header information
+    -r            - Show RAW header information
+    -c            - Write correct checksums and image length
+    -s key value  - Change a key inside header and update checksums.
+                    See [-r]   for a list of keys  
+```
+
+
+# Typical usage
 
 ## Validate image
 

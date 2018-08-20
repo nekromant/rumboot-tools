@@ -48,14 +48,14 @@ class ImageFormatV2(imageFormatBase.ImageFormatBase):
 
     header = {}
 
-    def dump_header(self):
+    def dump_header(self, raw=False, format=False):
         #Hide all unused entry points
         for i in range(self.header["num_cores"], self.MAX_NUM_CORES):
             key = "entry" + str(i)
             self.hide_field(key)
 
         #Dump fields
-        super().dump_header()
+        super().dump_header(raw, format)
 
     def check(self):
         if (super().check()):

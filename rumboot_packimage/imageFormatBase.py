@@ -1,6 +1,6 @@
 import os
 import binascii
-from logging import Logger
+from parse import parse
 
 class ImageFormatBase:
     cur_pos = 0
@@ -42,7 +42,7 @@ class ImageFormatBase:
     def hide_field(self, field):
         self.hidden[field] = True
 
-    def dump_field(self, field, format=False, comment=False):
+    def dump_field(self, field, format=False, comment=False, raw=False):
 
         if (format == False):
             format = self.format
@@ -54,12 +54,17 @@ class ImageFormatBase:
                 if (f[1]==field):
                     break;
 
-        if (comment):
-            print((self.tblfmt + f[2] + " [%s]") % (f[3] + ":", self.header[f[1]], comment))
+        if raw:
+            label = f[1]
         else:
-            print((self.tblfmt + f[2]) % (f[3] + ":", self.header[f[1]]))
+            label = f[3]
 
-    def dump_header(self, format=False):
+        if (comment):
+            print((self.tblfmt + f[2] + " [%s]") % (label + ":", self.header[f[1]], comment))
+        else:
+            print((self.tblfmt + f[2]) % (label + ":", self.header[f[1]]))
+
+    def dump_header(self, raw=False, format=False):
         #Hide fields that need comments from printout
         self.hide_field("header_crc32")
         self.hide_field("data_crc32")
@@ -76,7 +81,7 @@ class ImageFormatBase:
                 break
 
             if (show and f[3]):
-                self.dump_field(f)
+                self.dump_field(f, raw=raw)
 
         if (self.header["header_crc32"] == self.header_crc32):
             hmatch = "Valid"
@@ -94,9 +99,9 @@ class ImageFormatBase:
         if (self.file_size - self.get_header_length() != self.header["data_length"]):
             actual = "Actual length {}".format(self.file_size - self.get_header_length())
 
-        self.dump_field("data_length",  False, actual)
-        self.dump_field("header_crc32", False, hmatch)
-        self.dump_field("data_crc32",   False, dmatch)
+        self.dump_field("data_length",  False, actual, raw)
+        self.dump_field("header_crc32", False, hmatch, raw)
+        self.dump_field("data_crc32",   False, dmatch, raw)
 
 
     def read_header(self):
@@ -193,11 +198,12 @@ class ImageFormatBase:
         self.read_header()
         return True
 
-#    def set(self, key, value):
-#        if (self.header[key]==False):
-#            print("No such key in header: " + key)
-#        self.header[key] = value;
-#
-#    def get(self, key):
-#        return self.header[key]):
-#
+    def set(self, key, value):
+        if not key in self.header:
+            print("No such key in header: " + key)
+        self.header[key] = int(value,16);
+        self.write_header()
+        self.read_header()
+
+    def get(self, key):
+        return self.header[key]
