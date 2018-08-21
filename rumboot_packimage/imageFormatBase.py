@@ -127,7 +127,7 @@ class ImageFormatBase:
 
     def fix_checksums(self):
         self.header["data_length"] = self.data_length
-        self.header["data_crc32"] = self.data_crc32
+        self.header["data_crc32"] = self.crc32(self.get_header_length(), self.get_header_length() + self.data_length)
         self.write_header()
         self.header["header_crc32"] = self.crc32(0, self.get_header_checksum_length())
         self.write_header()
