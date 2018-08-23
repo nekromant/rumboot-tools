@@ -1,6 +1,5 @@
 import os
 import binascii
-from parse import parse
 
 class ImageFormatBase:
     cur_pos = 0
