@@ -7,7 +7,7 @@ class ImageFormatV2(imageFormatBase.ImageFormatBase):
     struct __attribute__((packed)) rumboot_bootheader {
     uint32_t magic; /* 0xb0ldface */
     uint8_t  version;
-    uint8_t  num_cores;
+    uint8_t  reserved;
     uint8_t  chip_id;
     uint8_t  chip_rev;
     uint32_t data_crc32;
@@ -21,12 +21,11 @@ class ImageFormatV2(imageFormatBase.ImageFormatBase):
     """
     name = "RumBootV2"
     MAGIC = 0xb01dface
-    MAX_NUM_CORES = 11
     VERSION = 2
     format = [
         [4, "magic", "0x%x", "Magic"],
         [1, "version", "0x%x", "Header Version"],
-        [1, "num_cores", "0x%x", "CPU Cores"],
+        [1, "reserved", "0x%x", "Reserved"],
         [1, "chip_id", "0x%x", "Chip ID"],
         [1, "chip_rev", "0x%x", "Chip Revision"],
         [4, "data_crc32", "0x%x", "Data CRC32"],
@@ -41,7 +40,6 @@ class ImageFormatV2(imageFormatBase.ImageFormatBase):
         [4, "entry7",  "0x%x", "Entry Point[7]"],
         [4, "entry8",  "0x%x", "Entry Point[8]"],
         [4, "entry9",  "0x%x", "Entry Point[9]"],
-        [4, "entry10", "0x%x", "Entry Point[10]"],
         [4, "header_crc32", "0x%x", "Header CRC32"],
         [4, "bootsource", "0x%x", ""],
     ]
@@ -50,9 +48,9 @@ class ImageFormatV2(imageFormatBase.ImageFormatBase):
 
     def dump_header(self, raw=False, format=False):
         #Hide all unused entry points
-        for i in range(self.header["num_cores"], self.MAX_NUM_CORES):
-            key = "entry" + str(i)
-            self.hide_field(key)
+        #for i in range(2, 9):
+        #    key = "entry" + str(i)
+        #    self.hide_field(key)
 
         #Dump fields
         super().dump_header(raw, format)
