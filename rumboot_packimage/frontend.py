@@ -1,6 +1,7 @@
 from rumboot_packimage import imageFormatBase
 from rumboot_packimage import imageFormatV2
 from rumboot_packimage import imageFormatLegacy
+from rumboot_packimage import imageFormatElfV2
 import argparse
 import rumboot_packimage
 
@@ -10,8 +11,9 @@ class RumbootPackimage:
         print("hello")
 
 def guessImageFormat(file):
-    formats = [ imageFormatLegacy.ImageFormatLegacy,
-                imageFormatV2.ImageFormatV2
+    formats = [ imageFormatElfV2.ImageFormatElfV2,
+                imageFormatLegacy.ImageFormatLegacy,
+                imageFormatV2.ImageFormatV2,
             ];
     for f in formats:
         tmp = f(file)
