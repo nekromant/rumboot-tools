@@ -54,12 +54,17 @@ def cli():
 
     t = guessImageFormat(opts.file);
 
+    calc_data = True
     if (t == False):
         print("ERROR: Not a valid image, see README.md")
         return 1
 
     if opts.set != None:
         t.set(opts.set[0], opts.set[1])
+
+        #FixMe: Hack
+        if (opts.set[0] == "data_crc32"):
+            calc_data = False
         opts.info = True
         print("Setting " + opts.set[0] + " to " + opts.set[1])
         if not opts.checksum:
@@ -69,7 +74,7 @@ def cli():
         print("0x%x" % t.get(opts.get[0]))
 
     if opts.checksum:
-        t.fix_checksums()
+        t.fix_checksums(calc_data)
         print("Wrote valid checksums to image header")
         opts.info = True
 

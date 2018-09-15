@@ -124,9 +124,10 @@ class ImageFormatBase:
             self.write_element(offset, self.header[f[1]], f[0])
             offset = offset + f[0]
 
-    def fix_checksums(self):
+    def fix_checksums(self, calc_data = True):
         self.header["data_length"] = self.data_length
-        self.header["data_crc32"] = self.crc32(self.get_header_length(), self.get_header_length() + self.data_length)
+        if calc_data:
+            self.header["data_crc32"] = self.crc32(self.get_header_length(), self.get_header_length() + self.data_length)
         self.write_header()
         self.header["header_crc32"] = self.crc32(0, self.get_header_checksum_length())
         self.write_header()
