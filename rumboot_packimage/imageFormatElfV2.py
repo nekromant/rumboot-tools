@@ -17,6 +17,7 @@ class ImageFormatElfV2(imageFormatV2.ImageFormatV2):
             self.header["version"] = 2
             self.header["data_length"] = self.file_size
             self.header["chip_id"] = 0
+            self.header["bootsource"] = 0            
             self.file_size = self.file_size + self.get_header_length()
             self.write_header()
             self.dump_header()
