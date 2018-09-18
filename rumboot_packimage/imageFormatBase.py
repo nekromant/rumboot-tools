@@ -207,3 +207,22 @@ class ImageFormatBase:
 
     def get(self, key):
         return self.header[key]
+
+    def add_zeroes(self, count):
+        self.fd.seek(0, os.SEEK_END)
+        len = int(count)
+        self.file_size += len
+        while len > 0:
+            self.fd.write(bytearray([0]))
+            len = len - 1
+
+    def align(self, align):
+        self.fd.seek(0, os.SEEK_END)
+        align = int(align)
+        if not self.file_size % align:
+            return
+        len = align - (self.file_size % align)
+        self.file_size += len 
+        while len > 0:
+            self.fd.write(bytearray([0]))
+            len = len - 1
