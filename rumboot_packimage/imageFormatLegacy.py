@@ -16,7 +16,7 @@ class ImageFormatLegacy(imageFormatBase.ImageFormatBase):
 
     """
     name = "RumBootV1"
-    MAGIC = 0xbeefc0de
+    MAGIC = 0xdeadc0de
     format = [
         [4, "magic", "0x%x", "Magic"],
         [4, "data_length", "%d", "Data Length"],
