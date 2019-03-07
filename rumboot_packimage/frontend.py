@@ -33,7 +33,12 @@ def cli():
                         help="Show information about the image",
                         action="store_true")
     parser.add_argument("-c", "--checksum",
-                        help="This option will modify the file! Adds valid length/checksums to the header",
+                        help='''This option will modify the file! Calculates valid checksums to the header.
+                        The length is set to cover the full length of file only if it's non-zero. 
+                        ''',
+                        action="store_true")
+    parser.add_argument("-C", "--checksum_fix_length",
+                        help="This option will modify the file! The same as --checksum, but always overrides length with the actual length of file",
                         action="store_true")
     parser.add_argument("-r", "--raw",
                         help="Display raw header field names",
@@ -83,7 +88,10 @@ def cli():
     if opts.get:
         print("0x%x" % t.get(opts.get[0]))
 
-    if opts.checksum:
+    if (opts.checksum_fix_length):
+        t.fix_length()
+        opts.info = True
+    elif opts.checksum:
         t.fix_checksums(calc_data)
         print("Wrote valid checksums to image header")
         opts.info = True

@@ -124,6 +124,11 @@ class ImageFormatBase:
             self.write_element(offset, self.header[f[1]], f[0])
             offset = offset + f[0]
 
+    def fix_length(self):
+        self.header["data_length"] = self.file_size - self.get_header_length()
+        self.data_length = self.header["data_length"]
+        self.fix_checksums()
+
     def fix_checksums(self, calc_data = True):
         self.header["data_length"] = self.data_length
         if calc_data:
