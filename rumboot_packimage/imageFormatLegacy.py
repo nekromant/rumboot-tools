@@ -29,3 +29,9 @@ class ImageFormatLegacy(imageFormatBase.ImageFormatBase):
     def __init__(self, inFile):
         super().__init__(inFile)
         #TODO:
+
+    def get_chip_id(self):
+        return 1
+
+    def get_chip_rev(self):
+        return 1    

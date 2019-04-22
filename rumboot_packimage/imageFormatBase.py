@@ -231,3 +231,9 @@ class ImageFormatBase:
         while len > 0:
             self.fd.write(bytearray([0]))
             len = len - 1
+
+    def get_chip_id(self):
+        return 0
+
+    def get_chip_rev(self):
+        return 0
