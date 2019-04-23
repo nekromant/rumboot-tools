@@ -86,7 +86,22 @@ def cli():
     reset = pickResetSequence(opts)
     term = terminal.terminal(opts.port[0], opts.baud[0])
 
-    spl = spl_path + c.memories["i2c-0x50"]
+    mem = opts.memory[0]
+    if not mem:
+        return 1
+
+    if mem == "help":
+        for mem,spl in c.memories.items():
+            print("Memory %10s: %s" % (mem, spl))
+        return 1
+
+    try:
+        spl = c.memories[mem]
+    except:
+        print("ERROR: Target chip (%s) doesn't have memory '%s'. Run with -m help for a list" % (c.name, mem))
+        return 1
+
+    spl = spl_path + c.memories[mem]
 
     print("Reset method:     %s" % (reset.name))
     print("Baudrate:         %d bps" % opts.baud[0])
