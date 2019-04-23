@@ -7,10 +7,9 @@ from rumboot_packimage import imageFormatElfV2
 from rumboot_xrun import resetSeqMT12505
 from rumboot_xrun import resetSeqBase
 from rumboot_xrun import terminal
-
+import rumboot_xrun
 
 import argparse
-import rumboot_packimage
 
 
 class RumbootXrun:
@@ -30,14 +29,16 @@ def guessImageFormat(file):
     return False
 
 def pickResetSequence(opts):
-    return {
-        'mt12505': resetSeqMT12505.resetSeqMT12505('A92XPFQL'),
-        'pl2303': resetSeqBase.resetSeqBase()
-    }.get(opts.reset[0],resetSeqBase.resetSeqBase())
+    if opts.reset[0] == "pl2303":
+        return resetSeqBase.resetSeqBase()
+    if opts.reset[0] == 'mt12505':
+        return resetSeqMT12505.resetSeqMT12505(opts.ft232_reset[0])
+    
+    return resetSeqBase.resetSeqBase()
 
 def cli():
     parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter,
-                                     description="rumboot-xrun {} - RumBoot X-Modem execution tool\n".format(rumboot_packimage.__version__) +
+                                     description="rumboot-xrun {} - RumBoot X-Modem execution tool\n".format(rumboot_xrun.__version__) +
                                     "(C) 2018 Andrew Andrianov, RC Module\nhttps://github.com/RC-MODULE")
     parser.add_argument("-f", "--file",
                         help="image file",

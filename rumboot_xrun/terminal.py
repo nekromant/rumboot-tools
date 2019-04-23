@@ -2,7 +2,7 @@ import serial
 import sys
 from xmodem import XMODEM
 import os
-from parse import parse
+import parse
 import time
 import io
 
