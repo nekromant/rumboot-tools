@@ -108,6 +108,6 @@ def cli():
     print("Port:             %s" % opts.port[0])
     reset.resetToHost()
     term.xmodem_send(spl)
-    term.xmodem_send_stream(opts.file, 4096, b"boot: Press 'X' and send me the image\n")
-    return 0
+    return term.xmodem_send_stream(opts.file, 4096, b"boot: Press 'X' and send me the image\n")
+
     
