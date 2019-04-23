@@ -1,4 +1,3 @@
-import ft232
 import sys
 import time
 
@@ -28,6 +27,7 @@ class resetSeqMT12505:
         self.sp.cbus_write(0)
 
     def __init__(self, serial, flags = [0, 0, 0, 0, 0, 0, 0, 0], reset_pin = 5, host_pin = 3):
+        import ft232
         self.sp = ft232.Ft232(serial, baudrate=115200)
         self.sp.cbus_setup(mask=0xf, init=0xf)
         self.flags = flags

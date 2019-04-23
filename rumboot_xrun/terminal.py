@@ -2,7 +2,7 @@ import serial
 import sys
 from xmodem import XMODEM
 import os
-import parse
+from parse import parse
 import time
 import io
 
@@ -51,13 +51,15 @@ class terminal:
                             break
                     break
 
+        def xmodem_send(self, fl, chunksize=0, welcome=b"boot: host: Hit 'X' for xmodem upload\n"):
+            stream = open(fl, 'rb')
+            return self.xmodem_send_stream(stream, chunksize, welcome)
+
         def xmodem_send_stream(self, stream, chunksize=0, welcome=b"boot: host: Hit 'X' for xmodem upload\n"):
             self.poll_for_invite(welcome)
             stream.seek(0)
-            #stream = open(fl, 'rb')
             if chunksize==0:
                 ret = self.modem.send(stream, retry=16)
-                print(ret)
             else:
                 while True:
                     data = stream.read(chunksize)
@@ -65,4 +67,4 @@ class terminal:
                             break
                     data = io.BytesIO(data)
                     ret = self.modem.send(data, retry=16)
-                    poll_for_invite(welcome)            
+                    self.poll_for_invite(welcome)            

@@ -11,12 +11,6 @@ import rumboot_xrun
 
 import argparse
 
-
-class RumbootXrun:
-    """RumbootXrun tool frontend"""
-    def __init__(self, opts):
-        print("hello")
-
 def guessImageFormat(file):
     formats = [ imageFormatElfV2.ImageFormatElfV2,
                 imageFormatLegacy.ImageFormatLegacy,
@@ -32,8 +26,7 @@ def pickResetSequence(opts):
     if opts.reset[0] == "pl2303":
         return resetSeqBase.resetSeqBase()
     if opts.reset[0] == 'mt12505':
-        return resetSeqMT12505.resetSeqMT12505(opts.ft232_reset[0])
-    
+        return resetSeqMT12505.resetSeqMT12505(opts.ft232_serial[0])
     return resetSeqBase.resetSeqBase()
 
 def cli():
@@ -47,7 +40,8 @@ def cli():
     parser.add_argument("-p", "--port",
                         help="Serial port to use",
                         nargs=1, metavar=('value'),
-                        required=True)
+                        default=["/dev/ttyUSB0"],
+                        required=False),
     parser.add_argument("-b", "--baud",
                         help="Serial port to use",
                         nargs=1, metavar=('value'),
@@ -60,12 +54,16 @@ def cli():
     parser.add_argument("-S", "--ft232-serial",
                         help="FT232 serial number for MT125.05",
                         nargs=1, metavar=('value'),
-                        default="A92XPFQL",
+                        default=["A92XPFQL"],
                         required=False)
 
     opts = parser.parse_args()
 
     t = guessImageFormat(opts.file)
+    if t == False:
+        print("Failed to detect image format")
+        return 1
+
 
     db = chipDb.chipDb()
     c = db.query(t.get_chip_id(),t.get_chip_rev())

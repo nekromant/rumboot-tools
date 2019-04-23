@@ -9,6 +9,7 @@ from rumboot_xrun import terminal
 
 import argparse
 import rumboot_packimage
+import os
 
 
 def guessImageFormat(file):
@@ -23,10 +24,11 @@ def guessImageFormat(file):
     return False
 
 def pickResetSequence(opts):
-    return {
-        'mt12505': resetSeqMT12505.resetSeqMT12505('A92XPFQL'),
-        'pl2303': resetSeqBase.resetSeqBase()
-    }.get(opts.reset[0],resetSeqBase.resetSeqBase())
+    if opts.reset[0] == "pl2303":
+        return resetSeqBase.resetSeqBase()
+    if opts.reset[0] == 'mt12505':
+        return resetSeqMT12505.resetSeqMT12505(opts.ft232_serial[0])
+    return resetSeqBase.resetSeqBase()
 
 def cli():
     parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -40,7 +42,8 @@ def cli():
     parser.add_argument("-p", "--port",
                         help="Serial port to use",
                         nargs=1, metavar=('value'),
-                        required=True)
+                        default=["/dev/ttyUSB0"],
+                        required=False)
     parser.add_argument("-b", "--baud",
                         help="Serial port to use",
                         nargs=1, metavar=('value'),
@@ -50,6 +53,11 @@ def cli():
                         nargs=1, metavar=('value'),
                         default="none",
                         required=False)
+    parser.add_argument("-m", "--memory",
+                        help="Memory program. Help for a list of memories",
+                        nargs=1, metavar=('value'),
+                        default="help",
+                        required=True)                        
     parser.add_argument("-S", "--ft232-serial",
                         help="FT232 serial number for MT125.05",
                         nargs=1, metavar=('value'),
@@ -58,7 +66,12 @@ def cli():
 
     opts = parser.parse_args()
 
+    spl_path = os.path.dirname(__file__) + "/spl-tools/"
+
     t = guessImageFormat(opts.file)
+    if t == False:
+        print("Failed to detect image format")
+        return 1
 
     db = chipDb.chipDb()
     c = db.query(t.get_chip_id(),t.get_chip_rev())
@@ -72,10 +85,14 @@ def cli():
 
     reset = pickResetSequence(opts)
     term = terminal.terminal(opts.port[0], opts.baud[0])
+
+    spl = spl_path + c.memories["i2c-0x50"]
+
     print("Reset method:     %s" % (reset.name))
     print("Baudrate:         %d bps" % opts.baud[0])
     print("Port:             %s" % opts.port[0])
     reset.resetToHost()
-    term.xmodem_send_stream(opts.file)
-    return term.loop()
+    term.xmodem_send(spl)
+    term.xmodem_send_stream(opts.file, 4096, b"boot: Press 'X' and send me the image\n")
+    return 0
     

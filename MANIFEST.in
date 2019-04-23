@@ -1,0 +1,1 @@
+recursive-include rumboot_xflash/spl-tools *.bin

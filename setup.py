@@ -13,7 +13,7 @@ setup(
     name = "rumboot-tools",
     version = rumboot_packimage.__version__,
     packages = find_packages(exclude=["doc", "tests"]),
-    install_requires = ["pyserial", "pyft232", "parse", "xmodem"],
+    install_requires = ["pyserial", "pyft232", "parse", "xmodem", "tqdm"],
     extras_require = {
         "usb": ["pyusb>=1.0.0"]
     },
@@ -21,7 +21,7 @@ setup(
         "console_scripts": [
             "rumboot-packimage = rumboot_packimage.frontend:cli",
             "rumboot-xrun = rumboot_xrun.frontend:cli",
-            "rumboot-flash = rumboot_xflash.frontend:cli",
+            "rumboot-xflash = rumboot_xflash.frontend:cli",
         ],
     },
     include_package_data=True,
