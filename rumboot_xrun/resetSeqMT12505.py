@@ -4,6 +4,7 @@ import time
 
 #   MT125.05. Shift register on CBUS pins
 class resetSeqMT12505:
+    name = "MT125.05 (FT232RL)"
     flags = [ ]
 
     def reg_write_bit(self, bit):

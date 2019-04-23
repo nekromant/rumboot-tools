@@ -27,6 +27,11 @@ def guessImageFormat(file):
             return tmp
     return False
 
+def pickResetSequence(opts):
+    return {
+        'mt12505': resetSeqMT12505.resetSeqMT12505('A92XPFQL'),
+        'pl2303': resetSeqBase.resetSeqBase()
+    }.get(opts.reset[0],resetSeqBase.resetSeqBase())
 
 def cli():
     parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -47,17 +52,20 @@ def cli():
     parser.add_argument("-r", "--reset",
                         help="Reset sequence to use (none, pl2303, mt125.05)",
                         nargs=1, metavar=('value'),
+                        default="none",
+                        required=False)
+    parser.add_argument("-S", "--ft232-serial",
+                        help="FT232 serial number for MT125.05",
+                        nargs=1, metavar=('value'),
+                        default="A92XPFQL",
                         required=False)
 
     opts = parser.parse_args()
-    print(opts)
 
     t = guessImageFormat(opts.file)
 
     db = chipDb.chipDb()
     c = db.query(t.get_chip_id(),t.get_chip_rev())
-    #reset = resetSeqBase.resetSeqBase()
-    reset = resetSeqMT12505.resetSeqMT12505('A92XPFQL')
 
     print("Detected chip:    %s (%s)" % (c.name, c.part))
     if c == None:
@@ -65,9 +73,12 @@ def cli():
         return 1
     if opts.baud == None:
         opts.baud = [ c.baudrate]
-        print("Guessed Baudrate: %d" % c.baudrate)
 
+    reset = pickResetSequence(opts)
     term = terminal.terminal(opts.port[0], opts.baud[0])
+    print("Reset method:     %s" % (reset.name))
+    print("Baudrate:         %d bps" % opts.baud[0])
+    print("Port:             %s" % opts.port[0])
     reset.resetToHost()
     term.xmodem_send_stream(opts.file)
     return term.loop()

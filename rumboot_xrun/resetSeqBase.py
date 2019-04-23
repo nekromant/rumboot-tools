@@ -1,6 +1,7 @@
 class resetSeqBase:
+    name = "None"
     def __init__(self):
-        print("Warning: No auto-reset specified, you'll have to reset manually")
+        pass
 
     def resetWithCustomFlags(self, flags=[]):
         print("Please, power-cycle board")
