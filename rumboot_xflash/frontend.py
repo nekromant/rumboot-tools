@@ -1,22 +1,15 @@
-from rumboot_packimage import chipDb
 from rumboot_packimage import imageFormatBase
 from rumboot_packimage import imageFormatV2
 from rumboot_packimage import imageFormatLegacy
 from rumboot_packimage import imageFormatElfV2
-
+from rumboot_packimage import chipDb
 from rumboot_xrun import resetSeqMT12505
 from rumboot_xrun import resetSeqBase
 from rumboot_xrun import terminal
 
-
 import argparse
 import rumboot_packimage
 
-
-class RumbootXrun:
-    """RumbootXrun tool frontend"""
-    def __init__(self, opts):
-        print("hello")
 
 def guessImageFormat(file):
     formats = [ imageFormatElfV2.ImageFormatElfV2,
@@ -37,10 +30,11 @@ def pickResetSequence(opts):
 
 def cli():
     parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter,
-                                     description="rumboot-xrun {} - RumBoot X-Modem execution tool\n".format(rumboot_packimage.__version__) +
-                                    "(C) 2018 Andrew Andrianov, RC Module\nhttps://github.com/RC-MODULE")
+                                     description="rumboot-xflash {} - RumBoot X-Modem firmware update tool\n".format(rumboot_packimage.__version__) +
+                                    "(C) 2018-2019 Andrew Andrianov, RC Module\nhttps://github.com/RC-MODULE")
+
     parser.add_argument("-f", "--file",
-                        help="image file",
+                        help="image file to write",
                         type=argparse.FileType("rb"),
                         required=True)
     parser.add_argument("-p", "--port",

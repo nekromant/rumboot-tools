@@ -21,8 +21,10 @@ setup(
         "console_scripts": [
             "rumboot-packimage = rumboot_packimage.frontend:cli",
             "rumboot-xrun = rumboot_xrun.frontend:cli",
+            "rumboot-flash = rumboot_xflash.frontend:cli",
         ],
     },
+    include_package_data=True,
     description = "RumBoot loader tools",
     long_description = long_description,
     long_description_content_type = "text/markdown",

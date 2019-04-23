@@ -20,6 +20,10 @@ class chipBasis:
     chip_rev=1
     welcome='host'
     baudrate=115200
+    memories = {
+        "i2c-0x50": "rumboot-basis-PostProduction-simple-iram-i2c-updater.bin",
+        "spi1": "rumboot-basis-PostProduction-simple-iram-spi1-updater.bin"
+    }
 
 class chipOI10:
     name="bbp3"
