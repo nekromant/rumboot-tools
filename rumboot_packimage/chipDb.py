@@ -21,8 +21,13 @@ class chipBasis:
     welcome='host'
     baudrate=115200
     memories = {
-        "i2c-0x50": "rumboot-basis-PostProduction-simple-iram-i2c-updater.bin",
-        "spi1": "rumboot-basis-PostProduction-simple-iram-spi1-updater.bin"
+        "i2c0-0x50": "rumboot-basis-PostProduction-updater-i2c0-0x50.bin",
+        "i2c0-0x51": "rumboot-basis-PostProduction-updater-i2c0-0x51.bin", 
+        "i2c0-0x52": "rumboot-basis-PostProduction-updater-i2c0-0x52.bin", 
+        "i2c0-0x53": "rumboot-basis-PostProduction-updater-i2c0-0x53.bin",
+        "spi0-gpio0_5-cs": "rumboot-basis-PostProduction-updater-spi0-gpio0_5-cs.bin",
+        "spi0-internal-cs": "rumboot-basis-PostProduction-updater-spi0-internal-cs.bin",
+        "spi1-internal-cs": "rumboot-basis-PostProduction-updater-spi1-internal-cs.bin",
     }
 
 class chipOI10:

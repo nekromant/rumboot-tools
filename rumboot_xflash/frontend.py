@@ -92,7 +92,7 @@ def cli():
 
     if mem == "help":
         for mem,spl in c.memories.items():
-            print("Memory %10s: %s" % (mem, spl))
+            print("Memory %16s: %s" % (mem, spl))
         return 1
 
     try:
