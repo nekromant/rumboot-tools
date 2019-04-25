@@ -5,6 +5,7 @@ from rumboot_packimage import imageFormatElfV2
 from rumboot_packimage import chipDb
 from rumboot_xrun import resetSeqMT12505
 from rumboot_xrun import resetSeqBase
+from rumboot_xrun import resetSeqP2303
 from rumboot_xrun import terminal
 
 import argparse
@@ -25,7 +26,7 @@ def guessImageFormat(file):
 
 def pickResetSequence(opts):
     if opts.reset[0] == "pl2303":
-        return resetSeqBase.resetSeqBase()
+        return resetSeqPL2303.resetSeqPL2303()
     if opts.reset[0] == 'mt12505':
         return resetSeqMT12505.resetSeqMT12505(opts.ft232_serial[0])
     return resetSeqBase.resetSeqBase()
