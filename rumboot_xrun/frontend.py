@@ -37,6 +37,10 @@ def cli():
                         help="image file",
                         type=argparse.FileType("rb"),
                         required=True)
+    parser.add_argument("-l", "--log",
+                        help="Log terminal output to file",
+                        type=argparse.FileType("w+"),
+                        required=False)
     parser.add_argument("-p", "--port",
                         help="Serial port to use",
                         nargs=1, metavar=('value'),
@@ -77,10 +81,14 @@ def cli():
 
     reset = pickResetSequence(opts)
     term = terminal.terminal(opts.port[0], opts.baud[0])
+
+    if opts.log:
+        term.logstream = opts.log
+
     print("Reset method:     %s" % (reset.name))
     print("Baudrate:         %d bps" % opts.baud[0])
     print("Port:             %s" % opts.port[0])
     reset.resetToHost()
-    term.xmodem_send_stream(opts.file)
+    term.xmodem_send_stream(opts.file, desc="Uploading image")
     return term.loop()
     

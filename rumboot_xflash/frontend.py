@@ -39,28 +39,34 @@ def cli():
                         help="image file to write",
                         type=argparse.FileType("rb"),
                         required=True)
+    parser.add_argument("-l", "--log",
+                        help="Log terminal output to file",
+                        type=argparse.FileType("wb+"),
+                        required=False)
     parser.add_argument("-p", "--port",
                         help="Serial port to use",
                         nargs=1, metavar=('value'),
                         default=["/dev/ttyUSB0"],
                         required=False)
     parser.add_argument("-b", "--baud",
-                        help="Serial port to use",
-                        nargs=1, metavar=('value'),
+                        help="Serial port to use e.g. /dev/ttyUSB0 (*nix), com1: (windows)",
+                        nargs=1, metavar=('port'),
                         required=False)
     parser.add_argument("-r", "--reset",
-                        help="Reset sequence to use (none, pl2303, mt125.05)",
-                        nargs=1, metavar=('value'),
+                        help="Reset sequence to use (none, pl2303, mt12505)",
+                        nargs=1, metavar=('sequence'),
                         default="none",
                         required=False)
+    parser.add_argument("-v", "--verbose", 
+                        help="Print serial debug messages during update"),
     parser.add_argument("-m", "--memory",
                         help="Memory program. Help for a list of memories",
-                        nargs=1, metavar=('value'),
+                        nargs=1, metavar=('memory'),
                         default="help",
                         required=True)                        
     parser.add_argument("-S", "--ft232-serial",
                         help="FT232 serial number for MT125.05",
-                        nargs=1, metavar=('value'),
+                        nargs=1, metavar=('serial'),
                         default="A92XPFQL",
                         required=False)
 
@@ -86,6 +92,12 @@ def cli():
     reset = pickResetSequence(opts)
     term = terminal.terminal(opts.port[0], opts.baud[0])
 
+    if opts.log:
+        term.logstream = opts.log
+
+    if opts.verbose == None:
+        term.verbose = False
+
     mem = opts.memory[0]
     if not mem:
         return 1
@@ -107,7 +119,8 @@ def cli():
     print("Baudrate:         %d bps" % opts.baud[0])
     print("Port:             %s" % opts.port[0])
     reset.resetToHost()
-    term.xmodem_send(spl)
-    return term.xmodem_send_stream(opts.file, 4096, b"boot: Press 'X' and send me the image\n")
+    term.xmodem_send(spl, desc="Uploading SPL")
+    print("Preparing image upload, please stand by...")
+    return term.xmodem_send_stream(opts.file, 4096, b"boot: Press 'X' and send me the image\n", desc="Writing image")
 
     
