@@ -5,7 +5,7 @@ from rumboot_packimage import imageFormatElfV2
 from rumboot_packimage import chipDb
 from rumboot_xrun import resetSeqMT12505
 from rumboot_xrun import resetSeqBase
-from rumboot_xrun import resetSeqP2303
+from rumboot_xrun import resetSeqPL2303
 from rumboot_xrun import terminal
 
 import argparse
@@ -117,11 +117,11 @@ def cli():
     spl = spl_path + c.memories[mem]
 
     print("Reset method:     %s" % (reset.name))
-    print("Baudrate:         %d bps" % opts.baud[0])
+    print("Baudrate:         %d bps" % int(opts.baud[0]))
     print("Port:             %s" % opts.port[0])
     reset.resetToHost()
     term.xmodem_send(spl, desc="Uploading SPL")
     print("Preparing image upload, please stand by...")
-    return term.xmodem_send_stream(opts.file, 4096, b"boot: Press 'X' and send me the image\n", desc="Writing image")
-
+    term.xmodem_send_stream(opts.file, 4096, b"boot: Press 'X' and send me the image\n", desc="Writing image")
+    reset.resetToNormal()
     

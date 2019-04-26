@@ -13,7 +13,7 @@ class terminal:
 
         def __init__(self, port, speed):
             self.port = port
-            self.ser = serial.Serial(port, speed, timeout=1)
+            self.ser = serial.Serial(port, speed, timeout=3)
             def getc(size, timeout=10):
                 ret = self.ser.read(size)
                 return ret or None
@@ -42,11 +42,14 @@ class terminal:
                    code = ret[0]
                    return int(code)
 
-        def poll_for_invite(self, welcome, shortsync=False):
+        def poll_for_invite(self, welcome, shortsync=False, completed=b"Operation completed\n"):
             while True:
                 line = self.ser.readline()
                 l = line.decode(errors='replace')
+                line = line.replace(b'\r',b'')
                 self.log(l,end='')
+                if (line == completed):
+                    return True
                 if (line == welcome):
                     self.ser.write("X".encode())
                     if shortsync:
@@ -57,6 +60,7 @@ class terminal:
                         if tmp1 == b"C" and tmp2 == b"C": 
                             break
                     break
+            return False
 
         def xmodem_send(self, fl, chunksize=0, desc="Uploading file", welcome=b"boot: host: Hit 'X' for xmodem upload\n"):
             stream = open(fl, 'rb')
@@ -88,4 +92,5 @@ class terminal:
                             break
                     data = io.BytesIO(data)
                     ret = self.modem.send(data, retry=16, callback=callback)
-                    self.poll_for_invite(welcome, True)           
+                    if self.poll_for_invite(welcome, True):
+                        break        
