@@ -12,6 +12,9 @@ class chipMM7705:
     chip_rev=1
     welcome='host'
     baudrate=1000000
+    memories = {
+        "spi" : "rumboot-mm7705-PostProduction-spl-spi.bin"
+    }
 
 class chipBasis:
     name="basis"
@@ -31,7 +34,7 @@ class chipBasis:
     }
 
 class chipOI10:
-    name="bbp3"
+    name="oi10"
     part="???"
     chip_id=4
     chip_rev=1
