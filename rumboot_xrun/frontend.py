@@ -25,7 +25,7 @@ def guessImageFormat(file):
 
 def pickResetSequence(opts):
     if opts.reset[0] == "pl2303":
-        return resetSeqPL2303.resetSeqPL2303()
+        return resetSeqPL2303.resetSeqPL2303(int(opts.pl2303_port[0]))
     if opts.reset[0] == 'mt12505':
         return resetSeqMT12505.resetSeqMT12505(opts.ft232_serial[0])
     return resetSeqBase.resetSeqBase()
@@ -61,6 +61,12 @@ def cli():
                         nargs=1, metavar=('value'),
                         default=["A92XPFQL"],
                         required=False)
+    parser.add_argument("-P", "--pl2303-port",
+                        help="PL2303 physical port (for -P of pl2303gpio)",
+                        nargs=1, metavar=('value'),
+                        default=[ "-1" ],
+                        required=False)
+
 
     opts = parser.parse_args()
 
