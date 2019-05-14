@@ -8,7 +8,7 @@ class resetSeqPL2303:
     # GPIO1: power
 
     def gpio(self, gp, v):
-        os.system("pl2303gpio --gpio=%d --out=%d --port=%d" % (gp, v, self.port))
+        os.system("pl2303gpio --port=%d --gpio=%d --out=%d" % (self.port, gp, v))
 
     def __init__(self, port):
         self.port = port
