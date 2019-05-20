@@ -45,8 +45,8 @@ class terminal:
         def poll_for_invite(self, welcome, shortsync=False, completed=b"Operation completed\n"):
             while True:
                 line = self.ser.readline()
-                l = line.decode(errors='replace')
                 line = line.replace(b'\r',b'')
+                l = line.decode(errors='replace')
                 self.log(l,end='')
                 if (line == completed):
                     return True
