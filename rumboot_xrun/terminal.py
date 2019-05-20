@@ -22,10 +22,13 @@ class terminal:
             self.modem = XMODEM(getc, putc)
 
         def log(self, *args, **kwargs):
-            if self.verbose:
-                tqdm.write(*args, **kwargs)
-            if not self.logstream == None:
-                self.logstream.write(*args)
+            try:
+                if self.verbose:
+                    tqdm.write(*args, **kwargs)
+                if not self.logstream == None:
+                    self.logstream.write(*args)
+            except:
+                pass
 
         def loop(self, exitfmt="boot: host: Back in rom, code {}"):
             while True:
@@ -64,7 +67,8 @@ class terminal:
 
         def xmodem_send(self, fl, chunksize=0, desc="Uploading file", welcome=b"boot: host: Hit 'X' for xmodem upload\n"):
             stream = open(fl, 'rb')
-            return self.xmodem_send_stream(stream, chunksize, welcome, desc)
+            ret = self.xmodem_send_stream(stream, chunksize, welcome, desc)
+            close(stream)
 
         def stream_size(self, stream):
             stream.seek(0,2)
