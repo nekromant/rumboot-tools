@@ -32,7 +32,7 @@ class terminal:
                 ret = None
                 line = self.ser.readline()
                 try: 
-                    line = line.decode()
+                    line = line.decode(errors='replace')
                     self.log(line, end='')
                     ret = parse(exitfmt, line)
                 except:
