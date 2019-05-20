@@ -22,6 +22,8 @@ class terminal:
             self.modem = XMODEM(getc, putc)
 
         def log(self, *args, **kwargs):
+            # Sometimes we get a weird exception on certain windows systems/setups
+            # Try to catch any exceptions and dispose of them here
             try:
                 if self.verbose:
                     tqdm.write(*args, **kwargs)
@@ -35,7 +37,7 @@ class terminal:
                 ret = None
                 line = self.ser.readline()
                 try: 
-                    line = line.decode(errors='replace')
+                    line = line.decode()
                     self.log(line, end='')
                     ret = parse(exitfmt, line)
                 except:
@@ -48,8 +50,8 @@ class terminal:
         def poll_for_invite(self, welcome, shortsync=False, completed=b"Operation completed\n"):
             while True:
                 line = self.ser.readline()
-                line = line.replace(b'\r',b'')
                 l = line.decode(errors='replace')
+                line = line.replace(b'\r',b'')
                 self.log(l,end='')
                 if (line == completed):
                     return True
@@ -68,7 +70,7 @@ class terminal:
         def xmodem_send(self, fl, chunksize=0, desc="Uploading file", welcome=b"boot: host: Hit 'X' for xmodem upload\n"):
             stream = open(fl, 'rb')
             ret = self.xmodem_send_stream(stream, chunksize, welcome, desc)
-            close(stream)
+            stream.close()
 
         def stream_size(self, stream):
             stream.seek(0,2)
