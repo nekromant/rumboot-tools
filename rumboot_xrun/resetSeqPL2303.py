@@ -19,13 +19,13 @@ class resetSeqPL2303:
     def resetToHost(self, flags = []):
         self.gpio(0, 1)
         self.gpio(1, 1)
-        time.sleep(0.5)
+        time.sleep(1)
         self.gpio(1, 0)
         self.gpio(0, 0)
 
     def resetToNormal(self, flags = []):
         self.gpio(0, 1)
         self.gpio(1, 1)
-        time.sleep(0.5)
+        time.sleep(1)
         self.gpio(1, 0)
         self.gpio(0, 0) 
