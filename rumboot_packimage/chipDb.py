@@ -35,7 +35,7 @@ class chipBasis:
 
 class chipOI10:
     name="oi10"
-    part="???"
+    part="1888ВМ018(A)/1888ВМ01H4"
     chip_id=4
     chip_rev=1
     welcome='host'
