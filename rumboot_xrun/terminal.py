@@ -54,7 +54,7 @@ class terminal:
                 line = line.replace(b'\r',b'')
                 self.log(l,end='')
                 #HACK: Some chips have this string different
-                line = line.replace('X-Modem','xmodem')
+                line = line.replace(b'X-Modem',b'xmodem')
                 if (line == completed):
                     return True
                 if (line == welcome):
