@@ -53,6 +53,8 @@ class terminal:
                 l = line.decode(errors='replace')
                 line = line.replace(b'\r',b'')
                 self.log(l,end='')
+                #HACK: Some chips have this string different
+                line = line.replace('X-Modem','xmodem')
                 if (line == completed):
                     return True
                 if (line == welcome):
