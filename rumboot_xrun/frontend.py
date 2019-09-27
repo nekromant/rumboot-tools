@@ -7,6 +7,7 @@ from rumboot_packimage import imageFormatElfV2
 from rumboot_xrun import resetSeqMT12505
 from rumboot_xrun import resetSeqBase
 from rumboot_xrun import resetSeqPL2303
+from rumboot_xrun import resetSeqPowerHub
 from rumboot_xrun import terminal
 import rumboot_xrun
 
@@ -28,6 +29,8 @@ def pickResetSequence(opts):
         return resetSeqPL2303.resetSeqPL2303(int(opts.pl2303_port[0]))
     if opts.reset[0] == 'mt12505':
         return resetSeqMT12505.resetSeqMT12505(opts.ft232_serial[0])
+    if opts.reset[0] == 'powerhub':
+        return resetSeqPowerHub.resetSeqPowerHub(opts.ft232_serial[0])
     return resetSeqBase.resetSeqBase()
 
 def cli():
