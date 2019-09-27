@@ -46,11 +46,14 @@ class chipOI10:
 
 class chipBBP3:
     name="bbp3"
-    part="???"
+    part="1888ВС058"
     chip_id=5
     chip_rev=1
     welcome='host'
     baudrate=115200
+    memories = {
+        "spi0-cs0": "rumboot-bbp3-PostProduction-updater-spi0-cs0.bin",
+    }
 
 
 class chipDb:
