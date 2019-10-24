@@ -27,6 +27,7 @@ class terminal:
             try:
                 if self.verbose:
                     tqdm.write(*args, **kwargs)
+                    sys.stdout.flush()
                 if not self.logstream == None:
                     self.logstream.write(*args)
             except:
@@ -40,12 +41,17 @@ class terminal:
                     line = line.decode()
                     self.log(line, end='')
                     ret = parse(exitfmt, line)
+                    if not ret:
+                        ret = parse("PANIC: {}", line)  
                 except:
                     pass
 
                 if ret:
-                   code = ret[0]
-                   return int(code)
+                    try:
+                        code = ret[0]
+                        return int(code)
+                    except:
+                        return 42
 
         def poll_for_invite(self, welcome, shortsync=False, completed=b"Operation completed\n"):
             while True:
@@ -92,13 +98,13 @@ class terminal:
             
             stream.seek(0)
             if chunksize==0:
-                ret = self.modem.send(stream, retry=16, callback=callback)
+                ret = self.modem.send(stream, retry=128, callback=callback)
             else:
                 while True:
                     data = stream.read(chunksize)
                     if (not data):
                             break
                     data = io.BytesIO(data)
-                    ret = self.modem.send(data, retry=16, callback=callback)
+                    ret = self.modem.send(data, retry=128, callback=callback, timeout=10)
                     if self.poll_for_invite(welcome, True):
                         break        
