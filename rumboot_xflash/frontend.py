@@ -128,6 +128,8 @@ def cli():
     reset.resetToHost()
     term.xmodem_send(spl, desc="Uploading SPL")
     print("Preparing image upload, please stand by...")
-    term.xmodem_send_stream(opts.file, 4096, b"boot: Press 'X' and send me the image\n", desc="Writing image")
-    reset.resetToNormal()
+    #term.xmodem_send(opts.file, desc="Writing image")
+    term.xmodem_send_stream(opts.file, 0, b"boot: Press 'X' and send me the image\n", desc="Writing image")
+#    reset.resetToNormal()
+    term.loop()
     
