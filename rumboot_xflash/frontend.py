@@ -40,6 +40,10 @@ def cli():
                         help="image file to write",
                         type=argparse.FileType("rb"),
                         required=True)
+    parser.add_argument("-c", "--chip_id",
+                        help="Override chip id",
+                        nargs=1, metavar=('chip_id'),
+                        required=False)
     parser.add_argument("-l", "--log",
                         help="Log terminal output to file",
                         type=argparse.FileType("wb+"),
@@ -80,15 +84,18 @@ def cli():
     opts = parser.parse_args()
 
     spl_path = os.path.dirname(__file__) + "/spl-tools/"
-
     t = guessImageFormat(opts.file)
-    if t == False:
+    if t == False and opts.chip_id == None:
         print("Failed to detect image format")
         return 1
 
     db = chipDb.chipDb()
-    c = db.query(t.get_chip_id(),t.get_chip_rev())
 
+    if opts.chip_id == None:
+        c = db.query(t.get_chip_id(),t.get_chip_rev())
+    else:        
+        c = db.query(int(opts.chip_id[0]), 1)
+        
     print("Detected chip:    %s (%s)" % (c.name, c.part))
     if c == None:
         print("ERROR: Failed to auto-detect chip type")
