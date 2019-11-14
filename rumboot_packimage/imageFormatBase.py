@@ -37,11 +37,16 @@ class ImageFormatBase:
         self.header_size = 66
         self.fd.seek(0, os.SEEK_SET)
 
+    def field_exists(self, name):
+        for f in self.format:
+            if (f[1] == name):
+                return True
+        return False
 
     def hide_field(self, field):
         self.hidden[field] = True
 
-    def dump_field(self, field, format=False, comment=False, raw=False):
+    def dump_field(self, field, format=False, comment=False, raw=False, nocheck=False):
 
         if (format == False):
             format = self.format
@@ -98,9 +103,12 @@ class ImageFormatBase:
         if (self.file_size - self.get_header_length() != self.header["data_length"]):
             actual = "Actual length {}".format(self.file_size - self.get_header_length())
 
-        self.dump_field("data_length",  False, actual, raw)
-        self.dump_field("header_crc32", False, hmatch, raw)
-        self.dump_field("data_crc32",   False, dmatch, raw)
+        if (self.field_exists("data_length")):
+            self.dump_field("data_length",  False, actual, raw)
+        if (self.field_exists("header_crc32")):
+            self.dump_field("header_crc32", False, hmatch, raw)
+        if (self.field_exists("data_crc32")):
+            self.dump_field("data_crc32",   False, dmatch, raw)
 
 
     def read_header(self):
@@ -152,37 +160,37 @@ class ImageFormatBase:
             offset = offset + f[0]
         return offset
 
-    def read_element(self, offset, len):
-        self.fd.seek(offset, os.SEEK_SET)
+    def read_element(self, offset, len, whence = os.SEEK_SET):
+        self.fd.seek(offset, whence)
         tmp = self.fd.read(len)
         tmp = int.from_bytes(tmp, self.endian)
         return tmp
 
-    def write_element(self, offset, value, len):
-        self.fd.seek(offset, os.SEEK_SET)
+    def write_element(self, offset, value, len, whence = os.SEEK_SET):
+        self.fd.seek(offset, whence)
         self.fd.write(bytearray(value.to_bytes(len, self.endian)))
         return value
 
-    def read64(self, offset):
-        return self.read_element(offset, 8)
+    def read64(self, offset, whence = os.SEEK_SET):
+        return self.read_element(offset, 8, whence)
 
-    def read32(self, offset):
-        return self.read_element(offset, 4)
+    def read32(self, offset, whence = os.SEEK_SET):
+        return self.read_element(offset, 4, whence)
 
-    def read16(self, offset):
-        return self.read_element(offset, 2)
+    def read16(self, offset, whence = os.SEEK_SET):
+        return self.read_element(offset, 2, whence)
 
-    def read8(self, offset):
-        return self.read_element(offset, 1)
+    def read8(self, offset, whence = os.SEEK_SET):
+        return self.read_element(offset, 1, whence)
 
-    def write32(self, offset, value):
-        return self.write_element(offset, value, 4)
+    def write32(self, offset, value, whence = os.SEEK_SET):
+        return self.write_element(offset, value, 4, whence)
 
-    def write16(self, offset, value):
-        return self.write_element(offset, value, 2)
+    def write16(self, offset, value, whence = os.SEEK_SET):
+        return self.write_element(offset, value, 2, whence)
 
-    def write8(self, offset, value):
-        return self.write_element(offset, value, 1)
+    def write8(self, offset, value, whence = os.SEEK_SET):
+        return self.write_element(offset, value, 1, whence)
 
     def crc32(self, from_byte, to_byte=-1):
 
