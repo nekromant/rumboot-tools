@@ -79,7 +79,10 @@ def cli():
                         nargs=1, metavar=('value'),
                         default=[ "-1" ],
                         required=False)
-
+    parser.add_argument("-z", "--spl-path",
+                        help="Path for SPL writers (Debug only)",
+                        type=str,
+                        required=False)
 
     opts = parser.parse_args()
 
@@ -101,7 +104,7 @@ def cli():
         print("ERROR: Failed to auto-detect chip type")
         return 1
     if opts.baud == None:
-        opts.baud = [ c.baudrate]
+        opts.baud = [ c.baudrate ]
 
     reset = pickResetSequence(opts)
     term = terminal.terminal(opts.port[0], opts.baud[0])
@@ -126,6 +129,10 @@ def cli():
     except:
         print("ERROR: Target chip (%s) doesn't have memory '%s'. Run with -m help for a list" % (c.name, mem))
         return 1
+
+    if opts.spl_path != None:
+        spl_path = opts.spl_path
+        print("SPL               %s" % (spl_path + c.memories[mem]))
 
     spl = spl_path + c.memories[mem]
 
