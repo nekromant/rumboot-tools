@@ -42,6 +42,7 @@ class chipOI10:
     baudrate=115200
     memories = {
         "spi0-internal-cs": "rumboot-oi10-PostProduction-updater-spi-flash-0.bin",
+        "nor":  "rumboot-oi10-PostProduction-updater-nor-mt150.04.bin"
     }
 
 class chipBBP3:
