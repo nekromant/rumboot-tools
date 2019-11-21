@@ -4,12 +4,18 @@ class chipBase:
     chip_id=0
     chip_rev=0
     baudrate=115200
+    warning=None
 
 class chipMM7705:
     name="mm7705"
     part="1888ТХ018"
     chip_id=1
     chip_rev=1
+    warning='''
+    This chip has a RumBoot V1 bootloader. 
+    RumBootV2 may be flashed onto SPI flash and executed from internal memory
+    to provide additional functionality, e.g. xmodem loading
+    '''
     welcome='host'
     baudrate=1000000
     memories = {
@@ -42,13 +48,15 @@ class chipOI10:
     baudrate=115200
     memories = {
         "spi0-internal-cs": "rumboot-oi10-PostProduction-updater-spi-flash-0.bin",
-        "nor":  "rumboot-oi10-PostProduction-updater-nor-mt150.04.bin"
+        "nor":  "rumboot-oi10-PostProduction-updater-nor-mt150.04.bin",
+        "nor-bootrom":  "rumboot-oi10-PostProduction-updater-nor-mt150.04-brom.bin"
     }
 
 class chipBBP3:
     name="bbp3"
     part="1888ВС058"
     chip_id=5
+    baudrate=115200
     chip_rev=1
     welcome='host'
     baudrate=115200
@@ -56,9 +64,25 @@ class chipBBP3:
         "spi0-cs0": "rumboot-bbp3-PostProduction-updater-spi0-cs0.bin",
     }
 
+class chipNM6408:
+    name="nm6408"
+    part="1888ВС058"
+    chip_id=6
+    chip_rev=1
+    welcome='host'
+    baudrate=115200
+    warning='''
+    This chip has a legacy ROM bootloader. 
+    RumBoot is flashed onto SPI flash and executed from internal memory
+    to provide additional functionality
+    Please be careful not wipe it! Recovery will be only possible via JTAG
+    '''
+    memories = {
+        "spi0-cs0": "rumboot-nm6408-PostProduction-updater-spi0-cs0.bin",
+    }
 
 class chipDb:
-    chips = {chipMM7705, chipBasis,chipOI10, chipBBP3}
+    chips = {chipMM7705, chipBasis,chipOI10, chipBBP3, chipNM6408}
     
     def query(self, id, rev):
         for c in self.chips:

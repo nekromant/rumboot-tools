@@ -42,7 +42,7 @@ def cli():
     parser.add_argument("-f", "--file",
                         help="image file to write",
                         type=argparse.FileType("rb"),
-                        required=True)
+                        required=False)
     parser.add_argument("-c", "--chip_id",
                         help="Override chip id",
                         nargs=1, metavar=('chip_id'),
@@ -90,10 +90,12 @@ def cli():
     opts = parser.parse_args()
 
     spl_path = os.path.dirname(__file__) + "/spl-tools/"
-    t = guessImageFormat(opts.file)
-    if t == False and opts.chip_id == None:
-        print("Failed to detect image format")
-        return 1
+    
+    if opts.file:
+        t = guessImageFormat(opts.file)
+        if t == False and opts.chip_id == None:
+            print("Failed to detect image format")
+            return 1
 
     db = chipDb.chipDb()
 
@@ -101,13 +103,19 @@ def cli():
         c = db.query(t.get_chip_id(),t.get_chip_rev())
     else:        
         c = db.query(int(opts.chip_id[0]), 1)
-        
-    print("Detected chip:    %s (%s)" % (c.name, c.part))
+
     if c == None:
         print("ERROR: Failed to auto-detect chip type")
         return 1
     if opts.baud == None:
         opts.baud = [ c.baudrate ]
+
+    print("Detected chip:    %s (%s)" % (c.name, c.part))    
+    if hasattr(c,"warning"):
+        print("    --- WARNING ---")
+        print(c.warning)        
+        print("    --- WARNING ---")
+        print("")
 
     reset = pickResetSequence(opts)
     term = terminal.terminal(opts.port[0], opts.baud[0])
@@ -145,8 +153,7 @@ def cli():
     reset.resetToHost()
     term.xmodem_send(spl, desc="Uploading SPL")
     print("Preparing image upload, please stand by...")
-    #term.xmodem_send(opts.file, desc="Writing image")
     term.xmodem_send_stream(opts.file, 0, b"boot: Press 'X' and send me the image\n", desc="Writing image")
-#    reset.resetToNormal()
+    reset.resetToNormal()
     term.loop()
     
