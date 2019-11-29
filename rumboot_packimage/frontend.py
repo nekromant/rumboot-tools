@@ -66,6 +66,12 @@ def cli():
                                 Use -r flag on an existing image to find out what keys exist.
                                 Use -c to update the checksums
                         ''')
+    parser.add_argument('-e', '--reverse-endianness',
+                        action="store_true",
+                        help='''Use this option to reverse endianness of all headers. This will not touch data.
+                                For testing only
+                        ''')
+
 
     opts = parser.parse_args()
 
@@ -89,6 +95,10 @@ def cli():
 
     if opts.get:
         print("0x%x" % t.get(opts.get[0]))
+        return 0
+
+    if opts.reverse_endianness:
+        t.swap_endian()
 
     if (opts.checksum_fix_length):
         t.fix_length()

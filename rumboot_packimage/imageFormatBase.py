@@ -1,5 +1,6 @@
 import os
 import binascii
+import sys
 
 class ImageFormatBase:
     cur_pos = 0
@@ -200,6 +201,12 @@ class ImageFormatBase:
         data = self.fd.read(to_byte-from_byte)
         crc32 = (binascii.crc32(data) & 0xffffffff)
         return crc32
+
+    def swap_endian(self):
+        if (self.endian == "big"):
+                self.endian = "little"
+        if (self.endian == "little"):
+                self.endian = "big"
 
     def check(self):
         self.read_header()
