@@ -7,9 +7,12 @@ import time
 import io
 from tqdm import tqdm
 
+from rumboot_xrun.handlers import *
+import pkgutil
 class terminal:
         verbose=True
         logstream=None
+        plusargs={}
 
         def __init__(self, port, speed):
             self.port = port
@@ -43,6 +46,10 @@ class terminal:
                     ret = parse(exitfmt, line)
                     if not ret:
                         ret = parse("PANIC: {}", line)  
+                    if not ret:
+                        tmp = parse("UPLOAD: {} to {}", line)
+                        if (tmp):
+                            self.xmodem_from_plusarg(tmp[0])
                 except:
                     pass
 
@@ -85,9 +92,18 @@ class terminal:
             len = stream.tell()
             stream.seek(0)
             return len
+        
+        # UPLOAD: file.bin 
+        def xmodem_from_plusarg(self, arg):
+            fl = self.plusargs[arg]
+            stream = open(fl, 'rb')
+            print("Sending %s via xmodem" % fl)
+            ret = self.xmodem_send_stream(stream, 0, None, "Uploading")
+            stream.close()
 
         def xmodem_send_stream(self, stream, chunksize=0, welcome=b"boot: host: Hit 'X' for xmodem upload\n", desc="Uploading stream"):
-            self.poll_for_invite(welcome)
+            if welcome != None:
+                self.poll_for_invite(welcome)
             pbar = tqdm(desc=desc, total=self.stream_size(stream), unit_scale=True, unit_divisor=1024, unit='B')
 
             def callback(total_packets, success_count, error_count):
