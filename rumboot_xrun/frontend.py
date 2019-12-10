@@ -12,6 +12,7 @@ from rumboot_xrun import terminal
 import rumboot_xrun
 
 import argparse
+from parse import *
 
 def guessImageFormat(file):
     formats = [ imageFormatElfV2.ImageFormatElfV2,
@@ -69,9 +70,16 @@ def cli():
                         nargs=1, metavar=('value'),
                         default=[ "-1" ],
                         required=False)
-
+    parser.add_argument('-A', '--plusargs', nargs='*')
 
     opts = parser.parse_args()
+
+    plusargs = {}
+    if opts.plusargs:
+        for a in opts.plusargs:
+            ret = parse("+{}={}", a)
+            plusargs[ret[0]] = ret[1]
+
 
     t = guessImageFormat(opts.file)
     if t == False:
@@ -91,6 +99,7 @@ def cli():
 
     reset = pickResetSequence(opts)
     term = terminal.terminal(opts.port[0], opts.baud[0])
+    term.plusargs = plusargs
 
     if opts.log:
         term.logstream = opts.log
