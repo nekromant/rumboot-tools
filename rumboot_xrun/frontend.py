@@ -28,6 +28,8 @@ def guessImageFormat(file):
 def pickResetSequence(opts):
     if opts.reset[0] == "pl2303":
         return resetSeqPL2303.resetSeqPL2303(int(opts.pl2303_port[0]))
+    if opts.reset[0] == "pl2303i":
+        return resetSeqPL2303.resetSeqPL2303i(int(opts.pl2303_port[0]))
     if opts.reset[0] == 'mt12505':
         return resetSeqMT12505.resetSeqMT12505(opts.ft232_serial[0])
     if opts.reset[0] == 'powerhub':
@@ -55,8 +57,12 @@ def cli():
                         help="Serial port to use",
                         nargs=1, metavar=('value'),
                         required=False)
+    parser.add_argument("-c", "--chip_id",
+                        help="Override chip id",
+                        nargs=1, metavar=('chip_id'),
+                        required=False)
     parser.add_argument("-r", "--reset",
-                        help="Reset sequence to use (none, pl2303, mt125.05)",
+                        help="Reset sequence to use (none, pl2303, pl2303i, mt125.05)",
                         nargs=1, metavar=('value'),
                         default="none",
                         required=False)
@@ -80,16 +86,23 @@ def cli():
             ret = parse("+{}={}", a)
             plusargs[ret[0]] = ret[1]
 
-
-    t = guessImageFormat(opts.file)
-    if t == False:
-        print("Failed to detect image format")
-        return 1
-
+    if opts.file:
+        t = guessImageFormat(opts.file)
+        if t == False and opts.chip_id == None:
+            print("Failed to detect image format")
+            return 1
 
     db = chipDb.chipDb()
-    c = db.query(t.get_chip_id(),t.get_chip_rev())
 
+    if opts.chip_id == None:
+        c = db.query(t.get_chip_id(),t.get_chip_rev())
+    else:        
+        c = db.query(int(opts.chip_id[0]), 1)
+
+    if c == None:
+        print("ERROR: Failed to auto-detect chip type")
+        return 1
+        
     print("Detected chip:    %s (%s)" % (c.name, c.part))
     if c == None:
         print("ERROR: Failed to auto-detect chip type")
