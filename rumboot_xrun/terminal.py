@@ -16,7 +16,7 @@ class terminal:
 
         def __init__(self, port, speed):
             self.port = port
-            self.ser = serial.Serial(port, speed, timeout=3)
+            self.ser = serial.Serial(port, speed, timeout=5)
             def getc(size, timeout=10):
                 ret = self.ser.read(size)
                 return ret or None
