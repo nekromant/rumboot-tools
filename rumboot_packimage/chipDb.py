@@ -81,8 +81,28 @@ class chipNM6408:
         "spi0-cs0": "rumboot-nm6408-PostProduction-updater-spi0-cs0.bin",
     }
 
+class chipZynq:
+    name="zed"
+    part="Xilinx Zynq series (Zed Board, Tang Hex, ...)"
+    chip_id=255
+    baudrate=115200
+    chip_rev=1
+    welcome='Zynq> '
+    baudrate=115200
+    memories = {}
+
+class chipRPI4:
+    name="rpi4"
+    part="BCM2711 (Raspberry Pi 4)"
+    chip_id=255
+    baudrate=115200
+    chip_rev=2
+    welcome='U-Boot> '
+    baudrate=115200
+    memories = {}
+
 class chipDb:
-    chips = {chipMM7705, chipBasis,chipOI10, chipBBP3, chipNM6408}
+    chips = {chipMM7705, chipBasis,chipOI10, chipBBP3, chipNM6408, chipZynq, chipRPI4}
     
     def query(self, id, rev):
         for c in self.chips:
