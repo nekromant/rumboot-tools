@@ -1,4 +1,4 @@
-from classes.classLoader import classLoader
+from rumboot.classLoader import classLoader
 
 class ImageFormatDb(classLoader):
     def guess(self, ifile):

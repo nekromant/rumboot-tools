@@ -1,4 +1,4 @@
-from classes.ImageFormatDb import ImageFormatDb
+from rumboot.ImageFormatDb import ImageFormatDb
 import argparse
 import rumboot_packimage
 
@@ -57,7 +57,7 @@ def cli():
                         ''')
 
     opts = parser.parse_args()
-    formats = ImageFormatDb("classes.images");
+    formats = ImageFormatDb("rumboot.images");
     t = formats.guess(opts.file);
 
     calc_data = True

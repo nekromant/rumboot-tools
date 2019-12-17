@@ -1,6 +1,6 @@
 import os
 import time
-from classes.resetseq.resetSeqBase import base
+from rumboot.resetseq.resetSeqBase import base
 
 class powerhub(base):
     name = "PowerHub"

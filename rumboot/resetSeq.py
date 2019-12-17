@@ -1,4 +1,4 @@
-from classes.classLoader import classLoader
+from rumboot.classLoader import classLoader
 
 class ResetSeqFactory(classLoader):
     def __getitem__(self, key):

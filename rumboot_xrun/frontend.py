@@ -1,17 +1,17 @@
-from classes.chipDb import ChipDb
-from classes.ImageFormatDb import ImageFormatDb
-from classes.resetSeq import ResetSeqFactory
-from classes.cmdline import arghelper
-from classes.terminal import terminal
+from rumboot.chipDb import ChipDb
+from rumboot.ImageFormatDb import ImageFormatDb
+from rumboot.resetSeq import ResetSeqFactory
+from rumboot.cmdline import arghelper
+from rumboot.terminal import terminal
 
 import argparse
 import rumboot_xrun
 from parse import *
 
 def cli():
-    resets  = ResetSeqFactory("classes.resetseq")
-    formats = ImageFormatDb("classes.images")
-    chips   = ChipDb("classes.chips")
+    resets  = ResetSeqFactory("rumboot.resetseq")
+    formats = ImageFormatDb("rumboot.images")
+    chips   = ChipDb("rumboot.chips")
 
     parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter,
                                      description="rumboot-xrun {} - RumBoot X-Modem execution tool\n".format(rumboot_xrun.__version__) +

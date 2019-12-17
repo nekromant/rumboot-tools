@@ -1,6 +1,6 @@
 import sys
 import time
-from classes.resetseq.resetSeqBase import base
+from rumboot.resetseq.resetSeqBase import base
 
 #   MT125.05. Shift register on CBUS pins
 class mt12505(base):

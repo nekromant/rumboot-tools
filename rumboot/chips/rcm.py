@@ -1,4 +1,4 @@
-from classes.chips.base import chipBase
+from rumboot.chips.base import chipBase
 
 class chipMM7705(chipBase):
     name="mm7705"

@@ -1,4 +1,4 @@
-from classes.images.imageFormatBase import ImageFormatBase
+from rumboot.images.imageFormatBase import ImageFormatBase
 
 class ImageFormatLegacy(ImageFormatBase):
     """

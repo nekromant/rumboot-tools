@@ -1,6 +1,6 @@
 import os
 import time
-from classes.resetseq.resetSeqBase import base
+from rumboot.resetseq.resetSeqBase import base
 class pl2303(base):
     name = "pl2303"
     #Physical port to use

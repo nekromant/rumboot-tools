@@ -1,5 +1,5 @@
-from classes.images.imageFormatV2   import ImageFormatV2
-from classes.images.imageFormatBase import ImageFormatBase
+from rumboot.images.imageFormatV2   import ImageFormatV2
+from rumboot.images.imageFormatBase import ImageFormatBase
 import os
 
 
