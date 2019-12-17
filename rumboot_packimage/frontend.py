@@ -1,8 +1,4 @@
-from rumboot_packimage import imageFormatBase
-from rumboot_packimage import imageFormatV2
-from rumboot_packimage import imageFormatLegacy
-from rumboot_packimage import imageFormatLegacyNM6408
-from rumboot_packimage import imageFormatElfV2
+from classes.ImageFormatDb import ImageFormatDb
 import argparse
 import rumboot_packimage
 
@@ -10,18 +6,6 @@ class RumbootPackimage:
     """RumbootPackimage tool frontend"""
     def __init__(self, opts):
         print("hello")
-
-def guessImageFormat(file):
-    formats = [ imageFormatElfV2.ImageFormatElfV2,
-                imageFormatLegacy.ImageFormatLegacy,
-                imageFormatV2.ImageFormatV2,
-                imageFormatLegacyNM6408.ImageFormatLegacyNM6408
-            ];
-    for f in formats:
-        tmp = f(file)
-        if tmp.check():
-            return tmp
-    return False
 
 def cli():
     parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -72,10 +56,9 @@ def cli():
                                 For testing only
                         ''')
 
-
     opts = parser.parse_args()
-
-    t = guessImageFormat(opts.file);
+    formats = ImageFormatDb("classes.images");
+    t = formats.guess(opts.file);
 
     calc_data = True
     if (t == False):

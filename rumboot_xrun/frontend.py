@@ -1,82 +1,31 @@
-from rumboot_packimage import chipDb
-from rumboot_packimage import imageFormatBase
-from rumboot_packimage import imageFormatV2
-from rumboot_packimage import imageFormatLegacy
-from rumboot_packimage import imageFormatElfV2
-
-from rumboot_xrun import resetSeqMT12505
-from rumboot_xrun import resetSeqBase
-from rumboot_xrun import resetSeqPL2303
-from rumboot_xrun import resetSeqPowerHub
-from rumboot_xrun import terminal
-import rumboot_xrun
+from classes.chipDb import ChipDb
+from classes.ImageFormatDb import ImageFormatDb
+from classes.resetSeq import ResetSeqFactory
+from classes.cmdline import arghelper
+from classes.terminal import terminal
 
 import argparse
+import rumboot_xrun
 from parse import *
 
-def guessImageFormat(file):
-    formats = [ imageFormatElfV2.ImageFormatElfV2,
-                imageFormatLegacy.ImageFormatLegacy,
-                imageFormatV2.ImageFormatV2,
-            ];
-    for f in formats:
-        tmp = f(file)
-        if tmp.check():
-            return tmp
-    return False
-
-def pickResetSequence(opts):
-    if opts.reset[0] == "pl2303":
-        return resetSeqPL2303.resetSeqPL2303(int(opts.pl2303_port[0]))
-    if opts.reset[0] == "pl2303i":
-        return resetSeqPL2303.resetSeqPL2303i(int(opts.pl2303_port[0]))
-    if opts.reset[0] == 'mt12505':
-        return resetSeqMT12505.resetSeqMT12505(opts.ft232_serial[0])
-    if opts.reset[0] == 'powerhub':
-        return resetSeqPowerHub.resetSeqPowerHub(opts.ft232_serial[0])
-    return resetSeqBase.resetSeqBase()
-
 def cli():
+    resets  = ResetSeqFactory("classes.resetseq")
+    formats = ImageFormatDb("classes.images")
+    chips   = ChipDb("classes.chips")
+
     parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter,
                                      description="rumboot-xrun {} - RumBoot X-Modem execution tool\n".format(rumboot_xrun.__version__) +
                                     "(C) 2018 Andrew Andrianov, RC Module\nhttps://github.com/RC-MODULE")
-    parser.add_argument("-f", "--file",
-                        help="image file",
-                        type=argparse.FileType("rb"),
-                        required=True)
-    parser.add_argument("-l", "--log",
-                        help="Log terminal output to file",
-                        type=argparse.FileType("w+"),
-                        required=False)
-    parser.add_argument("-p", "--port",
-                        help="Serial port to use",
-                        nargs=1, metavar=('value'),
-                        default=["/dev/ttyUSB0"],
-                        required=False),
-    parser.add_argument("-b", "--baud",
-                        help="Serial port to use",
-                        nargs=1, metavar=('value'),
-                        required=False)
-    parser.add_argument("-c", "--chip_id",
-                        help="Override chip id",
-                        nargs=1, metavar=('chip_id'),
-                        required=False)
-    parser.add_argument("-r", "--reset",
-                        help="Reset sequence to use (none, pl2303, pl2303i, mt125.05)",
-                        nargs=1, metavar=('value'),
-                        default="none",
-                        required=False)
-    parser.add_argument("-S", "--ft232-serial",
-                        help="FT232 serial number for MT125.05",
-                        nargs=1, metavar=('value'),
-                        default=["A92XPFQL"],
-                        required=False)
-    parser.add_argument("-P", "--pl2303-port",
-                        help="PL2303 physical port (for -P of pl2303gpio)",
-                        nargs=1, metavar=('value'),
-                        default=[ "-1" ],
-                        required=False)
-    parser.add_argument('-A', '--plusargs', nargs='*')
+    arghelper.add_file_handling_opts(parser)
+    arghelper.add_terminal_opts(parser)
+    arghelper.add_resetseq_options(parser, resets)
+    plus = parser.add_argument_group("Plusargs parser options", 
+        """
+        rumboot-xrun can parse plusargs (similar to verilog simulator) 
+        and use them for runtime file uploads. This option is intended 
+        to be used for 
+        """)
+    plus.add_argument('-A', '--plusargs', nargs='*')
 
     opts = parser.parse_args()
 
@@ -84,23 +33,15 @@ def cli():
     if opts.plusargs:
         for a in opts.plusargs:
             ret = parse("+{}={}", a)
-            plusargs[ret[0]] = ret[1]
+            if ret:
+                plusargs[ret[0]] = ret[1]
+                continue
+            ret = parse("+{}", a)
+            if ret: 
+                plusargs[ret[0]] = True                
 
-    if opts.file:
-        t = guessImageFormat(opts.file)
-        if t == False and opts.chip_id == None:
-            print("Failed to detect image format")
-            return 1
-
-    db = chipDb.chipDb()
-
-    if opts.chip_id == None:
-        c = db.query(t.get_chip_id(),t.get_chip_rev())
-    else:        
-        c = db.query(int(opts.chip_id[0]), 1)
-
+    c = arghelper.detect_chip_type(opts, chips, formats)
     if c == None:
-        print("ERROR: Failed to auto-detect chip type")
         return 1
         
     print("Detected chip:    %s (%s)" % (c.name, c.part))
@@ -108,10 +49,10 @@ def cli():
         print("ERROR: Failed to auto-detect chip type")
         return 1
     if opts.baud == None:
-        opts.baud = [ c.baudrate]
+        opts.baud = [ c.baudrate ]
 
-    reset = pickResetSequence(opts)
-    term = terminal.terminal(opts.port[0], opts.baud[0])
+    reset = resets[opts.reset[0]]()
+    term = terminal(opts.port[0], opts.baud[0])
     term.plusargs = plusargs
 
     if opts.log:

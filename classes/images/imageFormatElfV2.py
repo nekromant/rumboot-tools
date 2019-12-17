@@ -1,14 +1,14 @@
-from rumboot_packimage import imageFormatV2
-from rumboot_packimage import imageFormatBase
+from classes.images.imageFormatV2   import ImageFormatV2
+from classes.images.imageFormatBase import ImageFormatBase
 import os
 
 
-class ImageFormatElfV2(imageFormatV2.ImageFormatV2):
+class ImageFormatElfV2(ImageFormatV2):
     MAGIC =  0x464c457f
     name = "ELF"
 
     def check(self):
-        if (imageFormatBase.ImageFormatBase.check(self)):
+        if (ImageFormatBase.check(self)):
             print("[W] ELF File detected, appending V2 header")
             self.fd.seek(0, os.SEEK_SET)
             tmp = self.fd.read(self.file_size)

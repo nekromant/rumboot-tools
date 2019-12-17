@@ -1,4 +1,4 @@
-class resetSeqBase:
+class base:
     name = "None"
     def __init__(self):
         pass

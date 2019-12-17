@@ -1,8 +1,9 @@
 import sys
 import time
+from classes.resetseq.resetSeqBase import base
 
 #   MT125.05. Shift register on CBUS pins
-class resetSeqMT12505:
+class mt12505(base):
     name = "MT125.05 (FT232RL)"
     flags = [ ]
 
@@ -59,4 +60,11 @@ class resetSeqMT12505:
             time.sleep(1)
             tmp[self.reset_pin] = 1
             self.write_reg(tmp)
+
+    def add_argparse_options(parser):
+        parser.add_argument("-S", "--ft232-serial",
+                            help="FT232 serial number for MT125.05",
+                            nargs=1, metavar=('value'),
+                            default=["A92XPFQL"],
+                            required=False)
 

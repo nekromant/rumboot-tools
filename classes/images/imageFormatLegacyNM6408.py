@@ -1,8 +1,8 @@
-from rumboot_packimage import imageFormatBase
+from classes.images.imageFormatBase import ImageFormatBase
 import os
 
 
-class ImageFormatLegacyNM6408(imageFormatBase.ImageFormatBase):
+class ImageFormatLegacyNM6408(ImageFormatBase):
     MAGIC =  0x12345678
     name = "NM6408 (Legacy)"
     format = [
@@ -32,6 +32,9 @@ class ImageFormatLegacyNM6408(imageFormatBase.ImageFormatBase):
         for f in self.format:
             self.header[f[1]] = self.read_element(offset, f[0])
             offset = offset + f[0]
+
+        if self.header['magic'] != self.magic:
+            return
 
         if (self.header["data_length"] == 0):
             self.data_length = self.file_size - self.get_header_length()

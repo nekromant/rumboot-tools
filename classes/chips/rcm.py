@@ -1,12 +1,6 @@
-class chipBase:
-    name="name"
-    part="part"
-    chip_id=0
-    chip_rev=0
-    baudrate=115200
-    warning=None
+from classes.chips.base import chipBase
 
-class chipMM7705:
+class chipMM7705(chipBase):
     name="mm7705"
     part="1888ТХ018"
     chip_id=1
@@ -22,7 +16,7 @@ class chipMM7705:
         "spi" : "rumboot-mm7705-PostProduction-updater-spiflash.bin"
     }
 
-class chipBasis:
+class chipBasis(chipBase):
     name="basis"
     part="1888ВС048"
     chip_id=3
@@ -39,7 +33,7 @@ class chipBasis:
         "spi1-internal-cs": "rumboot-basis-PostProduction-updater-spi1-internal-cs.bin",
     }
 
-class chipOI10:
+class chipOI10(chipBase):
     name="oi10"
     part="1888ВМ018(A)/1888ВМ01H4"
     chip_id=4
@@ -52,7 +46,7 @@ class chipOI10:
         "nor-bootrom":  "rumboot-oi10-PostProduction-updater-nor-mt150.04-brom.bin"
     }
 
-class chipBBP3:
+class chipBBP3(chipBase):
     name="bbp3"
     part="1888ВС058"
     chip_id=5
@@ -64,7 +58,7 @@ class chipBBP3:
         "spi0-cs0": "rumboot-bbp3-PostProduction-updater-spi0-cs0.bin",
     }
 
-class chipNM6408:
+class chipNM6408(chipBase):
     name="nm6408"
     part="1888ВС058"
     chip_id=6
@@ -81,32 +75,7 @@ class chipNM6408:
         "spi0-cs0": "rumboot-nm6408-PostProduction-updater-spi0-cs0.bin",
     }
 
-class chipZynq:
-    name="zed"
-    part="Xilinx Zynq series (Zed Board, Tang Hex, ...)"
-    chip_id=255
-    baudrate=115200
-    chip_rev=1
-    welcome='Zynq> '
-    baudrate=115200
-    memories = {}
-
-class chipRPI4:
-    name="rpi4"
-    part="BCM2711 (Raspberry Pi 4)"
-    chip_id=255
-    baudrate=115200
-    chip_rev=2
-    welcome='U-Boot> '
-    baudrate=115200
-    memories = {}
-
-class chipDb:
-    chips = {chipMM7705, chipBasis,chipOI10, chipBBP3, chipNM6408, chipZynq, chipRPI4}
-    
-    def query(self, id, rev):
-        for c in self.chips:
-            if c.chip_id == id and c.chip_rev == rev:
-                return c
-        return None
+#class chipDb(chipBase):
+#    chips = {chipMM7705, chipBasis,chipOI10, chipBBP3, chipNM6408, chipZynq, chipRPI4}
+#    
     

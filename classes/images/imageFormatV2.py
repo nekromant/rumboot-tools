@@ -1,6 +1,6 @@
-from rumboot_packimage import imageFormatBase
+from classes.images.imageFormatBase import ImageFormatBase
 
-class ImageFormatV2(imageFormatBase.ImageFormatBase):
+class ImageFormatV2(ImageFormatBase):
     """
     This class works with version 2.0 images.
 

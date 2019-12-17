@@ -1,6 +1,6 @@
-from rumboot_packimage import imageFormatBase
+from classes.images.imageFormatBase import ImageFormatBase
 
-class ImageFormatLegacy(imageFormatBase.ImageFormatBase):
+class ImageFormatLegacy(ImageFormatBase):
     """
     This class works with TX1888 images
     struct bootheader
