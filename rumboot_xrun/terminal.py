@@ -7,8 +7,6 @@ import time
 import io
 from tqdm import tqdm
 
-from rumboot_xrun.handlers import *
-import pkgutil
 class terminal:
         verbose=True
         logstream=None
