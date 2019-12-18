@@ -63,6 +63,5 @@ def cli():
     print("Port:             %s" % opts.port[0])
     reset.resetToHost()
     term.add_binaries(opts.file)
-    #term.xmodem_send_stream(opts.file, desc="Uploading image")
     return term.loop()
     

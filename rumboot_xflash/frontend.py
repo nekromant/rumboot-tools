@@ -87,6 +87,7 @@ def cli():
     print("Port:             %s" % opts.port[0])
 
     reset.resetToHost()
+    term.flush()
     term.add_binaries(spl)
     term.add_binaries(opts.file[0][0])
     reset.resetToNormal()

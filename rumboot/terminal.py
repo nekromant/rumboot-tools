@@ -24,8 +24,7 @@ class terminal:
                 return self.ser.write(data)  # note that this ignores the timeout
             self.modem = XMODEM(getc, putc)
             self.opf = OpFactory("rumboot.ops", self) 
-
-
+            
         def add_binaries(self, path):
             if type(path) is list:
                 for p in path:
@@ -50,7 +49,22 @@ class terminal:
             except:
                 pass
 
-        def loop(self, exitfmt="boot: host: Back in rom, code {}"):
+
+        def sync(self):
+            self.ser.reset_input_buffer()
+            c1 = b'a'
+            c2 = b'd'
+            while True:
+                c2 = self.ser.read(1)
+                if c1 == b'U' and c2 == b'\r':
+                    break
+                if c1 == b'U' and c2 == b'\n':
+                    break
+                c1 = c2
+
+
+        def loop(self):
+            self.sync()
             while True:
                 ret = None
                 line = self.ser.readline()
