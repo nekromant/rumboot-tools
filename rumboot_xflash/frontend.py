@@ -87,8 +87,7 @@ def cli():
     print("Port:             %s" % opts.port[0])
 
     reset.resetToHost()
-    term.xmodem_send(spl, desc="Uploading SPL")
-    print("Preparing image upload, please stand by...")
-    term.xmodem_send_stream(opts.file, 0, b"boot: Press 'X' and send me the image\n", desc="Writing image")
+    term.add_binaries(spl)
+    term.add_binaries(opts.file[0][0])
     reset.resetToNormal()
     term.loop()

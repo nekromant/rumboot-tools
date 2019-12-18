@@ -62,6 +62,7 @@ def cli():
     print("Baudrate:         %d bps" % int(opts.baud[0]))
     print("Port:             %s" % opts.port[0])
     reset.resetToHost()
-    term.xmodem_send_stream(opts.file, desc="Uploading image")
+    term.add_binaries(opts.file)
+    #term.xmodem_send_stream(opts.file, desc="Uploading image")
     return term.loop()
     

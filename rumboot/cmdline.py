@@ -2,10 +2,10 @@ import argparse
 class arghelper:
     def add_file_handling_opts(parser):
         group = parser.add_argument_group('File Handling')
-        group.add_argument("-f", "--file",
-                        help="image file",
+        parser.add_argument('-f','--file',action='append',nargs=1,
                         type=argparse.FileType("rb"),
-                        required=False)
+                        required=False,
+                        help="Image file (may be specified multiple times)")
         group.add_argument("-c", "--chip_id",
                         help="Override chip id (by name or chip_id)",
                         nargs=1, metavar=('chip_id'),
@@ -47,7 +47,7 @@ class arghelper:
     def detect_chip_type(opts, chips, formats):
         c = None
         try:
-            t = formats.guess(opts.file)
+            t = formats.guess(opts.file[0][0])
             c = chips[t.get_chip_id()]
         except:
             pass
