@@ -4,9 +4,7 @@ import tqdm
 class xmodem(base):
     formats = {
         "first_upload"      : "boot: host: Hit '{}' for X-Modem upload",
-        "incremental_upload": "boot: host: Back in rom, code {}",
-        "runtime"           : "UPLOAD: {} to {}",
-        "flash_upload"      : "boot: Press '{}' and send me the image"
+        "first_upload_basis"  : "boot: host: Hit 'X' for xmodem upload"
         }
 
     def __init__(self, term):
@@ -52,26 +50,60 @@ class xmodem(base):
         return ret
 
     def action(self, trigger, result):
-        if trigger == "runtime":
-            if not self.xmodem_from_plusarg(result[0]):
-                print("Upload failed")
-                return 1
-            return True
-            
-        desc = "Sending stream"
-        if trigger == "flash_upload":
-            desc = "Writing image"
-
         binary = self.term.next_binary();
+
+        self.sync("X")
+        if not self.send(binary):
+            print("Upload failed")
+            return 1
+        return True
+
+
+class flasher(xmodem):
+    formats = {
+        "flash_upload"      : "boot: Press '{}' and send me the image"
+    }
+
+    def action(self, trigger, result):
+        desc = "Writing image"
+        self.sync("X")
+        if not self.send(binary, desc):
+            print("Upload failed")
+            return 1
+        return True
+
+
+class incremental(xmodem):
+    formats = {
+        "upload": "boot: host: Back in rom, code {}",
+    }
+
+    def action(self, trigger, result):
+        binary = self.term.next_binary();
+        ret = int(result[0])
         if binary == None: 
             if trigger == "incremental_upload":
                 print("No more files, exiting")
-                return int(result[0])
+                return ret
             else:
                 return 1
+        if ret != 0:
+            return ret
 
         self.sync("X")
-        if not self.send(binary, desc):
+        if not self.send(binary):
+            print("Upload failed")
+            return 1
+        return True
+
+
+class runtime(xmodem):
+    formats = {
+        "runtime"           : "UPLOAD: {} to {}",
+    }
+
+    def action(self, trigger, result):
+        if not self.xmodem_from_plusarg(result[0]):
             print("Upload failed")
             return 1
         return True
