@@ -58,8 +58,8 @@ def cli():
 
     if opts.log:
         term.logstream = opts.log
-    if opts.verbose == None:
-        term.verbose = False
+    
+    term.verbose = opts.verbose
 
     mem = opts.memory[0]
     if not mem:
