@@ -66,6 +66,7 @@ class flasher(xmodem):
 
     def action(self, trigger, result):
         desc = "Writing image"
+        binary = self.term.next_binary()
         self.sync("X")
         if not self.send(binary, desc):
             print("Upload failed")
@@ -79,7 +80,7 @@ class incremental(xmodem):
     }
 
     def action(self, trigger, result):
-        binary = self.term.next_binary();
+        binary = self.term.next_binary()
         ret = int(result[0])
         if binary == None: 
             if trigger == "incremental_upload":
