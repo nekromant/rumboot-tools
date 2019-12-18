@@ -54,6 +54,8 @@ class terminal:
             while True:
                 ret = None
                 line = self.ser.readline()
+                if line == b'':
+                    continue
                 try: 
                     line = line.decode().rstrip()
                 except:
