@@ -4,10 +4,10 @@ class base:
         pass
 
     def resetWithCustomFlags(self, flags=[]):
-        print("Please, power-cycle board")
+        pass
 
     def resetToHost(self, flags = []):
         print("Please, power-cycle board")
 
     def resetToNormal(self, flags = []):
-        print("Please, power-cycle board") 
+        pass
