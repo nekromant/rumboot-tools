@@ -3,7 +3,7 @@ from rumboot.ImageFormatDb import ImageFormatDb
 from rumboot.resetSeq import ResetSeqFactory
 from rumboot.cmdline import arghelper
 from rumboot.terminal import terminal
-
+import os
 import argparse
 import rumboot_xrun
 from parse import *
@@ -26,8 +26,17 @@ def cli():
         to be used for 
         """)
     plus.add_argument('-A', '--plusargs', nargs='*')
+    parser.add_argument("-R", "--rebuild",
+                        help="Attempt to rebuild/update target before uploading",
+                        action="store_true",
+                        default=False,
+                        required=False)
 
     opts = parser.parse_args()
+
+    target = opts.file.name.replace(".bin", ".all")
+    if opts.rebuild:
+        os.system("cmake --build . --target %s" % target)
 
     plusargs = {}
     if opts.plusargs:
