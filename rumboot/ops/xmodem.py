@@ -76,7 +76,7 @@ class flasher(xmodem):
 
 class incremental(xmodem):
     formats = {
-        "upload": "boot: host: Back in rom, code {}",
+        "incremental_upload": "boot: host: Back in rom, code {}",
     }
 
     def action(self, trigger, result):
@@ -88,6 +88,7 @@ class incremental(xmodem):
                 return ret
             else:
                 return 1
+
         if ret != 0:
             return ret
 
