@@ -33,7 +33,7 @@ class ImageFormatLegacyNM6408(ImageFormatBase):
             self.header[f[1]] = self.read_element(offset, f[0])
             offset = offset + f[0]
 
-        if self.header['magic'] != self.magic:
+        if self.header['magic'] != self.MAGIC:
             return
 
         if (self.header["data_length"] == 0):
