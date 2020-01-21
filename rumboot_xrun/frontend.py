@@ -34,10 +34,14 @@ def cli():
 
     opts = parser.parse_args()
 
-    for f in opts.file[0]:
+    for k,f in enumerate(opts.file[0]):
         target = f.name.replace(".bin", ".all")
         if opts.rebuild:
-            os.system("cmake --build . --target %s" % target)
+            ret = os.system("cmake --build . --target %s" % target)
+            if (ret != 0):
+                return ret
+            f.close()
+            opts.file[0][k] = open(f.name, "rb")
 
     plusargs = {}
     if opts.plusargs:
