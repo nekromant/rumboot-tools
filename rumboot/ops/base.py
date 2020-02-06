@@ -1,6 +1,7 @@
 from parse import *
 class base:
     formats = {}        
+    hidden = False
     def __init__(self, term):
         self.term = term
 
@@ -10,6 +11,8 @@ class base:
             if pres != None:
                 retval = self.action(key, pres)
                 if type(retval) is int:
+                    return retval
+                if retval == True:
                     return retval
         return False
 

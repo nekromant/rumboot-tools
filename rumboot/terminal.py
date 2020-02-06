@@ -13,6 +13,8 @@ class terminal:
         logstream=None
         plusargs={}
         runlist = []
+        dumps = {}
+        curbin = "bootrom"
 
         def __init__(self, port, speed):
             self.port = port
@@ -32,10 +34,21 @@ class terminal:
             else:
                 self.runlist.append(path)
 
+        def add_dumps(self, dumps):
+            self.dumps.update(dumps)
+
         def next_binary(self):
             if len(self.runlist) > 0:
-                return self.runlist.pop(0)
+                ret = self.runlist.pop(0)                
+                self.curbin = ret
+                return ret
             return None
+
+        def current_binary(self):
+            return self.curbin
+
+        def current_dump(self):
+            return self.dumps[self.curbin.name]
 
         def log(self, *args, **kwargs):
             # Sometimes we get a weird exception on certain windows systems/setups
@@ -75,7 +88,6 @@ class terminal:
                 except:
                     continue
 
-                self.log(line, end='\n')
                 ret = self.opf.handle_line(line)
                 if type(ret) is int:
                     return ret

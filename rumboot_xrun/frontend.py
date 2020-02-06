@@ -33,16 +33,18 @@ def cli():
                         required=False)
 
     opts = parser.parse_args()
+    dumps = {}
 
     for k,f in enumerate(opts.file[0]):
         target = f.name.replace(".bin", ".all")
+        dmp = f.name.replace(".bin", ".dmp")
         if opts.rebuild:
             ret = os.system("cmake --build . --target %s" % target)
             if (ret != 0):
                 return ret
             f.close()
             opts.file[0][k] = open(f.name, "rb")
-
+        dumps[f.name] = open(dmp, "r")
     plusargs = {}
     if opts.plusargs:
         for a in opts.plusargs:
@@ -77,5 +79,6 @@ def cli():
     print("Port:             %s" % opts.port[0])
     reset.resetToHost()
     term.add_binaries(opts.file)
+    term.add_dumps(dumps)
     return term.loop()
     
