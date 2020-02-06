@@ -11,10 +11,6 @@ class stackframe(base):
         "frame" : "frame[{}] address {}",
         }
 
-#80023590:	4b ff f9 15 	bl      80022ea4 <rumboot_vprintf>
-#80023518 <rumboot_printf>:
-#['80023844:', 'ff', 'ff', 'e4', '08', '.long', '0xffffe408']
-
     def getdump(self, dmp):
         if dmp.name in self.dumps:
             return self.dumps[dmp.name]
