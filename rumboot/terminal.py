@@ -59,6 +59,7 @@ class terminal:
                     sys.stdout.flush()
                 if not self.logstream == None:
                     self.logstream.write(*args)
+                    self.logstream.write("\n")
             except:
                 pass
 
