@@ -5,6 +5,9 @@ class stackframe(base):
     hidden = True
     dumps = {}
     formats = {
+        "mcsrr0": "MCSRR0: {}",
+        "csrr0":  "CSRR0: {}",
+        "srr1":   "SRR0: {}",
         "frame" : "frame[{}] address {}",
         }
 
@@ -12,8 +15,7 @@ class stackframe(base):
 #80023518 <rumboot_printf>:
 #['80023844:', 'ff', 'ff', 'e4', '08', '.long', '0xffffe408']
 
-    def getdump(self):
-        dmp = self.term.current_dump()
+    def getdump(self, dmp):
         if dmp.name in self.dumps:
             return self.dumps[dmp.name]
         dmp.seek(0)
@@ -47,12 +49,39 @@ class stackframe(base):
         self.dumps[dmp.name] = dumpdb
         return dumpdb
 
-    def action(self, trigger, result):
-        id = int(result[0])
-        dump = self.getdump()
-        address = int(result[1], 16)
+
+    def lookup(self, address):
+        dump = self.getdump(self.term.current_dump())
         if not address in dump:
+            dump = self.getdump(self.term.dumps["rom"])
+        if not address in dump:
+            return None
+        return dump[address]
+        
+    def dump_register(self, name, address):
+        if address == 0:
             return False
-        data = dump[address]
-        print("frame[%d] address: 0x%x %30s: %s" % (id, address, data["function"], data["assembly"]))
-        return True
+        data = self.lookup(address)
+        if data:
+            print("%s:  0x%x [%s(): %s]" % (name, address, data["function"], data["assembly"]))
+            return True
+
+    def action(self, trigger, result):
+        if trigger == "frame":
+            id = int(result[0])
+            address = int(result[1], 16)
+            data = self.lookup(address)
+            if data:
+                print("%d. 0x%x %30s(): %s" % (id, address, data["function"], data["assembly"]))
+                return True
+        if trigger == "mcsrr0":
+            address = int(result[0].strip(), 16)
+            return self.dump_register("MCSRR0", address)
+        if trigger == "csrr0":
+            address = int(result[0].strip(), 16)
+            return self.dump_register("CSRR0", address)
+        if trigger == "csrr1":
+            address = int(result[0].strip(), 16)
+            return self.dump_register("CSRR1", address)
+
+

@@ -6,4 +6,5 @@ class chipBase:
     baudrate=115200
     warning=None
     memories = {}
+    dumps = {}
 

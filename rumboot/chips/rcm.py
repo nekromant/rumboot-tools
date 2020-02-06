@@ -45,6 +45,7 @@ class chipOI10(chipBase):
         "nor":  "rumboot-oi10-PostProduction-updater-nor-mt150.04.bin",
         "nor-bootrom":  "rumboot-oi10-PostProduction-updater-nor-mt150.04-brom.bin"
     }
+    romdump = "oi10-v1.dmp"
 
 class chipBBP3(chipBase):
     name="bbp3"

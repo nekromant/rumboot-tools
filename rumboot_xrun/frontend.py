@@ -35,6 +35,8 @@ def cli():
     opts = parser.parse_args()
     dumps = {}
 
+    dump_path = os.path.dirname(__file__) + "/romdumps/"
+    
     for k,f in enumerate(opts.file[0]):
         target = f.name.replace(".bin", ".all")
         dmp = f.name.replace(".bin", ".dmp")
@@ -70,6 +72,8 @@ def cli():
     reset = resets[opts.reset[0]]()
     term = terminal(opts.port[0], opts.baud[0])
     term.plusargs = plusargs
+    romdump = open(dump_path + c.romdump, "r")
+    term.add_dumps({'rom' : romdump})
 
     if opts.log:
         term.logstream = opts.log
