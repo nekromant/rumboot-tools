@@ -48,7 +48,8 @@ class terminal:
             return self.curbin
 
         def current_dump(self):
-            return self.dumps[self.curbin.name]
+            if self.curbin.name in self.dumps:
+                return self.dumps[self.curbin.name]
 
         def log(self, *args, **kwargs):
             # Sometimes we get a weird exception on certain windows systems/setups

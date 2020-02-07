@@ -12,6 +12,8 @@ class stackframe(base):
         }
 
     def getdump(self, dmp):
+        if dmp == None:
+            return { }
         if dmp.name in self.dumps:
             return self.dumps[dmp.name]
         dmp.seek(0)
