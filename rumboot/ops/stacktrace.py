@@ -21,7 +21,7 @@ class stackframe(base):
         func = "none"
         funcaddr = 0
         while True:
-            try
+            try:
                 line = dmp.readline()
                 if not line:
                     break
