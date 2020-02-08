@@ -46,7 +46,10 @@ def cli():
                 return ret
             f.close()
             opts.file[0][k] = open(f.name, "rb")
-        dumps[f.name] = open(dmp, "r")
+        try:
+            dumps[f.name] = open(dmp, "r")
+        except:
+            pass
     plusargs = {}
     if opts.plusargs:
         for a in opts.plusargs:
@@ -72,8 +75,12 @@ def cli():
     reset = resets[opts.reset[0]]()
     term = terminal(opts.port[0], opts.baud[0])
     term.plusargs = plusargs
-    romdump = open(dump_path + c.romdump, "r")
-    term.add_dumps({'rom' : romdump})
+
+    try:
+        romdump = open(dump_path + c.romdump, "r")
+        term.add_dumps({'rom' : romdump})
+    except:
+        pass
 
     if opts.log:
         term.logstream = opts.log
