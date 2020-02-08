@@ -21,9 +21,12 @@ class stackframe(base):
         func = "none"
         funcaddr = 0
         while True:
-            line = dmp.readline()
-            if not line:
-                break
+            try
+                line = dmp.readline()
+                if not line:
+                    break
+            except:
+                continue
             ret = parse("{} <{}>:", line)
             if ret:
                 func = ret[1]
