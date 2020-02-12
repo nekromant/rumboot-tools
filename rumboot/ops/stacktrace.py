@@ -7,7 +7,7 @@ class stackframe(base):
     formats = {
         "mcsrr0": "MCSRR0: {}",
         "csrr0":  "CSRR0: {}",
-        "srr1":   "SRR0: {}",
+        "srr0":   "SRR0: {}",
         "frame" : "frame[{}] address {}",
         }
 
@@ -81,8 +81,8 @@ class stackframe(base):
         if trigger == "csrr0":
             address = int(result[0].strip(), 16)
             return self.dump_register("CSRR0", address)
-        if trigger == "csrr1":
+        if trigger == "srr0":
             address = int(result[0].strip(), 16)
-            return self.dump_register("CSRR1", address)
+            return self.dump_register("srr0", address)
 
 
