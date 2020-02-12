@@ -1,9 +1,33 @@
 import argparse
+import os
+import sys
+
 class arghelper:
+    def process_files(files, rebuild):
+        ret = files
+        dumps = { }
+        for k,f in enumerate(files):
+            target = f.replace(".bin", ".all")
+            dmp = f.replace(".bin", ".dmp")
+            if rebuild:
+                bres = os.system("cmake --build . --target %s" % target)
+                if (bres != 0):
+                    sys.exit(bres)
+
+            ret[k] = open(f, "rb")
+
+            try:
+                dumps[f] = open(dmp, "r")
+            except:
+                print("WARN: Missing dump file: " + dmp + ". Detailed traces will be unavailable")
+                pass
+
+        return ret, dumps
+
     def add_file_handling_opts(parser):
         group = parser.add_argument_group('File Handling')
         parser.add_argument('-f','--file',action='append',nargs=1,
-                        type=argparse.FileType("rb"),
+                        type=str,
                         required=False,
                         help="Image file (may be specified multiple times)")
         group.add_argument("-c", "--chip_id",

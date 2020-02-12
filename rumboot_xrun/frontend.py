@@ -33,23 +33,12 @@ def cli():
                         required=False)
 
     opts = parser.parse_args()
-    dumps = {}
+
+    #Open files, rebuild if needed
+    opts.file[0], dumps = arghelper.process_files(opts.file[0], opts.rebuild)
 
     dump_path = os.path.dirname(__file__) + "/romdumps/"
     
-    for k,f in enumerate(opts.file[0]):
-        target = f.name.replace(".bin", ".all")
-        dmp = f.name.replace(".bin", ".dmp")
-        if opts.rebuild:
-            ret = os.system("cmake --build . --target %s" % target)
-            if (ret != 0):
-                return ret
-            f.close()
-            opts.file[0][k] = open(f.name, "rb")
-        try:
-            dumps[f.name] = open(dmp, "r")
-        except:
-            pass
     plusargs = {}
     if opts.plusargs:
         for a in opts.plusargs:

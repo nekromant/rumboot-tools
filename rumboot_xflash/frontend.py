@@ -35,8 +35,11 @@ def cli():
 
     arghelper.add_resetseq_options(parser, resets)
 
-
     opts = parser.parse_args()
+
+    #Open files, rebuild if needed
+    opts.file[0], dumps = arghelper.process_files(opts.file[0], False)
+
     c = arghelper.detect_chip_type(opts, chips, formats)
     if (c == None):
         return 1;
