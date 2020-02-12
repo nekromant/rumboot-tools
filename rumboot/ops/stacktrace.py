@@ -64,7 +64,7 @@ class stackframe(base):
             return False
         data = self.lookup(address)
         if data:
-            print("%s:  0x%x [%s(): %s]" % (name, address, data["function"], data["assembly"]))
+            self.term.log("%s:  0x%x [%s(): %s]" % (name, address, data["function"], data["assembly"]))
             return True
 
     def action(self, trigger, result):
@@ -73,7 +73,7 @@ class stackframe(base):
             address = int(result[1], 16)
             data = self.lookup(address)
             if data:
-                print("%d. 0x%x %30s(): %s" % (id, address, data["function"], data["assembly"]))
+                self.term.log("%d. 0x%x %30s(): %s" % (id, address, data["function"], data["assembly"]))
                 return True
         if trigger == "mcsrr0":
             address = int(result[0].strip(), 16)
