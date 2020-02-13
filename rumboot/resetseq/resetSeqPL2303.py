@@ -5,7 +5,7 @@ class pl2303(base):
     name = "pl2303"
     #Physical port to use
     port = -1
-    invert = 0
+    invert = False
     # GPIO0: reset
     # GPIO1: power
 
@@ -14,8 +14,9 @@ class pl2303(base):
             v = not v
         os.system("pl2303gpio --port=%d --gpio=%d --out=%d" % (self.port, gp, v))
 
-    def __init__(self):
-        self.port = -1
+    def __init__(self, opts):
+        self.port   = int(opts.pl2303_port[0])
+        self.invert = opts.pl2303_invert
 
     def resetWithCustomFlags(self, flags=[]):
         print("Please, power-cycle board")
@@ -43,10 +44,5 @@ class pl2303(base):
         parser.add_argument("--pl2303-invert",
                             help="Invert all pl2303 gpio signals",
                             action='store_true',
+                            default = False,
                             required=False)
-
-
-
-#class pl2303i(pl2303):
-#    invert = 1
-#    name = "pl2303 (inverted)"

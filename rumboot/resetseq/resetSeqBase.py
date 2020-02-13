@@ -1,6 +1,6 @@
 class base:
     name = "None"
-    def __init__(self):
+    def __init__(self, opts):
         pass
 
     def resetWithCustomFlags(self, flags=[]):

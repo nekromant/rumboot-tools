@@ -61,7 +61,7 @@ def cli():
     if opts.baud == None:
         opts.baud = [ c.baudrate ]
 
-    reset = resets[opts.reset[0]]()
+    reset = resets[opts.reset[0]](opts)
     term = terminal(opts.port[0], opts.baud[0])
     term.plusargs = plusargs
 

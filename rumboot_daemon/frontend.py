@@ -40,7 +40,7 @@ def cli():
     if opts.baud == None:
         opts.baud = [ c.baudrate ]
 
-    reset = resets[opts.reset[0]]()
+    reset = resets[opts.reset[0]](opts)
 
     if opts.log:
         term.logstream = opts.log

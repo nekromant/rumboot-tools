@@ -4,8 +4,9 @@ from rumboot.resetseq.resetSeqBase import base
 
 class powerhub(base):
     name = "PowerHub"
-    def __init__(self, port):
-        self.port = port
+    port = 0
+    def __init__(self, opts):
+        pass
 
     def resetWithCustomFlags(self, flags=[]):
         print("Please, power-cycle board")
