@@ -31,13 +31,15 @@ class stackframe(base):
             if ret:
                 func = ret[1]
                 funcaddr = int(ret[0],16)
-            line = line.strip().split()
+
+            if func.find(".debug_") >= 0:
+                continue
+
+            line = line.strip().split("\t")
             try:
                 add = int(parse("{}:", line[0])[0], 16)
-                opcodes = []
-#                for i in range(2,5):
-#                    opcodes = opcodes.append(int(line[i], 16))
-                del line[0:5]
+                opcodes = line[2]
+                del line[0:2]
                 instructions = " ".join(line)
                 dumpdb[add] = {}
                 dumpdb[add]["assembly"]       =  instructions
@@ -73,7 +75,7 @@ class stackframe(base):
             address = int(result[1], 16)
             data = self.lookup(address)
             if data:
-                self.term.log("%d. 0x%x %30s(): %s" % (id, address, data["function"], data["assembly"]))
+                self.term.log("%d. 0x%.08x %30s(): %s" % (id, address, data["function"], data["assembly"]))
                 return True
         if trigger == "mcsrr0":
             address = int(result[0].strip(), 16)

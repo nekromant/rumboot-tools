@@ -32,6 +32,7 @@ class chipBasis(chipBase):
         "spi0-internal-cs": "rumboot-basis-PostProduction-updater-spi0-internal-cs.bin",
         "spi1-internal-cs": "rumboot-basis-PostProduction-updater-spi1-internal-cs.bin",
     }
+    romdump = "basis-v1.dmp"    
 
 class chipOI10(chipBase):
     name="oi10"
@@ -58,6 +59,7 @@ class chipBBP3(chipBase):
     memories = {
         "spi0-cs0": "rumboot-bbp3-PostProduction-updater-spi0-cs0.bin",
     }
+    romdump = "bbp3-v1.dmp"    
 
 class chipNM6408(chipBase):
     name="nm6408"
