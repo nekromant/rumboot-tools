@@ -25,7 +25,7 @@ def cli():
                         required=False)   
     parser.add_argument("-L", "--listen",
                         help="Specify address:port to listen (default 0.0.0.0:10000)",
-                        nargs=1, metavar=('listen'), default="0.0.0.0:10001",
+                        nargs=1, metavar=('listen'), default=["0.0.0.0:10000"],
                         required=False)
     opts = parser.parse_args()
 
@@ -48,10 +48,8 @@ def cli():
     print("Reset method:     %s" % (reset.name))
     print("Baudrate:         %d bps" % int(opts.baud[0]))
     print("Serial Port:      %s" % opts.port[0])
-    print("Listen address:   %s" % opts.listen[0])
+    print("Listen address:   %s" % opts.listen)
     reset.resetToHost()
-
-
 
     #term = terminal(opts.port[0], opts.baud[0])
     srv = server(opts.port[0], opts.baud[0], opts.listen[0])
