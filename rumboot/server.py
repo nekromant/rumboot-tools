@@ -82,7 +82,11 @@ class redirector(threading.Thread):
         except BrokenPipeError:
             self.cleanup(False)
             return
+        except ConnectionResetError:
+            self.cleanup(False)
+            return
         except Exception:
+            self.cleanup(False)
             raise
 
 class server:
@@ -128,10 +132,10 @@ class server:
         if self.worker != None:
             pos = pos + 1
 
-        if (pos > 1):
-            text = "Hello, you are client number %d in queue, please stand by\n\n\n" % pos
-            connection.sendall(text.encode())
-        else:
+        text = "Urumboot-daemon: You are client number %d in queue, please stand by\n\n\n" % pos
+        connection.sendall(text.encode())
+
+        if self.worker == None:
             self.serve_once()
 
     def loop(self):
