@@ -48,6 +48,7 @@ class arghelper:
                         required=False),
         group.add_argument("-b", "--baud",
                         help="Serial line speed",
+                        type=int,
                         nargs=1, metavar=('speed'),
                         required=False)
 

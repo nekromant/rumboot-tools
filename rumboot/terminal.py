@@ -7,6 +7,7 @@ import time
 import io
 from tqdm import tqdm
 from rumboot.OpFactory import OpFactory
+import socket
 
 class terminal:
         verbose=True
@@ -18,7 +19,11 @@ class terminal:
 
         def __init__(self, port, speed):
             self.port = port
-            self.ser = serial.Serial(port, speed, timeout=5)
+            if self.port.find("://") < 0:
+                self.ser = serial.Serial(port, speed, timeout=5)
+            else:
+                self.ser = serial.serial_for_url(port, timeout=5)
+
             def getc(size, timeout=10):
                 ret = self.ser.read(size)
                 return ret or None
@@ -78,7 +83,7 @@ class terminal:
                 c1 = c2
 
 
-        def loop(self):
+        def loop(self, break_after_uploads=False):
             self.sync()
             while True:
                 ret = None
@@ -93,7 +98,9 @@ class terminal:
                 ret = self.opf.handle_line(line)
                 if type(ret) is int:
                     return ret
-
+                
+                if break_after_uploads and len(self.runlist) == 0:
+                    break
  
         def xmodem_send(self, fl, chunksize=0, desc="Uploading file", welcome=b"boot: host: Hit 'X' for xmodem upload\n"):
             stream = open(fl, 'rb')

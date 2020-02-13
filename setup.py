@@ -22,6 +22,7 @@ setup(
             "rumboot-packimage = rumboot_packimage.frontend:cli",
             "rumboot-xrun = rumboot_xrun.frontend:cli",
             "rumboot-xflash = rumboot_xflash.frontend:cli",
+            "rumboot-daemon = rumboot_daemon.frontend:cli",
         ],
     },
     include_package_data=True,
