@@ -24,11 +24,11 @@ class arghelper:
 
         return ret, dumps
 
-    def add_file_handling_opts(parser):
+    def add_file_handling_opts(parser, need_file=False):
         group = parser.add_argument_group('File Handling')
         parser.add_argument('-f','--file',action='append',nargs=1,
                         type=str,
-                        required=False,
+                        required=need_file,
                         help="Image file (may be specified multiple times)")
         group.add_argument("-c", "--chip_id",
                         help="Override chip id (by name or chip_id)",

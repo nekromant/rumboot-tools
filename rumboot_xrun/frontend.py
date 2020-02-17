@@ -16,7 +16,7 @@ def cli():
     parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter,
                                      description="rumboot-xrun {} - RumBoot X-Modem execution tool\n".format(rumboot_xrun.__version__) +
                                     "(C) 2018 Andrew Andrianov, RC Module\nhttps://github.com/RC-MODULE")
-    arghelper.add_file_handling_opts(parser)
+    arghelper.add_file_handling_opts(parser, True)
     arghelper.add_terminal_opts(parser)
     arghelper.add_resetseq_options(parser, resets)
     plus = parser.add_argument_group("Plusargs parser options", 

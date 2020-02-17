@@ -18,7 +18,7 @@ def cli():
     parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter,
                                      description="rumboot-xflash {} - RumBoot X-Modem firmware update tool\n".format(rumboot_packimage.__version__) +
                                     "(C) 2018-2019 Andrew Andrianov, RC Module\nhttps://github.com/RC-MODULE")
-    arghelper.add_file_handling_opts(parser)
+    arghelper.add_file_handling_opts(parser, True)
     arghelper.add_terminal_opts(parser)
     parser.add_argument("-v", "--verbose", 
                         action='store_true',
