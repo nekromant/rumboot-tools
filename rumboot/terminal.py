@@ -7,6 +7,7 @@ import time
 import io
 from tqdm import tqdm
 from rumboot.OpFactory import OpFactory
+from rumboot.chips.base import chipBase
 import socket
 
 class terminal:
@@ -14,6 +15,7 @@ class terminal:
         logstream=None
         plusargs={}
         runlist = []
+        chip = chipBase()
         dumps = {}
         curbin = "bootrom"
 
@@ -31,7 +33,10 @@ class terminal:
                 return self.ser.write(data)  # note that this ignores the timeout
             self.modem = XMODEM(getc, putc)
             self.opf = OpFactory("rumboot.ops", self) 
-            
+        
+        def set_chip(self, chip):
+            self.chip = chip
+
         def add_binaries(self, path):
             if type(path) is list:
                 for p in path:
@@ -84,7 +89,8 @@ class terminal:
 
 
         def loop(self, break_after_uploads=False):
-            self.sync()
+            if not self.chip.skipsync:
+                self.sync()
             while True:
                 ret = None
                 line = self.ser.readline()

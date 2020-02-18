@@ -5,6 +5,7 @@ class chipMM7705(chipBase):
     part="1888ТХ018"
     chip_id=1
     chip_rev=1
+    skipsync=True
     warning='''
     This chip has a RumBoot V1 bootloader. 
     RumBootV2 may be flashed onto SPI flash and executed from internal memory

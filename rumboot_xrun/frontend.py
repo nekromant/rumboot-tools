@@ -63,6 +63,7 @@ def cli():
 
     reset = resets[opts.reset[0]](opts)
     term = terminal(opts.port[0], opts.baud[0])
+    term.set_chip(c)
     term.plusargs = plusargs
 
     try:
