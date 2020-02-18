@@ -3,6 +3,9 @@ class base:
     def __init__(self, opts):
         pass
 
+    def power(self, on):
+        pass
+
     def resetWithCustomFlags(self, flags=[]):
         pass
 

@@ -119,6 +119,7 @@ class server:
             print("Now serving client: ", client["dns"])
         except(IndexError):
             self.worker = None
+            self.rst.power(0) # Power off board
 
     def queue_client(self, connection, client_address):
         dns = socket.gethostbyaddr(client_address[0])
@@ -139,6 +140,7 @@ class server:
             self.serve_once()
 
     def loop(self):
+        self.rst.power(0) # Power off board
         try:
             self.sock.listen()
             self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)

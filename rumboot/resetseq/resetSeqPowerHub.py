@@ -8,6 +8,13 @@ class powerhub(base):
     def __init__(self, opts):
         pass
 
+    def power(self, on):
+        if on:
+            os.system("powerhubctl outlet_power_ctl 0");
+        else:
+            os.system("powerhubctl outlet_power_ctl 1");
+
+
     def resetWithCustomFlags(self, flags=[]):
         print("Please, power-cycle board")
 

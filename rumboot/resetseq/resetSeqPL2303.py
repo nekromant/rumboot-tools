@@ -6,8 +6,8 @@ class pl2303(base):
     #Physical port to use
     port = -1
     invert = False
-    # GPIO0: reset
-    # GPIO1: power
+    # GPIO0: power
+    # GPIO1: reset
 
     def gpio(self, gp, v):
         if self.invert:
@@ -20,6 +20,12 @@ class pl2303(base):
 
     def resetWithCustomFlags(self, flags=[]):
         print("Please, power-cycle board")
+
+    def power(self, on):
+        if on:
+            self.gpio(0, 0)
+        else:
+            self.gpio(0, 1)
 
     def resetToHost(self, flags = []):
         self.gpio(0, 1)
