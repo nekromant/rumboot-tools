@@ -16,7 +16,8 @@ class chipMM7705(chipBase):
     memories = {
         "spi" : "rumboot-mm7705-PostProduction-updater-spiflash.bin"
     }
-
+    romdump = "mm7705-v1.dmp"    
+    
 class chipBasis(chipBase):
     name="basis"
     part="1888ВС048"
@@ -78,8 +79,3 @@ class chipNM6408(chipBase):
     memories = {
         "spi0-cs0": "rumboot-nm6408-PostProduction-updater-spi0-cs0.bin",
     }
-
-#class chipDb(chipBase):
-#    chips = {chipMM7705, chipBasis,chipOI10, chipBBP3, chipNM6408, chipZynq, chipRPI4}
-#    
-    
