@@ -1,9 +1,51 @@
 import argparse
 import os
 import sys
+import yaml
 
-class arghelper:
-    def process_files(files, rebuild):
+class arghelper():
+    configs = [
+        "~/.rumboot.yaml", 
+        "/etc/rumboot.yaml", 
+        os.path.dirname(__file__) + "/../rumboot.yaml"
+        ]
+    config = None
+    default_port = "/dev/ttyUSB0"
+
+    def get_default_port(self, chip):
+        try:
+            ret = self.config['xrun']['chips'][chip.name]["port"]
+            return ret
+        except:
+            pass
+        
+        try: 
+            ret = self.config['xrun']['defaults']["port"]
+            return ret
+        except:
+            return self.default_port
+
+    def get_default_baud(self, chip):
+        try:
+            ret = self.config['xrun'][chip.name]["baudrate"]
+            return ret
+        except:
+            return chip.baudrate
+
+    def __init__(self):
+        for conf in self.configs:
+            if (os.path.exists(conf)):
+                self.load_config(conf)
+                break
+
+    def load_config(self, conf):
+        with open(conf, 'r') as stream:
+            try:
+                self.config = yaml.safe_load(stream)
+            except yaml.YAMLError as exc:
+                print(exc)
+
+    def process_files(self, files, rebuild):
         ret = files
         dumps = { }
         for k,f in enumerate(files):
@@ -24,7 +66,7 @@ class arghelper:
 
         return ret, dumps
 
-    def add_file_handling_opts(parser, need_file=False):
+    def add_file_handling_opts(self, parser, need_file=False):
         group = parser.add_argument_group('File Handling')
         parser.add_argument('-f','--file',action='append',nargs=1,
                         type=str,
@@ -35,7 +77,7 @@ class arghelper:
                         nargs=1, metavar=('chip_id'),
                         required=False)        
     
-    def add_terminal_opts(parser):
+    def add_terminal_opts(self, parser):
         group = parser.add_argument_group('Serial Terminal Settings')
         group.add_argument("-l", "--log",
                         help="Log terminal output to file",
@@ -44,7 +86,6 @@ class arghelper:
         group.add_argument("-p", "--port",
                         help="Serial port to use",
                         nargs=1, metavar=('port'),
-                        default=["/dev/ttyUSB0"],
                         required=False),
         group.add_argument("-b", "--baud",
                         help="Serial line speed",
@@ -52,7 +93,7 @@ class arghelper:
                         nargs=1, metavar=('speed'),
                         required=False)
 
-    def add_resetseq_options(parser, rfactory):
+    def add_resetseq_options(self, parser, rfactory):
         group = parser.add_argument_group('Reset Sequence options', "These options control how the target board will be reset")
         resetlist = ""
         for r in rfactory.classes:
@@ -69,7 +110,7 @@ class arghelper:
                 sequence.add_argparse_options(g)
         
 
-    def detect_chip_type(opts, chips, formats):
+    def detect_chip_type(self, opts, chips, formats):
         c = None
         try:
             t = formats.guess(opts.file[0][0])
@@ -83,7 +124,11 @@ class arghelper:
         if c == None:
             print("ERROR: Failed to auto-detect chip type")
             print("HINT: Specify a file (-f) or set chip id manually (-c)")
-        return c
 
-    def set_baudrate_opts():
-        pass
+        # Now, let's update default options, if needed
+        if opts.port == None:
+            opts.port = [ self.get_default_port(c) ]
+        if opts.baud == None:
+            opts.baud = [ self.get_default_baud(c) ]
+        
+        return c

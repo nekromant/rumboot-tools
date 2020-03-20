@@ -18,8 +18,9 @@ def cli():
     parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter,
                                      description="rumboot-xflash {} - RumBoot X-Modem firmware update tool\n".format(rumboot_packimage.__version__) +
                                     "(C) 2018-2019 Andrew Andrianov, RC Module\nhttps://github.com/RC-MODULE")
-    arghelper.add_file_handling_opts(parser, True)
-    arghelper.add_terminal_opts(parser)
+    helper = arghelper();                                
+    helper.add_file_handling_opts(parser, True)
+    helper.add_terminal_opts(parser)
     parser.add_argument("-v", "--verbose", 
                         action='store_true',
                         help="Print serial debug messages during update"),
@@ -33,14 +34,14 @@ def cli():
                         type=str,
                         required=False)
 
-    arghelper.add_resetseq_options(parser, resets)
+    helper.add_resetseq_options(parser, resets)
 
     opts = parser.parse_args()
 
     #Open files, rebuild if needed
-    opts.file[0], dumps = arghelper.process_files(opts.file[0], False)
+    opts.file[0], dumps = helper.process_files(opts.file[0], False)
 
-    c = arghelper.detect_chip_type(opts, chips, formats)
+    c = helper.detect_chip_type(opts, chips, formats)
     if (c == None):
         return 1;
  

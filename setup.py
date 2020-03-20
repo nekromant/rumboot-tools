@@ -13,7 +13,7 @@ setup(
     name = "rumboot-tools",
     version = rumboot_packimage.__version__,
     packages=find_packages(),
-    install_requires = ["pyserial", "pyft232", "parse", "xmodem", "tqdm"],
+    install_requires = ["pyserial", "pyft232", "parse", "xmodem", "tqdm", "pyyaml"],
     extras_require = {
         "usb": ["pyusb>=1.0.0"]
     },

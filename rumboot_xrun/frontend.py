@@ -16,9 +16,11 @@ def cli():
     parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter,
                                      description="rumboot-xrun {} - RumBoot X-Modem execution tool\n".format(rumboot_xrun.__version__) +
                                     "(C) 2018 Andrew Andrianov, RC Module\nhttps://github.com/RC-MODULE")
-    arghelper.add_file_handling_opts(parser, True)
-    arghelper.add_terminal_opts(parser)
-    arghelper.add_resetseq_options(parser, resets)
+    helper = arghelper()
+
+    helper.add_file_handling_opts(parser, True)
+    helper.add_terminal_opts(parser)
+    helper.add_resetseq_options(parser, resets)
     plus = parser.add_argument_group("Plusargs parser options", 
         """
         rumboot-xrun can parse plusargs (similar to verilog simulator) 
@@ -35,7 +37,7 @@ def cli():
     opts = parser.parse_args()
 
     #Open files, rebuild if needed
-    opts.file[0], dumps = arghelper.process_files(opts.file[0], opts.rebuild)
+    opts.file[0], dumps = helper.process_files(opts.file[0], opts.rebuild)
 
     dump_path = os.path.dirname(__file__) + "/romdumps/"
     
@@ -50,7 +52,7 @@ def cli():
             if ret: 
                 plusargs[ret[0]] = True                
 
-    c = arghelper.detect_chip_type(opts, chips, formats)
+    c = helper.detect_chip_type(opts, chips, formats)
     if c == None:
         return 1
         
