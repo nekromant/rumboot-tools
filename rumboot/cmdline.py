@@ -27,10 +27,12 @@ class arghelper():
 
     def get_default_baud(self, chip):
         try:
-            ret = self.config['xrun'][chip.name]["baudrate"]
+            ret = self.config['xrun']['chips'][chip.name]["baudrate"]
             return ret
         except:
-            return chip.baudrate
+            if chip != None:
+                return chip.baudrate
+            return 115200
 
     def __init__(self):
         for conf in self.configs:
