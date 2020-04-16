@@ -50,7 +50,7 @@ class xmodem(base):
         return ret
 
     def action(self, trigger, result):
-        binary = self.term.next_binary();
+        binary = self.term.next_binary()
 
         self.sync("X")
         if not self.send(binary):

@@ -9,6 +9,9 @@ from tqdm import tqdm
 from rumboot.OpFactory import OpFactory
 from rumboot.chips.base import chipBase
 import socket
+import select
+import tty
+import termios
 
 class terminal:
         verbose=True
@@ -61,11 +64,11 @@ class terminal:
             if self.curbin.name in self.dumps:
                 return self.dumps[self.curbin.name]
 
-        def log(self, *args, **kwargs):
+        def log(self, skipecho, *args, **kwargs):
             # Sometimes we get a weird exception on certain windows systems/setups
             # Try to catch any exceptions and dispose of them here
             try:
-                if self.verbose:
+                if not skipecho and self.verbose:
                     tqdm.write(*args, **kwargs)
                     sys.stdout.flush()
                 if not self.logstream == None:
@@ -87,26 +90,48 @@ class terminal:
                     break
                 c1 = c2
 
+        def loop(self, use_stdin=False, break_after_uploads=False):
+            if use_stdin:
+                old_settings = termios.tcgetattr(sys.stdin)
+            try:
+                if use_stdin:
+                    tty.setcbreak(sys.stdin.fileno())
 
-        def loop(self, break_after_uploads=False):
-            if not self.chip.skipsync:
-                self.sync()
-            while True:
-                ret = None
-                line = self.ser.readline()
-                if line == b'':
-                    continue
-                try: 
-                    line = line.decode().rstrip()
-                except:
-                    continue
-
-                ret = self.opf.handle_line(line)
-                if type(ret) is int:
-                    return ret
+                if not self.chip.skipsync:
+                    self.sync()
+                while True:
+                    ret = None
+                    if use_stdin : 
+                        line = b''
+                        sym = b''
+                        while sym != b'\n':
+                            if select.select([self.ser], [], [], 0) == ([self.ser], [], []):
+                                sym = self.ser.read(1)
+                                line = line + sym
+                                sys.stdout.write(str(sym, 'utf-8'))
+                                sys.stdout.flush()
+                            if select.select([sys.stdin], [], [], 0) == ([sys.stdin], [], []):
+                                insym = sys.stdin.read(1)
+                                self.ser.write(insym.encode())
+                    else:
+                        line = self.ser.readline()
                 
-                if break_after_uploads and len(self.runlist) == 0:
-                    break
+                    if line == b'':
+                        continue
+                    try: 
+                        line = line.decode().rstrip()
+                    except:
+                        continue
+
+                    ret = self.opf.handle_line(line, use_stdin)
+                    if type(ret) is int:
+                        return ret
+                    
+                    if break_after_uploads and len(self.runlist) == 0:
+                        break
+            finally:
+                if use_stdin:
+                    termios.tcsetattr(sys.stdin, termios.TCSADRAIN, old_settings)
  
         def xmodem_send(self, fl, chunksize=0, desc="Uploading file", welcome=b"boot: host: Hit 'X' for xmodem upload\n"):
             stream = open(fl, 'rb')

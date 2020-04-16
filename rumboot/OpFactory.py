@@ -9,16 +9,16 @@ class OpFactory(classLoader):
         for name,cl in self.classes.items():
             self.objects[name] = cl(terminal)
 
-    def handle_line(self, line):
+    def handle_line(self, line, skipecho):
         for name,obj in self.objects.items():
             ret = obj.handle_line(line)
             if type(ret) is int:
                 if not obj.hidden:
-                    self.term.log(line, end='\n')
+                    self.term.log(skipecho, line, end='\n')
                 return ret
             if ret == True:
                 if not obj.hidden:
-                    self.term.log(line, end='\n')
+                    self.term.log(skipecho, line, end='\n')
                 return ret
-        self.term.log(line, end='\n')
+        self.term.log(skipecho, line, end='\n')
         return False

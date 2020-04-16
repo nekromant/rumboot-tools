@@ -33,6 +33,12 @@ def cli():
                         action="store_true",
                         default=False,
                         required=False)
+    
+    parser.add_argument("-I", '--stdin',
+                        help="Use stdin redirection to tty",
+                        action="store_true",
+                        default=False,
+                        required=False)
 
     opts = parser.parse_args()
 
@@ -83,5 +89,5 @@ def cli():
     reset.resetToHost()
     term.add_binaries(opts.file)
     term.add_dumps(dumps)
-    return term.loop()
+    return term.loop(opts.stdin)
     
