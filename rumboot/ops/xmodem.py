@@ -52,8 +52,8 @@ class xmodem(base):
 
     def action(self, trigger, result):
         binary = self.term.next_binary()
-
-        self.sync("X")
+        if trigger != "upload_uboot":
+            self.sync("X")
         if not self.send(binary):
             print("Upload failed")
             return 1
