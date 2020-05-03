@@ -4,7 +4,8 @@ import tqdm
 class xmodem(base):
     formats = {
         "first_upload"      : "boot: host: Hit '{}' for X-Modem upload",
-        "first_upload_basis"  : "boot: host: Hit 'X' for xmodem upload"
+        "first_upload_basis"  : "boot: host: Hit 'X' for xmodem upload",
+        "upload_uboot": "Trying to boot from UART"
         }
 
     def __init__(self, term):
