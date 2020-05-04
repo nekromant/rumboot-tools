@@ -1,16 +1,17 @@
 from rumboot.ImageFormatDb import ImageFormatDb
 import argparse
 import rumboot_packimage
+import rumboot
 
 class RumbootPackimage:
     """RumbootPackimage tool frontend"""
     def __init__(self, opts):
-        print("hello")
+        pass
 
 def cli():
     parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter,
-                                     description="rumboot-packimage {} - Universal RumBoot Image Manipulation Tool\n".format(rumboot_packimage.__version__) +
-                                    "(C) 2018 Andrew Andrianov, RC Module\nhttps://github.com/RC-MODULE")
+                                     description="rumboot-packimage {} - Universal RumBoot Image Manipulation Tool\n".format(rumboot.__version__) +
+                                    rumboot.__copyright__)
     parser.add_argument("-f", "--file",
                         help="image file",
                         type=argparse.FileType("r+b"),

@@ -3,16 +3,17 @@ from rumboot.LayoutFactory import LayoutFactory
 
 import argparse
 import rumboot_packimage
+import rumboot
 
 class RumbootPackimage:
     """RumbootPackimage image combiner"""
     def __init__(self, opts):
-        print("hello")
+        pass
 
 def cli():
     parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter,
-                                     description="rumboot-combine {} - RumBoot Image Merger Tool\n".format(rumboot_packimage.__version__) +
-                                    "(C) 2018 Andrew Andrianov, RC Module\nhttps://github.com/RC-MODULE")
+                                     description="rumboot-combine {} - RumBoot Image Merger Tool\n".format(rumboot.__version__) +
+                                    rumboot.__copyright__)
     parser.add_argument("-i", "--input",
                         help="Input image file (may be specified several times)",
                         type=argparse.FileType("r+b"),
@@ -23,10 +24,7 @@ def cli():
                         required=True)
     parser.add_argument("-a", "--align",
                         default=1,
-                        help='''Set alignment of images in bytes. This option also accepts names of the boot sources
-                        SD - 512 byte alignment required for SD boot (alias of -a 512)
-                        physmap - 8-byte alignment required for physmap boot source (e.g. NOR). (alias of -a 8)
-                        ini - Special mode for .ini file appending. Adds a trailing zero and extends the header checksum. Replaces the existing .ini section, if any 
+                        help='''Set alignment pattern of images in bytes or via keyword (SD, physmap, ini)
                         ''')
 
 

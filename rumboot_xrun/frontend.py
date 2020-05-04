@@ -6,6 +6,7 @@ from rumboot.terminal import terminal
 import os
 import argparse
 import rumboot_xrun
+import rumboot
 from parse import *
 
 def cli():
@@ -14,8 +15,8 @@ def cli():
     chips   = ChipDb("rumboot.chips")
 
     parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter,
-                                     description="rumboot-xrun {} - RumBoot X-Modem execution tool\n".format(rumboot_xrun.__version__) +
-                                    "(C) 2018 Andrew Andrianov, RC Module\nhttps://github.com/RC-MODULE")
+                                     description="rumboot-xrun {} - RumBoot X-Modem execution tool\n".format(rumboot.__version__) +
+                                    rumboot.__copyright__)
     helper = arghelper()
 
     helper.add_file_handling_opts(parser, True)

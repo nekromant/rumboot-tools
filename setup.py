@@ -3,7 +3,7 @@
 # Copyright (c) 2018 Andrew Andrianov <andrew@ncrmnt.org>
 #
 
-import rumboot_packimage
+import rumboot
 from setuptools import setup, find_packages
 
 with open("README.md", "r") as fh:
@@ -11,7 +11,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name = "rumboot-tools",
-    version = rumboot_packimage.__version__,
+    version = rumboot.__version__,
     packages=find_packages(),
     install_requires = ["pyserial", "pyft232", "parse", "xmodem", "tqdm", "pyyaml"],
     extras_require = {

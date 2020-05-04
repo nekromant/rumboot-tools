@@ -9,6 +9,7 @@ import argparse
 import rumboot_xflash
 import rumboot_packimage
 from parse import *
+import rumboot
 
 def cli():
     resets  = ResetSeqFactory("rumboot.resetseq")
@@ -16,8 +17,8 @@ def cli():
     chips   = ChipDb("rumboot.chips")
 
     parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter,
-                                     description="rumboot-xflash {} - RumBoot X-Modem firmware update tool\n".format(rumboot_packimage.__version__) +
-                                    "(C) 2018-2019 Andrew Andrianov, RC Module\nhttps://github.com/RC-MODULE")
+                                     description="rumboot-xflash {} - RumBoot X-Modem firmware update tool\n".format(rumboot.__version__) +
+                                    rumboot.__copyright__)
     helper = arghelper();                                
     helper.add_file_handling_opts(parser, True)
     helper.add_terminal_opts(parser)

@@ -7,6 +7,7 @@ from rumboot.server import server
 import os
 import argparse
 import rumboot_xrun
+import rumboot
 from parse import *
 
 def cli():
@@ -15,8 +16,8 @@ def cli():
     chips   = ChipDb("rumboot.chips")
 
     parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter,
-                                     description="rumboot-daemon {} - Collaborative board access daemon\n".format(rumboot_xrun.__version__) +
-                                    "(C) 2018-2020 Andrew Andrianov, RC Module\nhttps://github.com/RC-MODULE")
+                                     description="rumboot-daemon {} - Collaborative board access daemon\n".format(rumboot.__version__) +
+                                    rumboot.__copyright__)
     helper = arghelper()
     helper.add_terminal_opts(parser)
     helper.add_resetseq_options(parser, resets)
