@@ -10,6 +10,7 @@ class chipMM7705(chipBase):
     This chip has a RumBoot V1 bootloader. 
     RumBootV2 may be flashed onto SPI flash and executed from internal memory
     to provide additional functionality, e.g. xmodem loading
+    Please be careful not wipe it! Recovery will be only possible via JTAG/EDCL
     '''
     welcome='host'
     baudrate=1000000
@@ -78,4 +79,21 @@ class chipNM6408(chipBase):
     '''
     memories = {
         "spi0-cs0": "rumboot-nm6408-PostProduction-updater-spi0-cs0.bin",
+    }
+
+class chipK1879XB1YA(chipBase):
+    name="mb7707"
+    part="K1879XB1YA"
+    chip_id=2
+    chip_rev=1
+    welcome='host'
+    baudrate=38400
+    warning='''
+    This chip has a legacy ROM bootloader. 
+    RumBoot is flashed onto NAND flash and executed from internal memory
+    to provide additional functionality
+    Please be careful not wipe it! Recovery will be only possible via JTAG/EDCL
+    '''
+    memories = {
+
     }
