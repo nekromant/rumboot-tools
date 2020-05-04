@@ -1,5 +1,6 @@
 import os
 import time
+from parse import parse
 from rumboot.resetseq.resetSeqBase import base
 class pl2303(base):
     name = "pl2303"
@@ -15,8 +16,31 @@ class pl2303(base):
         os.system("pl2303gpio --port=%d --gpio=%d --out=%d" % (self.port, gp, v))
 
     def __init__(self, opts):
-        self.port   = int(opts.pl2303_port[0])
         self.invert = opts.pl2303_invert
+
+        if opts.pl2303_port:
+            self.port = opts.pl2303_port[0]
+            return
+
+        #Else - proceed with auto-detection
+        try:
+            dev = os.readlink(opts.port[0])
+        except:
+            dev = opts.port[0]
+
+        tty = parse("/dev/ttyUSB{}", dev)
+        if tty:
+            dev = "ttyUSB" + tty[0]
+        syspath = os.readlink("/sys/bus/usb-serial/devices/" + dev)
+        syspath = syspath.split("/")
+        devid = parse("{}.{}:{}", syspath[-2])
+        if not devid:
+            devid = parse("{}-{}:{}", syspath[-2])
+
+        self.port = int(devid[1])
+        print("pl2303: %s detected at physical port %d" % (opts.port[0], self.port))
+
+
 
     def resetWithCustomFlags(self, flags=[]):
         print("Please, power-cycle board")
@@ -45,7 +69,6 @@ class pl2303(base):
         parser.add_argument("-P", "--pl2303-port",
                             help="PL2303 physical port (for -P of pl2303gpio)",
                             nargs=1, metavar=('value'),
-                            default=[ "-1" ],
                             required=False)
         parser.add_argument("--pl2303-invert",
                             help="Invert all pl2303 gpio signals",
