@@ -24,7 +24,7 @@ def cli():
     parser.add_argument("-a", "--align",
                         default=1,
                         help='''Set alignment of images in bytes. This option also accepts names of the boot sources
-                        sd - 512 byte alignment required for SD boot (alias of -a 512)
+                        SD - 512 byte alignment required for SD boot (alias of -a 512)
                         physmap - 8-byte alignment required for physmap boot source (e.g. NOR). (alias of -a 8)
                         ini - Special mode for .ini file appending. Adds a trailing zero and extends the header checksum. Replaces the existing .ini section, if any 
                         ''')

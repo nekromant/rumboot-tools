@@ -35,7 +35,7 @@ class physmap(basic):
         super().__init__(outfile, 8)
 
 class SD(basic):
-    name = "SDIO"
+    name = "SD"
     def __init__(self, outfile, align):
         super().__init__(outfile, 512)
 
