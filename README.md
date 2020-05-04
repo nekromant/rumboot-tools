@@ -1,51 +1,116 @@
-# RumBoot image packing tools
+# RumBoot Loader Tools
 
-This is a simple tool to add checksums to rumboot-compatible images and
-validate them. The tool also supports error injection for rumboot testing.
-Provided binaries must have a correct header for the tool to autodetect their
-format. You'll find instructions on how to prepare images and detailed header description further in this README.
+## Summary
+This repository is home to a set of tools to create, update and run rumboot v1, v2 and other images
+This repository contains several tools
 
-# Requirements
+* _rumboot-packimage_ - Adds/prints/updates checksums in image files
+* _rumboot-xrun_ - Directly executes images via serial line or network
+* _rumboot-xflash_ - Write on-board memories via serial line or network
+* _rumboot-daemon_ - Provides network access to different boards
+* _rumboot-combine_ - Combines several images into one
 
-python3
+## Supported BootRoms
 
-# Installation
+* _rumboot v1_ (Legacy, used in mm7705, see chip-specific notes!)
+* _rumboot v2_ (basis, oi10)
+* _NM6408_ (Legacy, see chip-specific notes!)
+
+## Requirements
+
+* Python 3.6 or 3.7
+
+* pyserial
+
+* pyft232 
+
+* parse
+
+* xmodem
+
+* tqdm
+
+* pyyaml
+
+* pl2303gpio tool (For pl2303 reset method)
+
+## Installation
 
 ```
     pip3 install .
-    pip3 install rumboot-packimage
+```
+or 
+```
+    pip3 install .
 ```
 
+P.S. Make sure you have a proper internet connection, or pip will fail to fetch dependencies
 
-# Commandline options
+## Tool descriptions
 
-```
-    rumboot-packimage -f file.bin [operations]
-    -f FILE  - specifies image filename
+### rumboot-packimage
+#### Description
 
-    Operations:
+This tool adds/checks/updates checksums to existing images. The image must already have a proper header placed by the linker. 
 
-    -i            - Show header information
-    -r            - Show RAW header information
-    -c            - Write correct checksums and image length
-    -s key value  - Change a key inside header and update checksums.
-                    See [-r]   for a list of keys  
-```
-
-
-# Typical usage
-
-## Validate image
+#### Options 
 
 ```
-    rumboot-packimage -f myimage.bin
-```
-    This command will silently validate an image and exit code 0 if everything's okay. 1 if something isn't right  
+rumboot-packimage --help
+usage: rumboot-packimage [-h] -f FILE [-i] [-c] [-C] [-r] [-z value]
+                         [-a value] [-g key] [-s key value] [-e]
 
-## Dump header information
+rumboot-packimage 1.4 - Universal RumBoot Image Manipulation Tool
+(C) 2018 Andrew Andrianov, RC Module
+https://github.com/RC-MODULE
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -f FILE, --file FILE  image file
+  -i, --info            Show information about the image
+  -c, --checksum        This option will modify the file! Calculates valid
+                        checksums to the header. The length is set to cover
+                        the full length of file only if it's non-zero.
+  -C, --checksum_fix_length
+                        This option will modify the file! The same as
+                        --checksum, but always overrides length with the
+                        actual length of file
+  -r, --raw             Display raw header field names
+  -z value, --add_zeroes value
+                        This option will add N bytes of zeroes to the end of
+                        the file (after checksummed area). This is required to
+                        avoid propagating 'X' during the next image check
+                        during simulation. Normally, you do not need this
+                        option
+  -a value, --align value
+                        Pad resulting image size to specified alignment
+  -g key, --get key     Get a single field from header. Nothing else will be
+                        printed. NOTE: The value will be formatted as hex
+  -s key value, --set key value
+                        This option will modify the file! Set a header key to
+                        specified value. Use -r flag on an existing image to
+                        find out what keys exist. Use -c to update the
+                        checksums
+  -e, --reverse-endianness
+                        Use this option to reverse endianness of all headers.
+                        This will not touch data. For testing only
+```
+
+#### Typical uses
+
+##### Check if an image file is valid
 
 ```
-rumboot-packimage -f image.bin -i
+~# rumboot-packimage -f myimage.bin
+```
+
+This command will silently validate an image and exit code 0 if everything's okay. 1 if something isn't right. Useful for scripts.
+
+##### Dump header information
+
+```
+~# rumboot-packimage -f image.bin -i
+
 Detected RumBootV1 image, endian: big
 === RumBootV1 Header Information ===
 Endianess:              big
@@ -56,12 +121,13 @@ Data CRC32:             0x1929eb8e [Valid]
 
 ```
 
-This command will dump header contents
+This command will dump all header contents of a file
 
-## Write correct data length and checksums to the image
+##### Write correct data length and checksums to the image
 
 ```
-rumboot-packimage -f image.bin -с
+~# rumboot-packimage -f image.bin -с
+
 Detected RumBootV1 image, endian: big
 Wrote valid checksums to image header
 === RumBootV1 Header Information ===
@@ -72,14 +138,223 @@ Header CRC32:           0x1e955d90 [Valid]
 Data CRC32:             0x1929eb8e [Valid]
 ```
 
-# Supported formats
 
-## General stuff
+### rumboot-xrun
+#### Description
+
+This tool directly uploads a binary to the target board, executes it and provides you with human-readable output. It also resets the board if necessary.
+
+#### Options 
+
+```
+~# rumboot-xrun --help
+
+usage: rumboot-xrun [-h] -f FILE [-c chip_id] [-l LOG] [-p port] [-b speed]
+                    [-r method] [--apc-ip APC_IP] [--apc-user APC_USER]
+                    [--apc-pass APC_PASS] [--apc-port APC_PORT] [-S value]
+                    [-P value] [--pl2303-invert]
+                    [-A [PLUSARGS [PLUSARGS ...]]] [-R] [-I]
+
+rumboot-xrun 1.4 - RumBoot X-Modem execution tool
+(C) 2018 Andrew Andrianov, RC Module
+https://github.com/RC-MODULE
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -f FILE, --file FILE  Image file (may be specified multiple times)
+  -R, --rebuild         Attempt to rebuild/update target before uploading
+  -I, --stdin           Use stdin redirection to tty
+
+File Handling:
+  -c chip_id, --chip_id chip_id
+                        Override chip id (by name or chip_id)
+
+Serial Terminal Settings:
+  -l LOG, --log LOG     Log terminal output to file
+  -p port, --port port  Serial port to use
+  -b speed, --baud speed
+                        Serial line speed
+
+Reset Sequence options:
+  These options control how the target board will be reset
+
+  -r method, --reset method
+                        Reset sequence to use (apc base mt12505 pl2303
+                        powerhub)
+
+apc reset sequence options:
+  --apc-ip APC_IP       APC IP Address/hostname
+  --apc-user APC_USER   APC IP username
+  --apc-pass APC_PASS   APC IP username
+  --apc-port APC_PORT   APC Power port
+
+mt12505 reset sequence options:
+  -S value, --ft232-serial value
+                        FT232 serial number for MT125.05
+
+pl2303 reset sequence options:
+  -P value, --pl2303-port value
+                        PL2303 physical port (for -P of pl2303gpio)
+  --pl2303-invert       Invert all pl2303 gpio signals
+
+Plusargs parser options:
+  
+          rumboot-xrun can parse plusargs (similar to verilog simulator) 
+          and use them for runtime file uploads. This option is intended 
+          to be used for 
+          
+
+  -A [PLUSARGS [PLUSARGS ...]], --plusargs [PLUSARGS [PLUSARGS ...]]
+
+```
+
+#### Configuration file
+
+The rumboot-xrun tries to find a configuration file on your system in the following locations:
+
+* ~/.rumboot.yaml
+* /etc/rumboot.yaml
+
+Example configuration file is provided below:
+
+```yaml
+xrun:
+    defaults:
+        port: /dev/ttyUSB0
+    chips:
+        oi10:   
+            port: /dev/ttyUSB1
+            baudrate: 19200
+        basis:  
+            port: /dev/ttyUSB2
+        mm7705: 
+            port: socket://10.7.11.59:10002
+```
+
+The configuration file contains default ports and speeds for all known chip ids. If you supply a file to rumboot-xrun without any other options, rumboot-xrun will find out the chip id from the header file and set default port and baudrate accordingly. 
+
+If no configuration file can be found in any location, the default serial port will be /dev/ttyUSB0. Default baudrate will be taken from the internal chip database and should match most typical settings
+
+
+
+
+#### Typical uses
+##### Execute a file
+
+```
+~# rumboot-xrun -f myimage.bin -p /dev/ttyUSB0
+Detected chip:    oi10 (1888ВМ018(A)/1888ВМ01H4)
+Reset method:     None
+Baudrate:         115200 bps
+Port:             /dev/ttyUSB0
+Please, power-cycle board
+
+
+
+
+
+
+    RC Module's          __                __
+   _______  ______ ___  / /_  ____  ____  / /_
+  / ___/ / / / __ `__ \/ __ \/ __ \/ __ \/ __/
+ / /  / /_/ / / / / / / /_/ / /_/ / /_/ / /_
+/_/   \__,_/_/ /_/ /_/_.___/\____/\____/\__/
+oi10 | Production | HEAD-0a2dc3a8
+--- RumBoot Configuration ---
+Force Host Mode: enabled
+Selftest:        disabled
+EDCL/RMAP:       enabled
+UART speed:      115200 bps
+Max SPL size:    131072 bytes
+SD Card:         Not inserted
+CPU ECC:         disabled
+NOR/SRAM ECC:    disabled
+Direct NOR boot: disabled
+Reset cause:     SCTL: 0x800 SPR_DBCR0: 0x0
+---          ---          ---
+boot: host: Entering Host Mode
+boot: host: GRETH0 EDCL MAC: ec:17:66:e:10:0 IP: 192.168.1.48
+boot: host: GRETH1 EDCL MAC: ec:17:66:e:10:1 IP: 192.168.1.49
+boot: host: Hit 'X' for X-Modem upload
+
+
+
+boot: host: Received 40960 bytes, executing in 100ms
+boot: host: --- Boot Image Header ---
+boot: host: Magic:            0xb01dface
+boot: host: Header version:   2
+boot: host: Chip Id:          4
+boot: host: Chip Revision:    1
+boot: host: Data length:      40800
+boot: host: Header CRC32:     0xb47a8252
+boot: host: Data CRC32:       0x87065aa6
+boot: host: ---        ---        ---
+Hello, World!
+boot: host: Back in rom, code 0
+
+```
+
+This command waits for bootrom prompt, uploads a file via xmodem and prints everything received to stdout acting pretty much the same, as your favorite terminal program. The exit code from the program will be the exit code of rumboot-run (0 in the example above), therefore you can rumboot-xrun in your scripts during unit-testing.
+
+NOTE: Make sure the jumpers on the board are set to 'host mode'. After running the command press the reset button or supply power to the board.
+
+##### Execute a file, custom port/speed, automatically reset board via pl2303
+
+```
+~# rumboot-xrun -f myimage.bin -p /dev/ttyUSB0 -b 19200 -r pl2303
+```
+The -r option specifies one of the ways to reset board. For more info on
+board reset mechanism, please see Appendix A
+
+##### Execute a chain of files without reset
+
+```
+~# rumboot-xrun -f init_ddr.bin -f test_ddr.bin -r pl2303
+```
+
+The -f option can be specified multiple times. Every image should exit with code 0 for the chain to move on. (See rumboot docs for more about this logic)
+
+##### Log serial output to a file
+
+```
+~# rumboot-xrun -f init_ddr.bin -f test_ddr.bin -l uart.log
+```
+
+The -l option can be used to log output to a file
+
+##### Using stdin
+
+```
+~# rumboot-xrun -f init_ddr.bin -I 
+```
+
+The -I options makes the terminal _bi-directional_. E.g. You can not only see what the board sends you, but you can also type in some commands. 
+
+
+
+# Appendix A. Board reset methods
+
+rumboot-xrun, rumboot-xflash and rumboot-daemon all accept the _-r_ option that configures the way boards are reset. The following reset methods are available: 
+
+* pl2303 (linux-only) - uses an external tool called pl2303gpio. The two GPIO lines of PL2303HXA should be connected to reset and power lines. Most RC Module's reference boards have this circuit. rumboot-tools will try to guess the correct device if more than one pl2303 device are connected.
+
+* mt12505 - Uses MT12505 board for power control. Internal RC Module's hardware. Don't use.
+
+* apc - Uses telnet-accessible APC Switched Rack PDU. Requires a set of options to be supplied: 
+
+```  
+  --apc-ip APC_IP       APC IP Address/hostname
+  --apc-user APC_USER   APC IP username
+  --apc-pass APC_PASS   APC IP username
+  --apc-port APC_PORT   APC Power port
+```
+
+If you wish to implement your own reset method - look into rumboot/resetSeq
+
+## Appendix B. Adding Rumboot V1 header to your app
 
 The tool expects that your compiled binary will already have a valid header that has all required fields except for the checksums and data length.
 To to this, you have to add a single .c file to your project that will define the header structure.
-
-## RumBootV1
 
 The V1 is the initial header as implemented in 1888TX018. It's very basic, but may contain two entry points.
 
@@ -165,5 +440,15 @@ SECTIONS
 }
 ```
 
-## RumBootV2
-    TBD
+Once you compile and link your app, run 
+```
+rumboot-packimage -c -f file.bin
+```
+And it should do all magic, required to boot this image
+
+## Appendix C. Adding Rumboot V2 header to your app
+
+TODO: ...
+
+## Appendix D. Adding NM6408 header to your app
+TODO: ...
