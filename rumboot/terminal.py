@@ -21,6 +21,7 @@ class terminal:
         chip = chipBase()
         dumps = {}
         curbin = "bootrom"
+        progress = tqdm(disable=True)
 
         def __init__(self, port, speed):
             self.port = port
@@ -39,6 +40,10 @@ class terminal:
         
         def set_chip(self, chip):
             self.chip = chip
+
+        def tqdm(self, *args, **kwargs):
+            self.progress.close()
+            self.progress = tqdm(*args, **kwargs)
 
         def add_binaries(self, path):
             if type(path) is list:
@@ -69,7 +74,7 @@ class terminal:
             # Try to catch any exceptions and dispose of them here
             try:
                 if not skipecho and self.verbose:
-                    tqdm.write(*args, **kwargs)
+                    self.progress.write(*args, **kwargs)
                     sys.stdout.flush()
                 if not self.logstream == None:
                     self.logstream.write(*args)

@@ -33,14 +33,17 @@ class xmodem(base):
         if type(stream) is str:
             stream = open(stream, 'rb')
 
-        pbar = tqdm.tqdm(desc=desc, total=self.stream_size(stream), unit_scale=True, unit_divisor=1024, unit='B')
+        self.term.tqdm(desc=desc, total=self.stream_size(stream), unit_scale=True, unit_divisor=1024, unit='B', disable=False)
+        pbar = self.term.progress
         def callback(total_packets, success_count, error_count):
             if success_count*128 < pbar.total:
                 pbar.update(128)
             else:
-                pbar.update(128 - (success_count*128 - pbar.total))
-        
-        return self.modem.send(stream, retry=128, callback=callback)
+                pbar.update(128 - (success_count*128 - pbar.total))        
+        ret = self.modem.send(stream, retry=128, callback=callback)
+        self.term.tqdm(disable=True)
+        return ret
+
 
     def xmodem_from_plusarg(self, arg):
         fl = self.term.plusargs[arg]
