@@ -15,14 +15,6 @@ import socket
 from rumboot.server import redirector
 
 
-def DummyServer():
-    def __init__(self):
-        pass
-
-    def serve_once(self):
-        pass
-
-
 class ipflashrom(threading.Thread):
     def configure(self, flashrom, port, args):
         self.flashrom = flashrom
@@ -45,10 +37,10 @@ def cli():
                                      description="rumboot-flashrom {} - flashrom wrapper tool\n".format(rumboot.__version__) +
                                     rumboot.__copyright__)
     helper = arghelper();                                
-    helper.add_file_handling_opts(parser, True)
     helper.add_terminal_opts(parser)
     parser.add_argument("-v", "--verbose", 
                         action='store_true',
+                        default=False,
                         help="Print serial debug messages during preload phase"),
     parser.add_argument("-m", "--memory",
                         help="SPI bus to use. Names match '-m help' of rumboot-xflash",
@@ -59,20 +51,30 @@ def cli():
                         help="Path for SPL writers (Debug only)",
                         type=str,
                         required=False)
-    parser.add_argument('-F', '--flashrom-args', nargs='*', help="Flashrom arguments")
+    parser.add_argument("-f", "--flashrom-path",
+                        help="Path to flashrom binary",
+                        type=str,
+                        required=False)
+    parser.add_argument("-c", "--chip_id",
+                    help="Chip Id (numeric or name)",
+                    required=True)        
+    parser.add_argument('remaining', nargs=argparse.REMAINDER, default=[], help="Flashrom arguments")
+#    parser.add_argument('-F', '--flashrom-args', nargs='*', default=[], )
 
     helper.add_resetseq_options(parser, resets)
 
     opts = parser.parse_args()
+    if opts.remaining and opts.remaining[0] == "--":
+        opts.remaining = opts.remaining[1:]
+    flashrom_args = " ".join(opts.remaining)
 
-    #Open files, rebuild if needed
-    opts.file[0], dumps = helper.process_files(opts.file[0], False)
-
-    c = helper.detect_chip_type(opts, chips, formats)
+    c = chips[opts.chip_id]
     if (c == None):
         return 1;
  
+    helper.detect_terminal_options(opts, c)
     print("Detected chip:    %s (%s)" % (c.name, c.part))
+
     if c.warning != None:
         print("    --- WARNING ---")
         print(c.warning)        
@@ -86,12 +88,11 @@ def cli():
 
     reset = resets[opts.reset[0]](opts)
     term = terminal(opts.port[0], opts.baud[0])
+    term.verbose = opts.verbose
     term.set_chip(c)
     if opts.log:
         term.logstream = opts.log
     
-    term.verbose = opts.verbose
-
     mem = opts.memory[0]
     if not mem:
         return 1
@@ -117,14 +118,37 @@ def cli():
     print("Baudrate:         %d bps" % int(opts.baud[0]))
     print("Port:             %s" % opts.port[0])
 
-    flashrom = "/usr/local/sbin/flashrom"
+    flashrom = None
+
+    flashrom_paths = [
+        "/usr/local/sbin/flashrom",
+        "/sbin/flashrom", 
+        "/usr/sbin/flashrom",
+        "C:\\flashrom\\flashrom.exe"
+        ]
+
+    if opts.flashrom_path and os.path.exists(opts.flashrom_path):
+        flashrom = opts.flashrom_path
+    elif opts.flashrom_path:
+        print("[W] Specified flashrom path (%s) is invalid, trying to guess" % opts.flashrom_path)
+
+    for f in flashrom_paths:
+        if os.path.exists(f):
+            flashrom = f
+
+    if flashrom == None:
+        print("FATAL: Failed to find working flashrom. Please download and install from https://flashrom.org/")
+        return 1
+
+    print("FlashRom:         %s" % flashrom)
+    print("FlashRom args:    %s" % flashrom_args)
 
     reset.resetToHost()
     term.add_binaries(spl)
+
     term.loop(break_after_uploads=True)
     while True:
         s = term.ser.readline()
-        print(s)
         if s.decode("utf-8", errors="replace").find("SERPROG READY!") != -1:
             break
 
@@ -156,17 +180,15 @@ def cli():
 
     #Fire up flashrom in background
     flr = ipflashrom()
-    flr.configure(flashrom, port, "-VVV")
+    flr.configure(flashrom, port, flashrom_args)
     flr.start()
 
     #Accept connection
     connection, client_address = server.accept()
     connection.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
 
-    dummy = DummyServer()
-
     rd = redirector()
-    rd.configure(dummy, term.ser, connection)
+    rd.configure(term.ser, connection)
     rd.start()
 
     return flr.join()
