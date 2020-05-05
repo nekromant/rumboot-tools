@@ -43,6 +43,7 @@ class redirector(threading.Thread):
         self.socket.setsockopt(socket.SOL_TCP, socket.TCP_KEEPIDLE, 1)
         self.socket.setsockopt(socket.SOL_TCP, socket.TCP_KEEPINTVL, 1)
         self.socket.setsockopt(socket.SOL_TCP, socket.TCP_KEEPCNT, 2)
+        self.socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
 
         try:
             while True:
@@ -55,7 +56,7 @@ class redirector(threading.Thread):
 
                 for sock in ready_to_read:       
                     if sock == self.serial.fileno():
-                        fromserial = fromserial = bytearray(self.serial.read(self.serial.inWaiting()))
+                        fromserial = fromserial + bytearray(self.serial.read(self.serial.inWaiting()))
                         if self.socket in ready_to_write:
                             sent = self.socket.send(fromserial)
                             del fromserial[0:sent]
