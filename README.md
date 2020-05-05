@@ -450,7 +450,83 @@ pl2303 reset sequence options:
 #### Typical Usage
 ##### Find out what memories a chip has
 
+This will output a list of external memories this tool can write and the spl stub names
+that will be used for that
+
 ```
+~$ rumboot-xflash -m help -c basis
+Memory        i2c0-0x50: rumboot-basis-PostProduction-updater-i2c0-0x50.bin
+Memory        i2c0-0x51: rumboot-basis-PostProduction-updater-i2c0-0x51.bin
+Memory        i2c0-0x52: rumboot-basis-PostProduction-updater-i2c0-0x52.bin
+Memory        i2c0-0x53: rumboot-basis-PostProduction-updater-i2c0-0x53.bin
+Memory  spi0-gpio0_5-cs: rumboot-basis-PostProduction-updater-spi0-gpio0_5-cs.bin
+Memory spi0-internal-cs: rumboot-basis-PostProduction-updater-spi0-internal-cs.bin
+Memory spi1-internal-cs: rumboot-basis-PostProduction-updater-spi1-internal-cs.bin
+```
+
+Or you can just specify the file you are going to flash instead.
+
+```
+$ rumboot-xflash -m help -f ../build-test/oi10-PostProduction/rumboot-oi10-PostProduction-simple-iram-hello.bin 
+Memory spi0-internal-cs: rumboot-oi10-PostProduction-updater-spi-flash-0.bin
+Memory              nor: rumboot-oi10-PostProduction-updater-nor-mt150.04.bin
+Memory      nor-bootrom: rumboot-oi10-PostProduction-updater-nor-mt150.04-brom.bin
+```
+
+##### Write image to flash
+
+```
+~$ rumboot-xflash -m spi0-gpio0_5-cs -f rumboot-basis-PostProduction-simple-iram-hello-iram.bin
+
+Detected chip:    basis (1888ВС048)
+Reset method:     None
+Baudrate:         115200 bps
+Port:             /dev/ttyUSB0
+Sending stream: 100%|███████████████████████████████| 13.6k/13.6k [00:21<00:00, 650B/s]
+Writing image: 100%|████████████████████████████████| 62.9k/62.9k [01:29<00:00, 717B/s]
+
+```
+
+##### Write image to flash, reset automatically via pl2303
+
+```
+~$ rumboot-xflash -m spi0-gpio0_5-cs -f rumboot-basis-PostProduction-simple-iram-hello-iram.bin -r pl2303
+
+Detected chip:    basis (1888ВС048)
+Reset method:     None
+Baudrate:         115200 bps
+Port:             /dev/ttyUSB0
+Sending stream: 100%|███████████████████████████████| 13.6k/13.6k [00:21<00:00, 650B/s]
+Writing image: 100%|████████████████████████████████| 62.9k/62.9k [01:29<00:00, 717B/s]
+
+```
+
+##### Write raw data to flash, overriding chip id
+
+```
+~$ rumboot-xflash -c basis -m spi0-gpio0_5-cs -f raw.bin
+
+Detected chip:    basis (1888ВС048)
+Reset method:     None
+Baudrate:         115200 bps
+Port:             /dev/ttyUSB0
+Sending stream: 100%|███████████████████████████████| 13.6k/13.6k [00:21<00:00, 650B/s]
+Writing image: 100%|████████████████████████████████| 62.9k/62.9k [01:29<00:00, 717B/s]
+
+```
+
+
+##### Write raw data to flash over network
+
+```
+~$ rumboot-xflash -c basis -m spi0-gpio0_5-cs -f raw.bin -p socket://10.7.11.59:10001
+
+Detected chip:    basis (1888ВС048)
+Reset method:     None
+Baudrate:         115200 bps
+Port:             socket://10.7.11.59:10001
+Sending stream: 100%|███████████████████████████████| 13.6k/13.6k [00:21<00:00, 650B/s]
+Writing image: 100%|████████████████████████████████| 62.9k/62.9k [01:29<00:00, 717B/s]
 
 ```
 
