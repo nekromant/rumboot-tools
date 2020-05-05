@@ -10,7 +10,11 @@ class classLoader():
 
 
     def __getitem__(self, key):
-        return self.classes[key]
+        if key in self.classes:
+            return self.classes[key]
+        for key,value in self.classes.items():
+            if type(value).__name__ == key:
+                return c            
 
     def load(self, path):
         p = __import__(path, fromlist=['object'])

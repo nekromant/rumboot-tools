@@ -1,7 +1,6 @@
 from rumboot.chips.base import chipBase
 
-class chipMM7705(chipBase):
-    name="mm7705"
+class mm7705(chipBase):
     part="1888ТХ018"
     chip_id=1
     chip_rev=1
@@ -19,8 +18,7 @@ class chipMM7705(chipBase):
     }
     romdump = "mm7705-v1.dmp"    
     
-class chipBasis(chipBase):
-    name="basis"
+class basis(chipBase):
     part="1888ВС048"
     chip_id=3
     chip_rev=1
@@ -42,8 +40,7 @@ class chipBasis(chipBase):
     }
     romdump = "basis-v1.dmp"    
 
-class chipOI10(chipBase):
-    name="oi10"
+class oi10(chipBase):
     part="1888ВМ018(A)/1888ВМ01H4"
     chip_id=4
     chip_rev=1
@@ -56,8 +53,7 @@ class chipOI10(chipBase):
     }
     romdump = "oi10-v1.dmp"
 
-class chipBBP3(chipBase):
-    name="bbp3"
+class bbp3(chipBase):
     part="1888ВС058"
     chip_id=5
     baudrate=115200
@@ -69,8 +65,7 @@ class chipBBP3(chipBase):
     }
     romdump = "bbp3-v1.dmp"    
 
-class chipNM6408(chipBase):
-    name="nm6408"
+class nm6408(chipBase):
     part="1888ВС058"
     chip_id=6
     chip_rev=1
@@ -86,8 +81,7 @@ class chipNM6408(chipBase):
         "spi0-cs0": "rumboot-nm6408-PostProduction-updater-spi0-cs0.bin",
     }
 
-class chipK1879XB1YA(chipBase):
-    name="mb7707"
+class mb7707(chipBase):
     part="K1879XB1YA"
     chip_id=2
     chip_rev=1
