@@ -35,6 +35,11 @@ class chipBasis(chipBase):
         "spi0-internal-cs": "rumboot-basis-PostProduction-updater-spi0-internal-cs.bin",
         "spi1-internal-cs": "rumboot-basis-PostProduction-updater-spi1-internal-cs.bin",
     }
+    flashrom = {
+        "spi0-gpio0_5-cs": "rumboot-basis-PostProduction-serprog-spi0-gpio0_5-cs.bin",
+        "spi0-internal-cs": "rumboot-basis-PostProduction-serprog-spi0-internal-cs.bin",
+        "spi1-internal-cs": "rumboot-basis-PostProduction-serprog-spi1-internal-cs.bin",
+    }
     romdump = "basis-v1.dmp"    
 
 class chipOI10(chipBase):
