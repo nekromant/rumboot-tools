@@ -1,7 +1,9 @@
 class base:
     name = "None"
+    silent = False
     def __init__(self, opts):
-        pass
+        if opts.port[0].find("socket") != -1:
+            self.silent = True
 
     def power(self, on):
         pass
@@ -10,7 +12,8 @@ class base:
         pass
 
     def resetToHost(self, flags = []):
-        print("Please, power-cycle board")
+        if not self.silent:
+            print("Please, power-cycle board")
 
     def resetToNormal(self, flags = []):
         pass
