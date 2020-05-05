@@ -24,11 +24,35 @@ Sounds like too much? How you are you expected to use them in your app?
 
 * Want to combine a set of tests into one image? Check out the _rumboot-combine_ tool.
 
-## Supported BootRoms
+## Chip IDs 
 
-* _rumboot v1_ (Legacy, used in mm7705, see chip-specific notes!)
-* _rumboot v2_ (basis, oi10)
-* _NM6408_ (Legacy, see chip-specific notes!)
+rumboot-tools use IDs to identify chips. Every supported chip has it's own id. 
+
+
+Platform Name  | Part Number             | Endianess | #Cores | ChipID | ChipRev | Image Format 
+-------------- | ----------------------- | --------- | ------ | ------ | ------- | ------------
+mm7705         | 1888ТХ018               | big       | 2      | 1      | 1       | RumBoot V1
+mb7707         | К1879ХБ1YA              | little    | -      | 2      | 1       | Legacy K1879XB1YA
+basis          | 1888ВС048               | little    | 1      | 3      | 1       | RumBoot V2
+oi10           | 1888ВМ018(A)/1888ВМ01H4 | big       | 1      | 4      | 1       | RumBoot V2
+bbp3           | 1888ВС058               | little    | 1      | 5      | 1       | RumBoot V2
+nm6408         | 1888ВС058               | little    | 1      | 6      | 1       | Legacy NM6408
+-------------- | ----------------------- | --------- | ------ | ------ | ------- | -------------
+zed            | Zed Board / Tang Hex    | little    | 2      | 255    | 1       | Other
+rpi4           | BCM2711 (Raspberry Pi 4)| little    | 4      | 255    | 2       | Other
+
+Since different chips have different ROM loaders, default baudrates, flash memories and etc., some tools require you either set ChipId explicitly (via -c option) or try their best to guess it from image file header. Only newer (rumboot V2 and later) image formats have a dedicated field called chip_id. 
+
+For some board (namely, older RC Module's chip) there's a build of newer bootloader that can be programmed into SPI Flash and NAND and provide booting via newer V2 images as well as UART upload.
+
+You can either specify chip id via it's number or via platform name, whichever suits you. (`-c 2` and `-c mb7707` do the same).
+
+Thirdparty chips that are used for testing and prototyping always have chip id as 255. 
+
+The Chip Revision may be used to distinguish different versions of the same chip, if any. It is only
+supported by Rumboot V2 headers and later. If Chip Revision of the file you are uploading and the one stored 
+in silicon don't match - you'll get a warning.
+
 
 ## Requirements
 
@@ -58,14 +82,14 @@ or
     pip3 install .
 ```
 
-P.S. Make sure you have a proper internet connection, or pip will fail to fetch dependencies
+P.S. Make sure you have a proper internet connection, or pip will fail to fetch dependencies.
 
 ## Tool descriptions
 
 ### rumboot-packimage
 #### Description
 
-This tool adds/checks/updates checksums to existing images. The image must already have a proper header placed by the linker. 
+This tool adds/checks/updates checksums in existing images. The image must already have a proper header placed by the linker. 
 
 #### Options 
 
@@ -343,6 +367,216 @@ The -l option can be used to log output to a file
 ```
 
 The -I options makes the terminal _bi-directional_. E.g. You can not only see what the board sends you, but you can also type in some commands. 
+
+##### Auto-rebuilding project
+
+```
+~# rumboot-xrun -R -f example.bin 
+```
+
+The -R options convenience option invokes automatically _cmake --build example.all_ in the directory with the binary file. The target name is calculating by changing .bin to .all. This is hardcoded for 'rumboot' SDK for now.
+
+##### Automatic stack trace decoding
+
+
+```
+```
+
+
+### rumboot-xflash
+#### Description
+
+This tool allows you to quickly program different flashes attached to the target chip. It is done by uploading a precompiled stub that implements the programming protocol of the target flash media and accepts an xmodem payload. Pre-compiled stubs are shipped with rumboot-tools.
+
+#### Options 
+
+```
+~# rumboot-xflash --help
+usage: rumboot-xflash [-h] -f FILE [-c chip_id] [-l LOG] [-p port] [-b speed]
+                      [-v] -m memory [-z SPL_PATH] [-r method]
+                      [--apc-ip APC_IP] [--apc-user APC_USER]
+                      [--apc-pass APC_PASS] [--apc-port APC_PORT] [-S value]
+                      [-P value] [--pl2303-invert]
+
+rumboot-xflash 0.9.1 - RumBoot X-Modem firmware update tool
+
+(C) 2018-2020 Andrew Andrianov <andrew@ncrmnt.org>, RC Module
+https://module.ru
+https://github.com/RC-MODULE
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -f FILE, --file FILE  Image file (may be specified multiple times)
+  -v, --verbose         Print serial debug messages during update
+  -m memory, --memory memory
+                        Memory program. Help for a list of memories
+  -z SPL_PATH, --spl-path SPL_PATH
+                        Path for SPL writers (Debug only)
+
+File Handling:
+  -c chip_id, --chip_id chip_id
+                        Override chip id (by name or chip_id)
+
+Serial Terminal Settings:
+  -l LOG, --log LOG     Log terminal output to file
+  -p port, --port port  Serial port to use
+  -b speed, --baud speed
+                        Serial line speed
+
+Reset Sequence options:
+  These options control how the target board will be reset
+
+  -r method, --reset method
+                        Reset sequence to use (apc base mt12505 pl2303
+                        powerhub)
+
+apc reset sequence options:
+  --apc-ip APC_IP       APC IP Address/hostname
+  --apc-user APC_USER   APC IP username
+  --apc-pass APC_PASS   APC IP username
+  --apc-port APC_PORT   APC Power port
+
+mt12505 reset sequence options:
+  -S value, --ft232-serial value
+                        FT232 serial number for MT125.05
+
+pl2303 reset sequence options:
+  -P value, --pl2303-port value
+                        PL2303 physical port (for -P of pl2303gpio)
+  --pl2303-invert       Invert all pl2303 gpio signals
+
+```
+
+#### Typical Usage
+##### Find out what memories a chip has
+
+```
+
+```
+
+### rumboot-flashrom
+#### Description
+
+This tool works as a flashrom (http://flashrom.org) frontend/wrapper and allows you to read/write SPI flash chips that are (for some reasons) unsupported by rumboot-xflash. It works by uploading a stub that implements serprog protocol and attaching the flashrom to it. This tool can be used along with boards accesible via _rumboot-daemon_ over the network.
+
+
+#### Options 
+
+This tool works differently, compared to other tools. It accepts two sets of arguments:
+* rumboot-flashrom arguments. They are needed to configure port, reset, find & upload stub etc.
+* flashrom options. These are passed directly to flashrom utility. They do all the work.
+
+In the example below
+
+```
+rumboot-flashrom -p /dev/ttyUSB1 -c basis -- --read img.bin
+```
+
+* _-p /dev/ttyUSB1 -c basis_ are rumboot-flashrom's options. 
+* -- is the separator
+* _--read img.bin_ are the flashrom options
+
+```
+usage: rumboot-flashrom [-h] [-l LOG] [-p port] [-b speed] [-v] -m memory
+                        [-z SPL_PATH] [-f FLASHROM_PATH] -c CHIP_ID
+                        [-r method] [--apc-ip APC_IP] [--apc-user APC_USER]
+                        [--apc-pass APC_PASS] [--apc-port APC_PORT] [-S value]
+                        [-P value] [--pl2303-invert]
+                        ...
+
+rumboot-flashrom 0.9.1 - flashrom wrapper tool
+
+(C) 2018-2020 Andrew Andrianov <andrew@ncrmnt.org>, RC Module
+https://module.ru
+https://github.com/RC-MODULE
+
+positional arguments:
+  remaining             Flashrom arguments
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -v, --verbose         Print serial debug messages during preload phase
+  -m memory, --memory memory
+                        SPI bus to use. Names match '-m help' of rumboot-
+                        xflash
+  -z SPL_PATH, --spl-path SPL_PATH
+                        Path for SPL writers (Debug only)
+  -f FLASHROM_PATH, --flashrom-path FLASHROM_PATH
+                        Path to flashrom binary
+  -c CHIP_ID, --chip_id CHIP_ID
+                        Chip Id (numeric or name)
+
+Serial Terminal Settings:
+  -l LOG, --log LOG     Log terminal output to file
+  -p port, --port port  Serial port to use
+  -b speed, --baud speed
+                        Serial line speed
+
+Reset Sequence options:
+  These options control how the target board will be reset
+
+  -r method, --reset method
+                        Reset sequence to use (apc base mt12505 pl2303
+                        powerhub)
+
+apc reset sequence options:
+  --apc-ip APC_IP       APC IP Address/hostname
+  --apc-user APC_USER   APC IP username
+  --apc-pass APC_PASS   APC IP username
+  --apc-port APC_PORT   APC Power port
+
+mt12505 reset sequence options:
+  -S value, --ft232-serial value
+                        FT232 serial number for MT125.05
+
+pl2303 reset sequence options:
+  -P value, --pl2303-port value
+                        PL2303 physical port (for -P of pl2303gpio)
+  --pl2303-invert       Invert all pl2303 gpio signals
+
+```
+#### Typical Usage
+##### Detect attached SPI flash
+
+```
+~# rumboot-flashrom -c basis -m spi0-gpio0_5-cs 
+Detected chip:    basis (1888ВС048)
+SPL               rumboot-basis-PostProduction-serprog-spi0-gpio0_5-cs.bin
+Reset method:     None
+Baudrate:         115200 bps
+Port:             socket://10.7.11.59:10001
+FlashRom:         /usr/sbin/flashrom
+FlashRom args:    
+Sending stream: 100%|████████████████████████| 10.6k/10.6k [00:16<00:00, 659B/s]
+Serprog stub ready!
+Trying port 20000
+Invoking flashrom: /usr/sbin/flashrom -p serprog:ip=127.0.0.1:20000 
+flashrom  on Linux 4.19.0-5-amd64 (x86_64)
+flashrom is free software, get the source code at https://flashrom.org
+
+Using clock_gettime for delay loops (clk_id: 1, resolution: 1ns).
+serprog: Programmer name is "rumboot:basis"
+serprog: requested mapping AT45CS1282 is incompatible: 0x1080000 bytes at 0x00000000fef80000.
+Found Winbond flash chip "W25Q32.V" (4096 kB, SPI) on serprog.
+No operations were specified.
+```
+
+##### Write data to SPI flash
+WARNING: The size of the image file must always match the size of SPI flash. This a flashrom limitation.
+
+```
+~# rumboot-flashrom -m spi0-gpio0_5-cs  -c basis -- --write img.bin
+```
+
+##### Read data from SPI flash
+
+```
+~# rumboot-flashrom -m spi0-gpio0_5-cs  -c basis -- --read img.bin
+```
+
+##### For more advanced usage please refer to flashrom docs
+
+https://flashrom.org/Flashrom
 
 
 
