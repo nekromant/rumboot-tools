@@ -12,15 +12,19 @@ import serial
 import serial.rfc2217
 import socket
 import select
+import signal
 
 class redirector(threading.Thread):
     alive = False
     fatal = False
+    callback = None
 
-    def configure(self, server, serial, socket):
+    def configure(self, serial, socket):
         self.serial = serial
         self.socket = socket
-        self.server = server
+
+    def set_callback(self, cb):
+        self.callback = cb
 
     def cleanup(self, fatal):
         self.socket.close()
@@ -28,9 +32,11 @@ class redirector(threading.Thread):
         self.alive = False
         if not fatal:
             print("Client disconnected")
-            self.server.serve_once()
         else:
             print("Something bad happened. Stopping daemon")
+        if self.callback != None:
+            print("calling", fatal)
+            self.callback(fatal)
 
     def run(self):
         self.alive = True
@@ -86,6 +92,10 @@ class redirector(threading.Thread):
         except ConnectionResetError:
             self.cleanup(False)
             return
+        except OSError:
+            self.socket.close()
+            self.cleanup(True)
+            raise
         except Exception:
             self.cleanup(False)
             raise
@@ -93,6 +103,9 @@ class redirector(threading.Thread):
 class server:
     client_queue = [ ]
     worker = None
+    #Graveyard of zombies
+    graveyard = []
+    pid = os.getpid()
 
     def __init__(self, sport, baud, tcplisten):
         print("Starting server", sport, baud, tcplisten)
@@ -105,14 +118,25 @@ class server:
         self.rst = rst
 
     def serve_once(self):
+        def the_callback(fatal = False):
+            if not fatal:
+                self.serve_once()
+            else:
+                print("Interrupting main thread")
+                os.kill(self.pid, signal.SIGINT)
+
         if self.worker != None:
             if self.worker.alive:
                 return #We're busy here
+            else:
+                #Put our dead worker to the graveyard
+                self.graveyard = self.graveyard + [ self.worker ]
 
         try:
             client = self.client_queue.pop(0)
             self.worker = redirector()
-            self.worker.configure(self, self.serial, client["connection"])
+            self.worker.configure(self.serial, client["connection"])
+            self.worker.set_callback(the_callback)
             self.serial.reset_input_buffer()
             self.serial.reset_output_buffer()
             self.rst.resetToHost()
@@ -140,6 +164,19 @@ class server:
         if self.worker == None:
             self.serve_once()
 
+
+    def kill_zombies(self):
+        #Kill all zombies.
+        for z in self.graveyard:
+            z.join()
+        self.graveyard = [ ]                    
+
+    def cleanup(self):
+        if self.worker:
+            self.worker.join()
+        self.worker.socket.close()
+        self.sock.close()
+
     def loop(self):
         self.rst.power(0) # Power off board
         try:
@@ -153,6 +190,8 @@ class server:
                 print('waiting for a connection')
                 connection, client_address = self.sock.accept()
                 self.queue_client(connection, client_address)
+                self.kill_zombies()
+        except:
+            self.cleanup()
         finally:
-            print('Cleaning up...')
-            self.sock.close()
+            self.cleanup()
