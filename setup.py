@@ -24,6 +24,7 @@ setup(
             "rumboot-xflash = rumboot_xflash.frontend:cli",
             "rumboot-daemon = rumboot_daemon.frontend:cli",
             "rumboot-combine = rumboot_combine.frontend:cli",
+            "rumboot-flashrom = rumboot_flashrom.frontend:cli",
         ],
     },
     include_package_data=True,
