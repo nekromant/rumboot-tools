@@ -6,9 +6,23 @@ This repository contains several tools
 
 * _rumboot-packimage_ - Adds/prints/updates checksums in image files
 * _rumboot-xrun_ - Directly executes images via serial line or network
-* _rumboot-xflash_ - Write on-board memories via serial line or network
-* _rumboot-daemon_ - Provides network access to different boards
+* _rumboot-xflash_ - Write on-board memories via serial line or network (Simple interface)
+* _rumboot-flashrom_ - Wrapper around flashrom tool for advanced SPI flash programming
+* _rumboot-daemon_ - Provides network shared access to different boards
 * _rumboot-combine_ - Combines several images into one
+
+
+Sounds like too much? How you are you expected to use them in your app? 
+
+* Use _rumboot-packimage_ to add valid checksums to your binaries, so that bootrom would accept them
+
+* Run them via UART using _rumboot-xrun_ (or your favourite jtag tool), flash them via _rumboot-xflash_
+
+* If rumboot-xflash doesn't work with your SPI Flash chip, check out _rumboot-flashrom_ instead
+
+* Have only one board for a few developers? Want easy remote access during COVID-19 epidemic? Check out _rumboot-daemon_
+
+* Want to combine a set of tests into one image? Check out the _rumboot-combine_ tool.
 
 ## Supported BootRoms
 
