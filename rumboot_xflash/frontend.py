@@ -39,13 +39,23 @@ def cli():
 
     opts = parser.parse_args()
 
-    #Open files, rebuild if needed
-    opts.file[0], dumps = helper.process_files(opts.file[0], False)
-
     c = helper.detect_chip_type(opts, chips, formats)
     if (c == None):
         return 1;
- 
+
+    mem = opts.memory[0]
+    if not mem:
+        return 1
+
+    if mem == "help":
+        for mem,spl in c.memories.items():
+            print("Memory %16s: %s" % (mem, spl))
+        return 1
+
+
+    #Open files, rebuild if needed
+    opts.file[0], dumps = helper.process_files(opts.file[0], False)
+
     print("Detected chip:    %s (%s)" % (c.name, c.part))
     if c.warning != None:
         print("    --- WARNING ---")
@@ -66,14 +76,6 @@ def cli():
     
     term.verbose = opts.verbose
 
-    mem = opts.memory[0]
-    if not mem:
-        return 1
-
-    if mem == "help":
-        for mem,spl in c.memories.items():
-            print("Memory %16s: %s" % (mem, spl))
-        return 1
 
     try:
         spl = c.memories[mem]

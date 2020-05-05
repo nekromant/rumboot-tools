@@ -72,7 +72,6 @@ class arghelper():
         group = parser.add_argument_group('File Handling')
         parser.add_argument('-f','--file',action='append',nargs=1,
                         type=str,
-                        required=need_file,
                         help="Image file (may be specified multiple times)")
         group.add_argument("-c", "--chip_id",
                         help="Override chip id (by name or chip_id)",
@@ -111,6 +110,13 @@ class arghelper():
                 g = parser.add_argument_group(name + " reset sequence options")
                 sequence.add_argparse_options(g)
         
+    def detect_terminal_options(self, opts, chip):
+        # Now, let's update default options, if needed
+        if opts.port == None:
+            opts.port = [ self.get_default_port(chip) ]
+        if opts.baud == None:
+            opts.baud = [ self.get_default_baud(chip) ]
+
 
     def detect_chip_type(self, opts, chips, formats):
         c = None
@@ -127,10 +133,5 @@ class arghelper():
             print("ERROR: Failed to auto-detect chip type")
             print("HINT: Specify a file (-f) or set chip id manually (-c)")
 
-        # Now, let's update default options, if needed
-        if opts.port == None:
-            opts.port = [ self.get_default_port(c) ]
-        if opts.baud == None:
-            opts.baud = [ self.get_default_baud(c) ]
-        
+        self.detect_terminal_options(opts, c)
         return c
