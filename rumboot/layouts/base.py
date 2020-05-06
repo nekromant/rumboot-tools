@@ -25,6 +25,9 @@ class basic:
 
     def close(self):
         self.fd.close()
+        #Avoid exception on windows 
+        if os.path.exists(self.outfile):
+            os.remove(self.outfile)
         os.rename(self.outfile + ".appending", self.outfile)
 
     def describe(self):
