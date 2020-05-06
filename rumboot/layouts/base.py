@@ -1,5 +1,6 @@
 import sys
 import os
+import tempfile
 class basic:
     name = "basic"
     align = 1
@@ -9,7 +10,7 @@ class basic:
         align = int(align)
         self.align = align
         self.outfile = outfile
-        self.fd = open(outfile, "wb+")
+        self.fd = open(outfile + ".appending", "wb+")
 
     def append(self, infile):
         opos = self.fd.tell()
@@ -24,6 +25,7 @@ class basic:
 
     def close(self):
         self.fd.close()
+        os.rename(self.outfile + ".appending", self.outfile)
 
     def describe(self):
         return self.name + "/" + str(self.align) + " bytes"
@@ -39,7 +41,7 @@ class SD(basic):
     def __init__(self, outfile, align):
         super().__init__(outfile, 512)
 
-class INI(basic):
+class ini(basic):
     name = "ini"
     first = True
     def __init__(self, outfile, align):
@@ -48,8 +50,8 @@ class INI(basic):
     def append(self, infile):
         super().append(infile)
 
-        if not first:
+        if not self.first:
             self.fd.write(b'\00')
 
-        first = False
+        self.first = False
 
