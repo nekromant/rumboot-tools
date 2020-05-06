@@ -655,6 +655,146 @@ WARNING: The size of the image file must always match the size of SPI flash. Thi
 https://flashrom.org/Flashrom
 
 
+### rumboot-demon
+#### Description
+
+The idea behind _rumboot-daemon_ is to allow access allow several apps/users to work with the same board over network. Basically it's a serial-to-tcp bridge that also handles board resetting and queues users for access to the board. 
+
+WARNING: rumboot-daemon lacks ANY kind of authorization or encryption and is supposed to be used in secure networks. Please, DO NOT EXPOSE IT TO THE INTERNET!!! You have been warned.
+
+_rumboot-daemon_ can theoretically work without the _-r_ option, prompting the user to reset the board, but
+in real life this is pretty much useless. 
+
+See Typical Usage section for examples
+
+When a user connects to rumboot-daemon, the tool powers on and resets the board, preloads it with any files specified on the commandline (if any) and redirects all serial traffic there. When the user disconnects, the board is powered off. If a second user connects when the board is in use, he/she would be placed in a virtual queue and wait until the board is available.
+
+
+#### Options 
+```
+usage: rumboot-daemon [-h] [-l LOG] [-p port] [-b speed] [-f FILE]
+                      [-c chip_id] [-r method] [--apc-ip APC_IP]
+                      [--apc-user APC_USER] [--apc-pass APC_PASS]
+                      [--apc-port APC_PORT] [-S value] [-P value]
+                      [--pl2303-invert] [-L listen]
+
+rumboot-daemon 0.9.1 - Collaborative board access daemon
+
+(C) 2018-2020 Andrew Andrianov <andrew@ncrmnt.org>, RC Module
+https://module.ru
+https://github.com/RC-MODULE
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -f FILE, --file FILE  Image file (may be specified multiple times)
+  -L listen, --listen listen
+                        Specify address:port to listen (default 0.0.0.0:10000)
+
+Serial Terminal Settings:
+  -l LOG, --log LOG     Log terminal output to file
+  -p port, --port port  Serial port to use
+  -b speed, --baud speed
+                        Serial line speed
+
+File Handling:
+  -c chip_id, --chip_id chip_id
+                        Override chip id (by name or chip_id)
+
+Reset Sequence options:
+  These options control how the target board will be reset
+
+  -r method, --reset method
+                        Reset sequence to use (apc base mt12505 pl2303
+                        powerhub)
+
+apc reset sequence options:
+  --apc-ip APC_IP       APC IP Address/hostname
+  --apc-user APC_USER   APC IP username
+  --apc-pass APC_PASS   APC IP username
+  --apc-port APC_PORT   APC Power port
+
+mt12505 reset sequence options:
+  -S value, --ft232-serial value
+                        FT232 serial number for MT125.05
+
+pl2303 reset sequence options:
+  -P value, --pl2303-port value
+                        PL2303 physical port (for -P of pl2303gpio)
+  --pl2303-invert       Invert all pl2303 gpio signals
+```
+
+
+#### Typical Usage
+##### Manually start the daemon with typical settings for 'basis' platform
+
+```
+~$ rumboot-daemon -c basis -p /dev/ttyUSB0 -r pl2303
+Detected chip:    basis (1888ВС048)
+Reset method:     pl2303
+Baudrate:         115200 bps
+Serial Port:      /dev/ttyUSB0
+Listen address:   ['0.0.0.0:10000']
+Please, power-cycle board
+waiting for a connection
+```
+
+Once the daemon is working, you can connect to it on port 10000 with rumboot-xrun:
+
+```
+rumboot-xrun -f rumboot-basis-PostProduction-spl-ok.bin -p socket://192.168.10.1:10000
+```
+
+N.B. Remember to specify the correct IP address.
+
+##### Start the daemon on boot using systemd, listen on a different port
+
+This will require
+Create /etc/systemd/system/rumboot-daemon.service with the following contents
+
+```ini
+[Unit]
+Description=Rumboot Daemon 
+After=network.target
+
+[Service]
+User=developer
+Group=codemonkeys
+Type=simple
+ExecStart=/home/developer/.local/bin/rumboot-daemon -r pl2303 -p /dev/ttyUSB0 -b 115200 -L 0.0.0.0:10001
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Adjust the script for your desired User and Group
+
+Next enable and start the daemon
+
+```
+  ~# systemctl enable rumboot-daemon
+  ~# systemctl start rumboot-daemon
+```
+
+##### Preloading an application before giving the user access to the daemon
+
+
+Sometimes it's useful to initialize some external memories (e.g. ddr) or execute an application before 
+allowing user access to the board. You can specify one or several applications using the -f flag
+
+```
+~$ rumboot-daemon -c basis -p /dev/ttyUSB0 -r pl2303 -f ddr_init.bin
+Detected chip:    basis (1888ВС048)
+Reset method:     pl2303
+Baudrate:         115200 bps
+Serial Port:      /dev/ttyUSB0
+Listen address:   ['0.0.0.0:10000']
+Please, power-cycle board
+waiting for a connection
+```
+
+The ddr_init.bin in the example above should initialize the ddr memory and return to bootrom with code 0. _rumboot-daemon_ will send it to the board and only then redirect serial stream to the connected user. 
+ 
 
 # Appendix A. Board reset methods
 
@@ -674,6 +814,75 @@ rumboot-xrun, rumboot-xflash and rumboot-daemon all accept the _-r_ option that 
 ```
 
 If you wish to implement your own reset method - look into rumboot/resetSeq
+
+
+### rumboot-combine
+#### Description
+
+_rumboot-combine_ is a simple to tool to compose a chain of several image file. Since Rumboot V2 the rom loader can load a chain of applications, one after another from flash media. Different boot sources require different size alignment, so this app can handle all that. For basis this tool is also used to append the .ini configuration file to the image.
+
+#### Options
+
+```
+~# rumboot-combine --help
+usage: rumboot-combine [-h] -i INPUT -o OUTPUT [-a ALIGN]
+
+rumboot-combine 0.9.1 - RumBoot Image Merger Tool
+
+(C) 2018-2020 Andrew Andrianov <andrew@ncrmnt.org>, RC Module
+https://module.ru
+https://github.com/RC-MODULE
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -i INPUT, --input INPUT
+                        Input image file (may be specified several times)
+  -o OUTPUT, --output OUTPUT
+                        Output image
+  -a ALIGN, --align ALIGN
+                        Set alignment pattern of images in bytes or via
+                        keyword (SD, physmap, ini)
+```
+
+
+#### Typical usage
+##### Combine several apps into SPI flash image
+
+
+```
+  rumboot-combine -a spi -i ddr_init.bin -i memorytest.bin -i uboot.bin -o spiflash.bin
+```
+
+or 
+
+```
+  rumboot-combine -a 1 -i ddr_init.bin -i memorytest.bin -i uboot.bin -o spiflash.bin
+```
+
+##### Combine several apps into SD flash image
+
+```
+  rumboot-combine -a SD -i ddr_init.bin -i memorytest.bin -i uboot.bin -o spiflash.bin
+```
+
+##### Combine several apps into NOR flash image
+
+```
+  rumboot-combine -a physmap -i ddr_init.bin -i memorytest.bin -i uboot.bin -o spiflash.bin
+```
+
+##### Append ini to a chip config tool
+
+```
+  rumboot-combine -a ini -i tool.bin -i config.ini -o runme.bin
+```
+
+##### Combine images with custom alignment
+
+```
+  rumboot-combine -a 32 -i 1.bin -i 2.bin -o all.bin
+```
+
 
 ## Appendix B. Adding Rumboot V1 header to your app
 
