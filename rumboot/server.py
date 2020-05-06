@@ -106,16 +106,21 @@ class server:
     #Graveyard of zombies
     graveyard = []
     pid = os.getpid()
+    binaries = []
 
-    def __init__(self, sport, baud, tcplisten):
-        print("Starting server", sport, baud, tcplisten)
-        self.serial = serial.Serial(sport, baud, timeout=5)
+    def __init__(self, terminal, tcplisten):
+        self.serial = terminal.serial()
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         addr, port = tcplisten.split(":")
         self.sock.bind((addr, int(port)))
+        self.term = terminal
+        terminal.chip.skipsync = True
 
     def set_reset_seq(self, rst):
         self.rst = rst
+
+    def preload_binaries(self, files):
+        self.binaries = files
 
     def serve_once(self):
         def the_callback(fatal = False):
@@ -134,12 +139,29 @@ class server:
 
         try:
             client = self.client_queue.pop(0)
+            # Reset if using a nested damon
+            self.term.reopen()
+            self.serial = self.term.serial()
+            # Reset if using a local resetter
+            self.rst.resetToHost()
+            if self.binaries:
+                text = b"U\nrumboot-daemon: Preloading your board board...\n\n\n"
+                client["connection"].sendall(text)
+
+                print(self.binaries)
+                self.term.add_binaries(self.binaries)
+                self.term.loop(break_after_uploads=True)
+
             self.worker = redirector()
             self.worker.configure(self.serial, client["connection"])
             self.worker.set_callback(the_callback)
-            self.serial.reset_input_buffer()
-            self.serial.reset_output_buffer()
-            self.rst.resetToHost()
+
+            # We can't do it, if we're working remotely
+            # Or somebody resets us manually
+#            if type(self.rst).__name__ != "base":
+#                self.serial.reset_input_buffer()
+#                self.serial.reset_output_buffer()
+            
             self.worker.start()
             print("Now serving client: ", client["dns"])
         except(IndexError):
@@ -158,8 +180,8 @@ class server:
         if self.worker != None:
             pos = pos + 1
 
-        text = "Urumboot-daemon: You are client number %d in queue, please stand by\n\n\n" % pos
-        connection.sendall(text.encode())
+        text = b"U\nrumboot-daemon: You are client number %d in queue, please stand by\n\n\n" % pos
+        connection.sendall(text)
 
         if self.worker == None:
             self.serve_once()

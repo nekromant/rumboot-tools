@@ -20,11 +20,8 @@ def cli():
                                     rumboot.__copyright__)
     helper = arghelper()
     helper.add_terminal_opts(parser)
+    helper.add_file_handling_opts(parser)
     helper.add_resetseq_options(parser, resets)
-    parser.add_argument("-c", "--chip_id",
-                        help="Specify target chip id (by name or chip_id)",
-                        nargs=1, metavar=('chip_id'),
-                        required=False)   
     parser.add_argument("-L", "--listen",
                         help="Specify address:port to listen (default 0.0.0.0:10000)",
                         nargs=1, metavar=('listen'), default=["0.0.0.0:10000"],
@@ -33,7 +30,8 @@ def cli():
 
     c = helper.detect_chip_type(opts, chips, formats)
     if c == None:
-        c = chips["chipBasis"]
+        c = chips["basis"]
+        return 1
         
     print("Detected chip:    %s (%s)" % (c.name, c.part))
     if c == None:
@@ -53,11 +51,12 @@ def cli():
     print("Listen address:   %s" % opts.listen)
     reset.resetToHost()
 
-    #term = terminal(opts.port[0], opts.baud[0])
-    srv = server(opts.port[0], opts.baud[0], opts.listen[0])
+    term = terminal(opts.port[0], opts.baud[0])
+    srv = server(term, opts.listen[0])
     srv.set_reset_seq(reset)
+
     if "file" in opts:
-        srv.add_binaries(opts.file)
+        srv.preload_binaries(opts.file)
 
     return srv.loop()
     

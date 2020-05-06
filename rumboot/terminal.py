@@ -22,13 +22,27 @@ class terminal:
         dumps = {}
         curbin = "bootrom"
         progress = tqdm(disable=True)
+        ser = None
 
         def __init__(self, port, speed):
             self.port = port
+            self.speed = speed
+            self.reopen()
+
+        
+
+        def serial(self):
+            return self.ser
+
+        def reopen(self):
+            if self.ser != None:
+                self.ser.close()
+                self.ser = None
+
             if self.port.find("://") < 0:
-                self.ser = serial.Serial(port, speed, timeout=5)
+                self.ser = serial.Serial(self.port, self.speed, timeout=5)
             else:
-                self.ser = serial.serial_for_url(port, timeout=5)
+                self.ser = serial.serial_for_url(self.port, timeout=5)
 
             def getc(size, timeout=10):
                 ret = self.ser.read(size)
@@ -37,7 +51,8 @@ class terminal:
                 return self.ser.write(data)  # note that this ignores the timeout
             self.modem = XMODEM(getc, putc)
             self.opf = OpFactory("rumboot.ops", self) 
-        
+
+
         def set_chip(self, chip):
             self.chip = chip
 
