@@ -22,6 +22,7 @@ class basic:
         infile.seek(0)
         data = infile.read()
         self.fd.write(data)
+        infile.close()
 
     def close(self):
         self.fd.close()
