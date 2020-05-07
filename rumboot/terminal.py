@@ -10,8 +10,10 @@ from rumboot.OpFactory import OpFactory
 from rumboot.chips.base import chipBase
 import socket
 import select
-import tty
-import termios
+
+if sys.platform != "win32":
+	import tty
+	import termios
 
 class terminal:
         verbose=True
