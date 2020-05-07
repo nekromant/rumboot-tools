@@ -4,6 +4,7 @@ from rumboot.resetSeq import ResetSeqFactory
 from rumboot.cmdline import arghelper
 from rumboot.terminal import terminal
 import os
+import sys
 import argparse
 import rumboot_xrun
 import rumboot
@@ -22,11 +23,11 @@ def cli():
     helper.add_file_handling_opts(parser, True)
     helper.add_terminal_opts(parser)
     helper.add_resetseq_options(parser, resets)
-    plus = parser.add_argument_group("Plusargs parser options", 
+    plus = parser.add_argument_group("Plusargs parser options",
         """
-        rumboot-xrun can parse plusargs (similar to verilog simulator) 
-        and use them for runtime file uploads. This option is intended 
-        to be used for 
+        rumboot-xrun can parse plusargs (similar to verilog simulator)
+        and use them for runtime file uploads. This option is intended
+        to be used for
         """)
     plus.add_argument('-A', '--plusargs', nargs='*')
     parser.add_argument("-R", "--rebuild",
@@ -34,12 +35,14 @@ def cli():
                         action="store_true",
                         default=False,
                         required=False)
-    
+
     parser.add_argument("-I", '--stdin',
                         help="Use stdin redirection to tty",
                         action="store_true",
                         default=False,
                         required=False)
+    if len(sys.argv) == 1:
+        sys.argv = sys.argv + ["--help"]
 
     opts = parser.parse_args()
 
@@ -47,7 +50,7 @@ def cli():
     opts.file[0], dumps = helper.process_files(opts.file[0], opts.rebuild)
 
     dump_path = os.path.dirname(__file__) + "/romdumps/"
-    
+
     plusargs = {}
     if opts.plusargs:
         for a in opts.plusargs:
@@ -56,13 +59,13 @@ def cli():
                 plusargs[ret[0]] = ret[1]
                 continue
             ret = parse("+{}", a)
-            if ret: 
-                plusargs[ret[0]] = True                
+            if ret:
+                plusargs[ret[0]] = True
 
     c = helper.detect_chip_type(opts, chips, formats)
     if c == None:
         return 1
-        
+
     print("Detected chip:    %s (%s)" % (c.name, c.part))
     if c == None:
         print("ERROR: Failed to auto-detect chip type")
@@ -91,4 +94,3 @@ def cli():
     term.add_binaries(opts.file)
     term.add_dumps(dumps)
     return term.loop(opts.stdin)
-    
