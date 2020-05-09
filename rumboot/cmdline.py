@@ -1,7 +1,11 @@
 import argparse
 import os
 import sys
-import yaml
+
+try:
+    import yaml
+except:
+    yaml = None
 
 class arghelper():
     configs = [
@@ -36,7 +40,7 @@ class arghelper():
 
     def __init__(self):
         for conf in self.configs:
-            if (os.path.exists(conf)):
+            if (yaml != None and os.path.exists(conf)):
                 self.load_config(conf)
                 break
 
