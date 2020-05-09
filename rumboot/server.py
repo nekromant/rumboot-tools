@@ -169,7 +169,10 @@ class server:
             self.rst.power(0) # Power off board
 
     def queue_client(self, connection, client_address):
-        dns = socket.gethostbyaddr(client_address[0])
+        try:
+            dns = socket.gethostbyaddr(client_address[0])
+        except:
+            dns = "<unknown>"
         print("Incoming connection: ", dns)
         client = { }
         client["connection"] = connection
