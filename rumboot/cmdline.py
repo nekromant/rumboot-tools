@@ -18,7 +18,7 @@ class arghelper():
 
     def get_default_port(self, chip):
         try:
-            ret = self.config['xrun']['chips'][chip.name]["port"]
+            ret = self.config['xrun']['chips'][chip.__name__]["port"]
             return ret
         except:
             pass
@@ -39,12 +39,16 @@ class arghelper():
             return 115200
 
     def __init__(self):
+        if yaml == None:
+            print("[W] No yaml, disabling config files. Install with 'pip install yaml' to fix")
+            return
         for conf in self.configs:
-            if (yaml != None and os.path.exists(conf)):
+            if (os.path.exists(conf)):
                 self.load_config(conf)
                 break
 
     def load_config(self, conf):
+        print("[!] Using configuration file: " + conf)
         with open(conf, 'r') as stream:
             try:
                 self.config = yaml.safe_load(stream)
