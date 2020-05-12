@@ -74,7 +74,7 @@ def cli():
         opts.baud = [ c.baudrate ]
 
     reset = resets[opts.reset[0]](opts)
-    term = terminal(opts.port[0], opts.baud[0])
+    term = terminal(opts.port[0], opts.baud[0], opts.k1)
     term.set_chip(c)
     term.plusargs = plusargs
 

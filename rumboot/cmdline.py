@@ -43,6 +43,7 @@ class arghelper():
             print("[W] No yaml, disabling config files. Install with 'pip install yaml' to fix")
             return
         for conf in self.configs:
+            conf = os.path.expanduser(conf)
             if (os.path.exists(conf)):
                 self.load_config(conf)
                 break
@@ -84,8 +85,7 @@ class arghelper():
         group.add_argument("-c", "--chip_id",
                         help="Override chip id (by name or chip_id)",
                         nargs=1, metavar=('chip_id'),
-                        required=False)        
-    
+                        required=False)            
     def add_terminal_opts(self, parser):
         group = parser.add_argument_group('Serial Terminal Settings')
         group.add_argument("-l", "--log",
@@ -100,6 +100,11 @@ class arghelper():
                         help="Serial line speed",
                         type=int,
                         nargs=1, metavar=('speed'),
+                        required=False)
+        group.add_argument("-1", "--k1",
+                        help="Prefer xmodem-1k protocol for all uploads",
+                        action='store_true',
+                        default=False,
                         required=False)
 
     def add_resetseq_options(self, parser, rfactory):

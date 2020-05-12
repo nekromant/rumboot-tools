@@ -51,7 +51,7 @@ def cli():
     print("Listen address:   %s" % opts.listen)
     reset.resetToHost()
 
-    term = terminal(opts.port[0], opts.baud[0])
+    term = terminal(opts.port[0], opts.baud[0], opts.k1)
     srv = server(term, opts.listen[0])
     srv.set_reset_seq(reset)
 

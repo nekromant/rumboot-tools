@@ -25,13 +25,14 @@ class terminal:
         curbin = "bootrom"
         progress = tqdm(disable=True)
         ser = None
+        mode = "xmodem"
 
-        def __init__(self, port, speed):
+        def __init__(self, port, speed, use_1k = False):
             self.port = port
             self.speed = speed
+            if use_1k:
+                self.mode = "xmodem1k"
             self.reopen()
-
-        
 
         def serial(self):
             return self.ser
@@ -51,7 +52,7 @@ class terminal:
                 return ret or None
             def putc(data, timeout=10):
                 return self.ser.write(data)  # note that this ignores the timeout
-            self.modem = XMODEM(getc, putc)
+            self.modem = XMODEM(getc, putc, mode=self.mode)
             self.opf = OpFactory("rumboot.ops", self) 
 
 
