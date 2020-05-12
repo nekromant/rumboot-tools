@@ -3,9 +3,11 @@ class chipBase:
     part="part"
     chip_id=0
     chip_rev=0
+    gdb = "gdb"
     skipsync=False
     baudrate=115200
     warning=None
     memories = {}
     dumps = {}
+    
 

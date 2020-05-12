@@ -4,12 +4,14 @@
 This repository is home to a set of tools to create, update and run rumboot v1, v2 and other images
 This repository contains several tools
 
+
 * _rumboot-packimage_ - Adds/prints/updates checksums in image files
 * _rumboot-xrun_ - Directly executes images via serial line or network
+* _rumboot-gdb_ - Debug your binaries, even without JTAG
 * _rumboot-xflash_ - Write on-board memories via serial line or network (Simple interface)
 * _rumboot-flashrom_ - Wrapper around flashrom tool for advanced SPI flash programming
 * _rumboot-daemon_ - Provides network shared access to different boards
-* _rumboot-combine_ - Combines several images into one
+
 
 
 Sounds like too much? How you are you expected to use them in your app? 
@@ -274,9 +276,7 @@ The configuration file contains default ports and speeds for all known chip ids.
 If no configuration file can be found in any location, the default serial port will be /dev/ttyUSB0. Default baudrate will be taken from the internal chip database and should match most typical settings
 
 
-
-
-#### Typical uses
+#### Typical usage
 ##### Execute a file
 
 ```
@@ -382,6 +382,112 @@ The -R options convenience option invokes automatically _cmake --build example.a
 ```
 ```
 
+### rumboot-gdb
+#### Description
+
+This tool uploads gdb stub to the target board and starts _gdb_ or _gdbgui_ for debugging. The board is reset if necessary. The stub provides easy access to debugging even without using JTAG. Unlike most tools, this tool accepts ELF binaries, not .bin files. For debugging you app should be compiled with _-gdwarf-2_ option.
+
+Limitations:
+
+- GDB stub occupies some of the internal memory and MUST own some of the exception vectors. If your apps uses IRQs, see notes below
+- At the moment only _powerpc_ is supported (mm7705, oi10)
+- No SMP debugging possible
+- Printf's in your app should either be disabled, or redirected via a gdbmon syscall
+- Since getting Chip Id from supplied elf is difficult, user should always specify target chip id manually
+- GDB 'run' command doesn't work correctly and may crash gdb. Use 'load' and 'continue' to start the application
+
+#### Options 
+```
+usage: rumboot-gdb [-h] [-l LOG] [-p port] [-b speed] [-v] [-z SPL_PATH] [-L]
+                   [-f FILE] [-e] [-R] [--debug-remote DEBUG_REMOTE]
+                   [-g GDB_PATH] [-G] -c CHIP_ID [-r method] [--apc-ip APC_IP]
+                   [--apc-user APC_USER] [--apc-pass APC_PASS]
+                   [--apc-port APC_PORT] [-S value] [-P value]
+                   [--pl2303-invert]
+                   ...
+
+rumboot-gdb 0.9.1 - Debugger launcher tool
+
+(C) 2018-2020 Andrew Andrianov <andrew@ncrmnt.org>, RC Module
+https://module.ru
+https://github.com/RC-MODULE
+
+positional arguments:
+  remaining             Extra gdb arguments (e.g. filename)
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -v, --verbose         Print serial debug messages during preload phase
+  -z SPL_PATH, --spl-path SPL_PATH
+                        Path for SPL writers (Debug only)
+  -L, --load            Load binary on start
+  -f FILE, --file FILE  Application ELF file to debug
+  -e, --exec            Execute supplied binary on start (Implies --load)
+  -R, --rebuild         Attempt to rebuild binary
+  --debug-remote DEBUG_REMOTE
+                        Debug gdb<-->stub communications
+  -g GDB_PATH, --gdb-path GDB_PATH
+                        Path to flashrom binary
+  -G, --gdb-gui         Start GDB gui
+  -c CHIP_ID, --chip_id CHIP_ID
+                        Chip Id (numeric or name)
+
+Serial Terminal Settings:
+  -l LOG, --log LOG     Log terminal output to file
+  -p port, --port port  Serial port to use
+  -b speed, --baud speed
+                        Serial line speed
+
+Reset Sequence options:
+  These options control how the target board will be reset
+
+  -r method, --reset method
+                        Reset sequence to use (apc base mt12505 pl2303
+                        powerhub)
+
+apc reset sequence options:
+  --apc-ip APC_IP       APC IP Address/hostname
+  --apc-user APC_USER   APC IP username
+  --apc-pass APC_PASS   APC IP username
+  --apc-port APC_PORT   APC Power port
+
+mt12505 reset sequence options:
+  -S value, --ft232-serial value
+                        FT232 serial number for MT125.05
+
+pl2303 reset sequence options:
+  -P value, --pl2303-port value
+                        PL2303 physical port (for -P of pl2303gpio)
+  --pl2303-invert       Invert all pl2303 gpio signals
+```
+
+
+#### Typical usage
+##### Launch commandline gdb
+
+```
+  rumboot-gdb -c oi10 -f rumboot-oi10-PostProduction-simple-iram-hello
+```
+
+##### Rebuild the application file, then launch commandline gdb 
+```
+  rumboot-gdb -c oi10 -Rf rumboot-oi10-PostProduction-simple-iram-hello
+```
+
+##### Rebuild the application file, launch commandline gdb, load the file into memory
+```
+  rumboot-gdb -c oi10 -Rf rumboot-oi10-PostProduction-simple-iram-hello -L
+```
+
+##### Same as the above, but start with a graphical user interface (gdbgui)
+```
+  rumboot-gdb -c oi10 -Rf rumboot-oi10-PostProduction-simple-iram-hello -LG
+```
+
+##### Rebuild the application file, launch commandline gdb, load the file into memory and start it
+```
+  rumboot-gdb -c oi10 -Rf rumboot-oi10-PostProduction-simple-iram-hello -E
+```
 
 ### rumboot-xflash
 #### Description

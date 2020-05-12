@@ -1,2 +1,3 @@
 recursive-include rumboot_xflash/spl-tools *.bin
 recursive-include rumboot_xrun/romdumps *.dmp
+recursive-include rumboot_gdb/tools *.bin

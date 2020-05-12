@@ -51,7 +51,9 @@ class oi10(chipBase):
         "nor":  "rumboot-oi10-PostProduction-updater-nor-mt150.04.bin",
         "nor-bootrom":  "rumboot-oi10-PostProduction-updater-nor-mt150.04-brom.bin"
     }
+    stub = "rumboot-oi10-PostProduction-gdb-stub.bin"
     romdump = "oi10-v1.dmp"
+    gdb = "powerpc-rcm-elf-gdb"
 
 class bbp3(chipBase):
     part="1888ВС058"

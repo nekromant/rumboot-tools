@@ -13,7 +13,7 @@ setup(
     name = "rumboot-tools",
     version = rumboot.__version__,
     packages=find_packages(),
-    install_requires = ["pyserial", "pyft232", "parse", "xmodem", "tqdm", "pyyaml"],
+    install_requires = ["pyserial", "pyft232", "parse", "xmodem", "tqdm", "pyyaml", "gdbgui"],
     extras_require = {
         "usb": ["pyusb>=1.0.0"]
     },
@@ -25,6 +25,7 @@ setup(
             "rumboot-daemon = rumboot_daemon.frontend:cli",
             "rumboot-combine = rumboot_combine.frontend:cli",
             "rumboot-flashrom = rumboot_flashrom.frontend:cli",
+            "rumboot-gdb = rumboot_gdb.frontend:cli",
         ],
     },
     include_package_data=True,
