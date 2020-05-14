@@ -25,6 +25,7 @@ class ipgdb(threading.Thread):
         self.port = port
         self.args = args
         target = "target extended-remote 127.0.0.1:" + str(self.port)
+        self.add_command("set remotetimeout 10")
         self.add_command(target)
 
     def add_command(self, cmd):
@@ -95,8 +96,13 @@ def cli():
                         default=False,
                         required=False)
     parser.add_argument("--debug-remote",
-                        help="Debug gdb<-->stub communications",
-                        type=bool,
+                        help="Send 'set debug remote 1' to gdb for debugging",
+                        action='store_true',
+                        default=False,
+                        required=False)
+    parser.add_argument("--debug-serial",
+                        help="Send 'set debug serial 1' to gdb for debugging",
+                        action='store_true',
                         default=False,
                         required=False)
     parser.add_argument("-g", "--gdb-path",
@@ -140,7 +146,7 @@ def cli():
         opts.baud = [ c.baudrate ]
 
     reset = resets[opts.reset[0]](opts)
-    term = terminal(opts.port[0], opts.baud[0])
+    term = terminal(opts.port[0], opts.baud[0], opts.k1)
     term.verbose = opts.verbose
     term.set_chip(c)
     if opts.log:
@@ -180,6 +186,8 @@ def cli():
     term.loop(break_after_uploads=True)
     while True:
         s = term.ser.readline()
+        if opts.verbose:
+            print(s)
         if s.decode("utf-8", errors="replace").find("STUB READY!") != -1:
             break
     print("gdb-stub is ready for operations, starting gdb..")
@@ -209,6 +217,9 @@ def cli():
 
     if opts.debug_remote:
         flr.add_command("set debug remote 1")
+
+    if opts.debug_serial:
+        flr.add_command("set debug serial 1")
 
     if opts.file != None: 
         gdb_args = gdb_args + opts.file
