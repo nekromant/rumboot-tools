@@ -131,7 +131,7 @@ class terminal:
                             if select.select([self.ser], [], [], 0) == ([self.ser], [], []):
                                 sym = self.ser.read(1)
                                 line = line + sym
-                                sys.stdout.write(str(sym, 'utf-8'))
+                                sys.stdout.write(str(sym, 'utf-8', errors='replace'))
                                 sys.stdout.flush()
                             if select.select([sys.stdin], [], [], 0) == ([sys.stdin], [], []):
                                 insym = sys.stdin.read(1)
