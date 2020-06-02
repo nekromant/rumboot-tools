@@ -14,6 +14,8 @@ class xmodem(base):
         self.modem = term.modem
 
     def sync(self, syncword):
+            if self.term.replay:
+                return
             while True:
                 self.ser.write(syncword.encode())
                 while True:
@@ -30,6 +32,10 @@ class xmodem(base):
         return len
         
     def send(self, stream, desc="Sending stream"):
+        if self.term.replay:
+            print("xmodem: We're in replay mode, not actually sending anything")
+            return 123
+
         if type(stream) is str:
             stream = open(stream, 'rb')
 

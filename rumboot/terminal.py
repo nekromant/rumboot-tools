@@ -24,6 +24,7 @@ class terminal:
         dumps = {}
         curbin = "bootrom"
         progress = tqdm(disable=True)
+        replay = False
         ser = None
         mode = "xmodem"
 
@@ -42,7 +43,10 @@ class terminal:
                 self.ser.close()
                 self.ser = None
 
-            if self.port.find("://") < 0:
+            if self.port.find("file://") == 0:
+                self.ser = open(self.port.replace("file://",""), "rb+")
+                self.replay = True
+            elif self.port.find("://") < 0:
                 self.ser = serial.Serial(self.port, self.speed, timeout=5)
             else:
                 self.ser = serial.serial_for_url(self.port, timeout=5)
@@ -84,6 +88,8 @@ class terminal:
             return self.curbin
 
         def current_dump(self):
+            if self.curbin == "bootrom":
+                return self.dumps["rom"]
             if self.curbin.name in self.dumps:
                 return self.dumps[self.curbin.name]
 
@@ -138,7 +144,7 @@ class terminal:
                                 self.ser.write(insym.encode())
                     else:
                         line = self.ser.readline()
-                
+
                     if line == b'':
                         continue
                     try: 
