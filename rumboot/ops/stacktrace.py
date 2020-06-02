@@ -1,6 +1,6 @@
 from rumboot.ops.base import base
 from parse import parse
-
+import sys
 class stackframe(base):
     hidden = True
     dumps = {}
@@ -66,7 +66,7 @@ class stackframe(base):
             return False
         data = self.lookup(address)
         if data:
-            self.term.log("%s:  0x%x [%s(): %s]" % (name, address, data["function"], data["assembly"]))
+            self.term.log(False, "%s:  0x%x [%s(): %s]" % (name, address, data["function"], data["assembly"]))
             return True
 
     def action(self, trigger, result):
@@ -74,8 +74,11 @@ class stackframe(base):
             id = int(result[0])
             address = int(result[1], 16)
             data = self.lookup(address)
-            if data:
-                self.term.log("%d. 0x%.08x %30s(): %s" % (id, address, data["function"], data["assembly"]))
+            if data != None:
+                self.term.log(False, "%d. 0x%.08x %30s(): %s" % (id, address, data["function"], data["assembly"]))
+                return True
+            else:
+                self.term.log(False, "%d. 0x%.08x %30s(): INVALID OR MISSING FRAME" % (id, address, "???"))
                 return True
         if trigger == "mcsrr0":
             address = int(result[0].strip(), 16)
