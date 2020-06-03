@@ -41,6 +41,11 @@ def cli():
                         action="store_true",
                         default=False,
                         required=False)
+    parser.add_argument('--replay-no-exit',
+                        help="Do not exit on panics/rom returns when replaying logs (for batch analysis)",
+                        action="store_true",
+                        default=False,
+                        required=False)
     if len(sys.argv) == 1:
         sys.argv = sys.argv + ["--help"]
 
@@ -93,4 +98,5 @@ def cli():
     reset.resetToHost()
     term.add_binaries(opts.file)
     term.add_dumps(dumps)
+    term.replay_till_the_end = opts.replay_no_exit
     return term.loop(opts.stdin)

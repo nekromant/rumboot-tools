@@ -25,6 +25,7 @@ class terminal:
         curbin = "bootrom"
         progress = tqdm(disable=True)
         replay = False
+        replay_till_the_end = False
         ser = None
         mode = "xmodem"
 
@@ -121,6 +122,7 @@ class terminal:
                 c1 = c2
 
         def loop(self, use_stdin=False, break_after_uploads=False):
+            return_code = 0
             if use_stdin:
                 old_settings = termios.tcgetattr(sys.stdin)
             try:
@@ -155,7 +157,10 @@ class terminal:
 
                     ret = self.opf.handle_line(line, use_stdin)
                     if type(ret) is int:
-                        return ret
+                        if not self.replay_till_the_end:
+                            return ret
+                        else:
+                            return_code = ret
                     
                     if break_after_uploads and len(self.runlist) == 0:
                         break
@@ -167,6 +172,7 @@ class terminal:
             finally:
                 if use_stdin:
                     termios.tcsetattr(sys.stdin, termios.TCSADRAIN, old_settings)
+                    return return_code
  
         def xmodem_send(self, fl, chunksize=0, desc="Uploading file", welcome=b"boot: host: Hit 'X' for xmodem upload\n"):
             stream = open(fl, 'rb')
