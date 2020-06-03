@@ -108,7 +108,8 @@ class terminal:
 
 
         def sync(self):
-            self.ser.reset_input_buffer()
+            if not self.replay:
+                self.ser.reset_input_buffer()
             c1 = b'a'
             c2 = b'd'
             while True:
@@ -158,6 +159,11 @@ class terminal:
                     
                     if break_after_uploads and len(self.runlist) == 0:
                         break
+
+                    if self.replay:
+                        if (self.ser.tell() == os.fstat(self.ser.fileno()).st_size):
+                            print("== END OF LOG REACHED ==")
+                            break
             finally:
                 if use_stdin:
                     termios.tcsetattr(sys.stdin, termios.TCSADRAIN, old_settings)

@@ -33,10 +33,10 @@ class redd:
 
     def add_argparse_options(parser):
         parser.add_argument("--redd-port",
-                            help="Redd ttyACMx port ",
+                            help="Redd serial port (e.g. /dev/ttyACM1)",
                             default="/dev/ttyACM1",
                             required=False)
         parser.add_argument("--redd-relay-id",
-                            help="Relay Port (e.g. A)",
+                            help="Redd Relay Id (e.g. A)",
                             default="B",
                             required=False)
