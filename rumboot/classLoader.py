@@ -2,12 +2,25 @@ import inspect
 import pkgutil
 
 class classLoader():
+    iteratable = []
 
     def __init__(self, objectpath):
         self.opath = objectpath
         self.classes = dict()
         self.load(objectpath)
 
+    def __iter__(self):
+        iteratable = []
+        for key,value in self.classes.items():
+            self.iteratable.append(value)
+        return self
+
+    def __next__(self):
+        try:
+            ret = self.iteratable.pop()
+        except:
+            raise StopIteration      
+        return ret
 
     def __getitem__(self, key):
         if key in self.classes:

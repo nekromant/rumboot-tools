@@ -114,7 +114,7 @@ class server:
         addr, port = tcplisten.split(":")
         self.sock.bind((addr, int(port)))
         self.term = terminal
-        terminal.chip.skipsync = True
+        terminal.chip.hacks["skipsync"] = True
 
     def set_reset_seq(self, rst):
         self.rst = rst

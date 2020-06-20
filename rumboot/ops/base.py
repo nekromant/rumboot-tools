@@ -5,6 +5,10 @@ class base:
     def __init__(self, term):
         self.term = term
 
+    #executed on first term.loop()
+    def on_start(self):
+        pass
+
     def handle_line(self, line):
         for key,value in self.formats.items():
             pres = parse(value, line)

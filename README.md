@@ -378,9 +378,8 @@ The -R options convenience option invokes automatically _cmake --build example.a
 
 ##### Automatic stack trace decoding
 
+rumboot-xrun provides a mechanism to decode runtime stack traces. To use this functionality, you have to place a .dmp file with disassembly in the same directory and with the same name as the .bin file
 
-```
-```
 
 ### rumboot-gdb
 #### Description

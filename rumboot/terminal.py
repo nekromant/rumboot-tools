@@ -8,6 +8,8 @@ import io
 from tqdm import tqdm
 from rumboot.OpFactory import OpFactory
 from rumboot.chips.base import chipBase
+from rumboot.ImageFormatDb import ImageFormatDb
+from rumboot.edclManager import edclmanager
 import socket
 import select
 
@@ -19,7 +21,9 @@ class terminal:
         verbose=True
         logstream=None
         plusargs={}
+        initial_loop_done = False
         runlist = []
+        formats = ImageFormatDb("rumboot.images")
         chip = chipBase()
         dumps = {}
         curbin = "bootrom"
@@ -121,15 +125,29 @@ class terminal:
                     break
                 c1 = c2
 
+        def hack(self, name):
+            if name in self.chip.hacks and self.chip.hacks[name]:
+                return True
+            return False
+
+        def enable_edcl(self):
+            self.edcl = edclmanager()
+            self.edcl.connect(self.chip)
+
         def loop(self, use_stdin=False, break_after_uploads=False):
+            if not self.initial_loop_done:
+                self.initial_loop_done = True
+                self.opf.on_start()
+
             return_code = 0
+
             if use_stdin:
                 old_settings = termios.tcgetattr(sys.stdin)
             try:
                 if use_stdin:
                     tty.setcbreak(sys.stdin.fileno())
 
-                if not self.chip.skipsync:
+                if not self.hack("skipsync"):
                     self.sync()
                 while True:
                     ret = None

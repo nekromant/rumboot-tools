@@ -4,10 +4,15 @@ from parse import *
 class OpFactory(classLoader):
     objects = dict()
     def __init__(self, objectpath, terminal):
+        print(self, objectpath, terminal)
         super().__init__(objectpath)
         self.term = terminal
         for name,cl in self.classes.items():
             self.objects[name] = cl(terminal)
+
+    def on_start(self):
+        for name,obj in self.objects.items():
+            obj.on_start()
 
     def handle_line(self, line, skipecho):
         for name,obj in self.objects.items():
