@@ -16,6 +16,34 @@ class mm7705(chipBase):
     memories = {
         "spi" : "rumboot-mm7705-PostProduction-updater-spiflash.bin"
     }
+    edcl = [
+    {   
+        "name"   : "Greth 100Mbit #0", 
+        "ip"     : "192.168.1.2", 
+        "mac"    : "ec:17:66:00:00:02"
+    },
+    {   
+        "name"   : "Greth 100Mbit #1", 
+        "ip"     : "192.168.1.3", 
+        "mac"    : "ec:17:66:00:00:03"
+    },
+    {   
+        "name"   : "Greth 100Mbit #2", 
+        "ip"     : "192.168.1.0", 
+        "mac"    : "ec:17:66:00:00:00"
+    },
+    {   
+        "name"   : "Greth 1Gbit #0", 
+        "ip"     : "192.168.1.49", 
+        "mac"    : "ec:17:66:77:05:01"
+    },
+    {   
+        "name"   : "Greth 1Gbit #1", 
+        "ip"     : "192.168.1.48", 
+        "mac"    : "ec:17:66:77:05:00"
+    }
+    ]
+
     romdump = "mm7705-v1.dmp"    
     
 class basis(chipBase):
