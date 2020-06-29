@@ -83,7 +83,7 @@ class edcl():
                              socket.SOCK_DGRAM) # UDP
         rc.bind(("0.0.0.0", 0x8088))
         self.sock = rc
-        self.sock.settimeout(2)
+        self.sock.settimeout(1)
 
     def set_max_payload(self, p):
         self.maxpayload = p
@@ -212,20 +212,3 @@ class edcl():
             return False
         self.seq = rx.seq
         return (tx.address == rx.address and tx.len == rx.len)
-
-#e = edcl()
-#if not e.connect():
-#    print("Connection failed")
-#data = e.read(0x00100010, 8192)
-#print("read", data, len(data))
-#e.write(0x00100010, b"FUCKOFFF")
-#data = e.read(0x00100010, 8)
-#print("read", data)
-#
-#from tqdm import tqdm
-#pbar = tqdm(total=768*1024)
-#def cb(total, pos, lastwrite):
-#    pbar.update(lastwrite)
-#    
-#e.recv_to_file(0x00100000,  768*1024, "dump.bin", callback=cb)
-

@@ -31,6 +31,7 @@ class terminal:
         replay = False
         replay_till_the_end = False
         ser = None
+        edcl = None
         mode = "xmodem"
 
         def __init__(self, port, speed, use_1k = False):
@@ -40,6 +41,9 @@ class terminal:
                 self.mode = "xmodem1k"
             self.reopen()
 
+        def edcl_enabled(self):
+            return self.edcl != None
+            
         def serial(self):
             return self.ser
 
