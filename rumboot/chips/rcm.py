@@ -37,11 +37,6 @@ class mm7705(chipBase):
         "ip"     : "192.168.1.49", 
         "mac"    : "ec:17:66:77:05:01"
     },
-    {   
-        "name"   : "Greth 1Gbit #1", 
-        "ip"     : "192.168.1.48", 
-        "mac"    : "ec:17:66:77:05:00"
-    }
     ]
 
     hacks = {
@@ -86,6 +81,18 @@ class oi10(chipBase):
     stub = "rumboot-oi10-PostProduction-gdb-stub.bin"
     romdump = "oi10-v1.dmp"
     gdb = "powerpc-rcm-elf-gdb"
+    edcl = [
+    {   
+        "name"   : "Greth #1", 
+        "ip"     : "192.168.1.48", 
+        "mac"    : "ec:17:66:0e:10:00"
+    },
+    {   
+        "name"   : "Greth #2", 
+        "ip"     : "192.168.1.49", 
+        "mac"    : "ec:17:66:0e:10:01"
+    },
+    ]
 
 class bbp3(chipBase):
     part="1888ВС058"
