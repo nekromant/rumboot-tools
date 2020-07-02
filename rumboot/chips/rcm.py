@@ -129,7 +129,6 @@ class mb7707(chipBase):
 
     hacks = {
         "skipsync"   : True, # Doesn't Send U\r\n\r\n at the start. All legacy stuff
-        "edclArpBug" : True, # EDCL doesn't have a valid IP, needs a static ARP entry (mb7707)
         "silentRom"  : True, # Bootrom is totally silent
         "noxmodem"   : True,  # Chip lacks xmodem implementation
         "noedcl"     : False  # Chip lacks edcl implementation
@@ -138,7 +137,7 @@ class mb7707(chipBase):
     edcl = [
         {   
             "name"   : "GRETH", 
-            "ip"     : "192.168.144.9", 
+            "ip"     : "192.168.144.0", 
             "mac"    : "0:0:5e:0:0:0"
         }
     ]

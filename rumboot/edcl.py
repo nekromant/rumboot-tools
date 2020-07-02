@@ -97,7 +97,6 @@ class edcl():
                 data, addr = self.sock.recvfrom(struct.calcsize(edcl_packet.FORMAT) + self.maxpayload)
                 packet.deserialize(data)
             except Exception as e:
-                print(e)
                 continue
 
             if checkrwnak and packet.e_rwnak():
@@ -208,7 +207,7 @@ class edcl():
         tx = edcl_packet()
         try:
             rx = self.xfer(tx, False)
-        except:
+        except Exception as e:
             return False
         self.seq = rx.seq
         return (tx.address == rx.address and tx.len == rx.len)

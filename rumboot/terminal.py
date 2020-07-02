@@ -136,7 +136,8 @@ class terminal:
 
         def enable_edcl(self):
             self.edcl = edclmanager()
-            self.edcl.connect(self.chip)
+            if not self.edcl.connect(self.chip):
+                sys.exit(1)
 
         def loop(self, use_stdin=False, break_after_uploads=False):
             if not self.initial_loop_done:

@@ -3,7 +3,8 @@ from rumboot.chipDb import ChipDb
 import os
 import platform
 import arpreq
-
+import netifaces as ni
+from netaddr import IPNetwork, IPAddress
 class edclmanager(object):
     edcl = None
     verbose = False
@@ -11,6 +12,17 @@ class edclmanager(object):
     def __init__(self):
         self.edcl = edcl()
 
+    def check_reachability(self, ip):
+        for i in ni.interfaces():
+            for addr in ni.ifaddresses(i)[ni.AF_INET]:
+                if IPAddress(ip) in IPNetwork(addr['addr'] + "/" +addr["netmask"]):
+                    return True
+        return False
+
+    def buggy_ip(self, params):
+        arr = params["ip"].split(".")
+        return int(arr[3]) == 0
+            
     def __getattribute__(self, key):
         try:
             return object.__getattribute__(self, key)
@@ -18,32 +30,50 @@ class edclmanager(object):
             return object.__getattribute__(self.edcl, key)
 
     def try_connect(self, chip, params):
-        if chip.hacks["edclArpBug"]:
+        if self.buggy_ip(params):
+            #FIXME: This logic sucks. 
+            #TODO: Implement a better solution to find non-used IP on the subnet
+            params["ip"] = params["ip"].replace(".0", ".76")
             self.AddStaticARP(chip, params)
+        if not self.check_reachability(params["ip"]):
+            print("WARNING: IP address %s is not in your subnet." % params["ip"])
+            print("WARNING: Please check network interface settings.")
+            return None
 
         if self.verbose:
             print("Testing: %s (%s) IP %s" % (chip.__name__, params["name"], params["ip"]))
         try: 
-            self.edcl.connect(params["ip"])
+            ret = self.edcl.connect(params["ip"])
         except:
             return None
-        print("Detected: %s (%s)" % (chip.__name__, params["name"]))
-        return chip        
+        if ret:
+            print("Connected: %s (%s)" % (chip.__name__, params["name"]))
+            return chip
+
+    def probe(self, chip):
+        for params in chip.edcl:
+            if None != self.try_connect(chip, params):
+                return params
+            else:
+                return None
 
     def scan(self, match=None):
         ret = []
         if type(match) == int or type(match) == str:
             match = self.chips[match]
 
-        for c in self.chips:
-            if c.edcl != None:
-                for params in c.edcl:
-                    if None != self.try_connect(c, params):
-                        if match == c:
-                            self.params = params
-                            return c
-                        else:
-                            ret.append(c)
+        if match == None:
+            chips = self.chips
+        else:
+            chips = { match }
+        for c in chips:
+            tmp = self.probe(c)
+            if tmp != None:
+                db = {
+                    "chip" : c,
+                    "params": tmp
+                }
+                ret.append(db)
         return ret
 
     def test_chip(self, chip):
