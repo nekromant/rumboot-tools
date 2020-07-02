@@ -23,8 +23,10 @@ setup(
         "gdbgui", 
         "arpreq", 
         "netifaces", 
-        "netaddr"],
-        
+        "netaddr",
+        "getmac"
+        ],
+
     extras_require = {
         "usb": ["pyusb>=1.0.0"]
     },
