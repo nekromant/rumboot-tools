@@ -44,6 +44,10 @@ class mm7705(chipBase):
     }
     ]
 
+    hacks = {
+        "skipsync"   : True, # Doesn't Send U\r\n\r\n at the start.
+    }
+
     romdump = "mm7705-v1.dmp"    
     
 class basis(chipBase):
@@ -131,7 +135,6 @@ class mb7707(chipBase):
         "skipsync"   : True, # Doesn't Send U\r\n\r\n at the start. All legacy stuff
         "silentRom"  : True, # Bootrom is totally silent
         "noxmodem"   : True,  # Chip lacks xmodem implementation
-        "noedcl"     : False  # Chip lacks edcl implementation
     }
 
     edcl = [
