@@ -118,6 +118,19 @@ class nm6408(chipBase):
     to provide additional functionality
     Please be careful not wipe it! Recovery will be only possible via JTAG
     '''
+
+
+    #This chip's mac/ip are configurable via 4 boot pins
+    #Let's handle it here
+    def __init__(self):
+        self.edcl = []
+        for i in range(0,16):
+            greth = {   
+                "name"   : "GRETH #" + str(i), 
+                "ip"     : "192.168.1."+str(i), 
+                "mac"    : "ec:17:66:64:08:"+str(i)
+            }
+            self.edcl.append(greth)
     memories = {
         "spi0-cs0": "rumboot-nm6408-PostProduction-updater-spi0-cs0.bin",
     }

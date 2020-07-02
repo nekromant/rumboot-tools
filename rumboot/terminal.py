@@ -137,6 +137,7 @@ class terminal:
         def enable_edcl(self):
             self.edcl = edclmanager()
             if not self.edcl.connect(self.chip):
+                print("ERROR: Failed to establish edcl connection")
                 sys.exit(1)
 
         def loop(self, use_stdin=False, break_after_uploads=False):
