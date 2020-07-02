@@ -14,6 +14,8 @@ class edclmanager(object):
 
     def check_reachability(self, ip):
         for i in ni.interfaces():
+            if not ni.AF_INET in ni.ifaddresses(i):
+                continue
             for addr in ni.ifaddresses(i)[ni.AF_INET]:
                 if IPAddress(ip) in IPNetwork(addr['addr'] + "/" +addr["netmask"]):
                     return True
@@ -54,8 +56,7 @@ class edclmanager(object):
         for params in chip.edcl:
             if None != self.try_connect(chip, params):
                 return params
-            else:
-                return None
+        return None
 
     def scan(self, match=None):
         ret = []

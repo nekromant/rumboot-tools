@@ -83,13 +83,13 @@ class edcl():
                              socket.SOCK_DGRAM) # UDP
         rc.bind(("0.0.0.0", 0x8088))
         self.sock = rc
-        self.sock.settimeout(1)
+        self.sock.settimeout(0.3)
 
     def set_max_payload(self, p):
         self.maxpayload = p
 
-    def xfer(self, packet, checkrwnak=True):
-        for i in range(0,8):
+    def xfer(self, packet, checkrwnak=True, retries=8):
+        for i in range(0,retries):
             packet.seq = self.seq
             self.seq = self.seq + 1
             try:
@@ -206,7 +206,7 @@ class edcl():
         self.remote_port = remote_port
         tx = edcl_packet()
         try:
-            rx = self.xfer(tx, False)
+            rx = self.xfer(tx, False, 1)
         except Exception as e:
             return False
         self.seq = rx.seq
