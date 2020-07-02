@@ -4,8 +4,9 @@ import tqdm
 
 class edcl_generic_uploader(xmodem):
     formats = {
-        "mm7705": "boot: Waiting for a valid image @ {}"
+        "mm7705": "\x00boot: Waiting for a valid image @ {:x}"
     }
+
 
     def action(self, trigger, result):
         def prg(total_bytes, position, increment):
