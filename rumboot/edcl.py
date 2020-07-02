@@ -83,7 +83,7 @@ class edcl():
                              socket.SOCK_DGRAM) # UDP
         rc.bind(("0.0.0.0", 0x8088))
         self.sock = rc
-        self.sock.settimeout(0.3)
+        self.sock.settimeout(1)
 
     def set_max_payload(self, p):
         self.maxpayload = p
