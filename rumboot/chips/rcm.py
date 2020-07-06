@@ -122,15 +122,20 @@ class nm6408(chipBase):
 
     #This chip's mac/ip are configurable via 4 boot pins
     #Let's handle it here
-    def __init__(self):
-        self.edcl = []
+    def __populate_6408_edcl_params():
+        edcl = []
+        print("init")
         for i in range(0,16):
             greth = {   
                 "name"   : "GRETH #" + str(i), 
                 "ip"     : "192.168.1."+str(i), 
                 "mac"    : "ec:17:66:64:08:"+str(i)
             }
-            self.edcl.append(greth)
+            edcl.append(greth)
+        return edcl
+
+    edcl = __populate_6408_edcl_params()
+
     memories = {
         "spi0-cs0": "rumboot-nm6408-PostProduction-updater-spi0-cs0.bin",
     }
