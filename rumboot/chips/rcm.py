@@ -140,6 +140,12 @@ class nm6408(chipBase):
         "spi0-cs0": "rumboot-nm6408-PostProduction-updater-spi0-cs0.bin",
     }
 
+    hacks = {
+        "skipsync"   : True, # Doesn't Send U\r\n\r\n at the start. All legacy stuff
+        "silentRom"  : True, # Bootrom is totally silent
+        "noxmodem"   : True,  # Chip lacks xmodem implementation
+    }
+
 class mb7707(chipBase):
     part="K1879XB1YA"
     chip_id=2
