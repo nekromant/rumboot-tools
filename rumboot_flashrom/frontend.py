@@ -72,7 +72,7 @@ def cli():
     if (c == None):
         return 1;
  
-    helper.detect_terminal_options(opts, c, opts.k1)
+    helper.detect_terminal_options(opts, c)
     print("Detected chip:    %s (%s)" % (c.name, c.part))
 
     if c.warning != None:

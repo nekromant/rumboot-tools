@@ -1,6 +1,5 @@
 import serial
 import sys
-from xmodem import XMODEM
 import os
 from parse import parse
 import time
@@ -9,7 +8,7 @@ from tqdm import tqdm
 from rumboot.OpFactory import OpFactory
 from rumboot.chips.base import chipBase
 from rumboot.ImageFormatDb import ImageFormatDb
-from rumboot.edclManager import edclmanager
+from rumboot.xfer import xferManager
 import socket
 import select
 
@@ -31,19 +30,17 @@ class terminal:
         replay = False
         replay_till_the_end = False
         ser = None
-        edcl = None
-        mode = "xmodem"
+        cmdline = None
+        xfer = None
+        desc_widget = None
+        prog_widget = None
 
-        def __init__(self, port, speed, use_1k = False):
+        def __init__(self, port, speed):
             self.port = port
             self.speed = speed
-            if use_1k:
-                self.mode = "xmodem1k"
+            self.xfer = xferManager(self)
             self.reopen()
 
-        def edcl_enabled(self):
-            return self.edcl != None
-            
         def serial(self):
             return self.ser
 
@@ -59,18 +56,12 @@ class terminal:
                 self.ser = serial.Serial(self.port, self.speed, timeout=5)
             else:
                 self.ser = serial.serial_for_url(self.port, timeout=5)
-
-            def getc(size, timeout=10):
-                ret = self.ser.read(size)
-                return ret or None
-            def putc(data, timeout=10):
-                return self.ser.write(data)  # note that this ignores the timeout
-            self.modem = XMODEM(getc, putc, mode=self.mode)
             self.opf = OpFactory("rumboot.ops", self) 
 
 
         def set_chip(self, chip):
             self.chip = chip
+            self.xfer.setChip(chip)
 
         def tqdm(self, *args, **kwargs):
             self.progress.close()
@@ -86,10 +77,12 @@ class terminal:
         def add_dumps(self, dumps):
             self.dumps.update(dumps)
 
-        def next_binary(self):
+        def next_binary(self, peek=False):
             if len(self.runlist) > 0:
-                ret = self.runlist.pop(0)                
-                self.curbin = ret
+                ret = self.runlist[0]
+                if not peek:
+                    self.runlist.pop(0)
+                    self.curbin = ret
                 return ret
             return None
 
@@ -134,11 +127,21 @@ class terminal:
                 return True
             return False
 
-        def enable_edcl(self):
-            self.edcl = edclmanager()
-            if not self.edcl.connect(self.chip):
-                print("ERROR: Failed to establish edcl connection")
-                sys.exit(1)
+        def set_progress_widgets(self, desc_widget = None, prog_widget = None):
+            self.desc_widget = desc_widget
+            self.prog_widget = prog_widget
+
+        def progress_start(self, description, total):
+            if self.prog_widget == None:
+                self.tqdm(desc=description, total=total, unit_scale=True, unit_divisor=1024, unit='B', disable=False)
+            else:
+                pass
+
+        def progress_update(self, total, position, increment):
+            self.progress.update(increment)
+
+        def progress_end(self):
+            self.tqdm(disable=True)
 
         def loop(self, use_stdin=False, break_after_uploads=False):
             if not self.initial_loop_done:
@@ -197,8 +200,3 @@ class terminal:
                 if use_stdin:
                     termios.tcsetattr(sys.stdin, termios.TCSADRAIN, old_settings)
                     return return_code
- 
-        def xmodem_send(self, fl, chunksize=0, desc="Uploading file", welcome=b"boot: host: Hit 'X' for xmodem upload\n"):
-            stream = open(fl, 'rb')
-            ret = self.xmodem_send_stream(stream, chunksize, welcome, desc)
-            stream.close()

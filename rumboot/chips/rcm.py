@@ -86,6 +86,7 @@ class oi10(chipBase):
     stub = "rumboot-oi10-PostProduction-gdb-stub.bin"
     romdump = "oi10-v1.dmp"
     gdb = "powerpc-rcm-elf-gdb"
+    spl_address = 0xC0000000
     edcl = [
     {   
         "name"   : "Greth #1", 
@@ -117,6 +118,7 @@ class nm6408(chipBase):
     chip_rev=1
     welcome='host'
     baudrate=115200
+    spl_address = 0x0
     warning='''
     This chip has a legacy ROM bootloader. 
     RumBoot is flashed onto SPI flash and executed from internal memory
@@ -157,6 +159,7 @@ class mb7707(chipBase):
     chip_rev=1
     welcome='host'
     baudrate=38400
+    spl_address = 0x00100000
     warning='''
     This chip has a legacy ROM bootloader. 
     RumBoot is flashed onto NAND flash and executed from internal memory
@@ -176,7 +179,7 @@ class mb7707(chipBase):
     edcl = [
         {   
             "name"   : "GRETH", 
-            "ip"     : "192.168.144.0", 
+            "ip"     : "192.168.1.0", 
             "mac"    : "0:0:5e:0:0:0"
         }
     ]

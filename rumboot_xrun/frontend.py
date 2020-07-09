@@ -79,7 +79,7 @@ def cli():
         opts.baud = [ c.baudrate ]
 
     reset = resets[opts.reset[0]](opts)
-    term = terminal(opts.port[0], opts.baud[0], opts.k1)
+    term = terminal(opts.port[0], opts.baud[0])
     term.set_chip(c)
     term.plusargs = plusargs
 
@@ -92,11 +92,14 @@ def cli():
     if opts.log:
         term.logstream = opts.log
 
-    print("Reset method:     %s" % (reset.name))
-    print("Baudrate:         %d bps" % int(opts.baud[0]))
-    print("Port:             %s" % opts.port[0])
+    print("Reset method:               %s" % (reset.name))
+    print("Baudrate:                   %d bps" % int(opts.baud[0]))
+    print("Port:                       %s" % opts.port[0])
     reset.resetToHost()
     term.add_binaries(opts.file)
     term.add_dumps(dumps)
     term.replay_till_the_end = opts.replay_no_exit
+    if opts.edcl and c.edcl != None:
+        term.xfer.selectTransport("edcl")
+    print("Preferred data transport:   %s" % term.xfer.how)
     return term.loop(opts.stdin)

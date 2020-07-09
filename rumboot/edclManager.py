@@ -4,6 +4,7 @@ import os
 import platform
 import arpreq
 import netifaces as ni
+import time
 from netaddr import IPNetwork, IPAddress
 class edclmanager(object):
     edcl = None
@@ -100,5 +101,9 @@ class edclmanager(object):
         self.edcl.send_from_file(address + 4, image, callback, 4)
         self.edcl.send_from_file(address    , image, None, 0, 4)
 
-    def connect(self, chip):
-        return self.scan(chip)
+    def connect(self, chip, retry=3):
+        for i in range(1,retry):
+            ret = self.scan(chip)
+            if ret != []:
+                return ret
+        

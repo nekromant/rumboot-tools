@@ -87,7 +87,7 @@ class arghelper():
                         nargs=1, metavar=('chip_id'),
                         required=False)            
     def add_terminal_opts(self, parser):
-        group = parser.add_argument_group('Serial Terminal Settings')
+        group = parser.add_argument_group('Connection Settings')
         group.add_argument("-l", "--log",
                         help="Log terminal output to file",
                         type=argparse.FileType("w+"),
@@ -101,9 +101,9 @@ class arghelper():
                         type=int,
                         nargs=1, metavar=('speed'),
                         required=False)
-        group.add_argument("-1", "--k1",
-                        help="Prefer xmodem-1k protocol for all uploads",
-                        action='store_true',
+        group.add_argument("-e", '--edcl',
+                        help="Use edcl for data uploads (when possible)",
+                        action="store_true",
                         default=False,
                         required=False)
 
@@ -129,7 +129,6 @@ class arghelper():
             opts.port = [ self.get_default_port(chip) ]
         if opts.baud == None:
             opts.baud = [ self.get_default_baud(chip) ]
-
 
     def detect_chip_type(self, opts, chips, formats):
         c = None

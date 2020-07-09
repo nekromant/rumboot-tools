@@ -146,7 +146,7 @@ def cli():
         opts.baud = [ c.baudrate ]
 
     reset = resets[opts.reset[0]](opts)
-    term = terminal(opts.port[0], opts.baud[0], opts.k1)
+    term = terminal(opts.port[0], opts.baud[0])
     term.verbose = opts.verbose
     term.set_chip(c)
     if opts.log:
@@ -179,6 +179,8 @@ def cli():
     print("Port:             %s" % opts.port[0])
     print("GDB:              %s" % gdb)
 
+    if opts.edcl and c.edcl != None:
+        term.xfer.selectTransport("edcl")
 
     reset.resetToHost()
     term.add_binaries(spl)

@@ -1,7 +1,7 @@
 import struct
 import socket
 from getmac import get_mac_address
-
+import time
 # sudo arp -s 192.168.144.9 0:0:5e:0:0:0
 
 class edcl_packet:

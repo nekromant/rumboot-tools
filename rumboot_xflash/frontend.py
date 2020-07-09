@@ -69,7 +69,7 @@ def cli():
         opts.baud = [ c.baudrate ]
 
     reset = resets[opts.reset[0]](opts)
-    term = terminal(opts.port[0], opts.baud[0], opts.k1)
+    term = terminal(opts.port[0], opts.baud[0])
     term.set_chip(c)
     if opts.log:
         term.logstream = opts.log
@@ -89,12 +89,16 @@ def cli():
 
     spl = spl_path + c.memories[mem]
 
-    print("Reset method:     %s" % (reset.name))
-    print("Baudrate:         %d bps" % int(opts.baud[0]))
-    print("Port:             %s" % opts.port[0])
+    print("Reset method:                    %s" % (reset.name))
+    print("Baudrate:                        %d bps" % int(opts.baud[0]))
+    print("Port:                            %s" % opts.port[0])
 
     reset.resetToHost()
     term.add_binaries(spl)
     term.add_binaries(opts.file[0][0])
-    reset.resetToNormal()
+    if opts.edcl and c.edcl != None:
+        term.xfer.selectTransport("edcl")
+        print("Preferred data transport:      %s" % term.xfer.how)
+
+    reset.resetToHost()
     term.loop()
