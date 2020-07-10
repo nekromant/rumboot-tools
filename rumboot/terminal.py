@@ -34,6 +34,7 @@ class terminal:
         xfer = None
         desc_widget = None
         prog_widget = None
+        shell_prompt = None
 
         def __init__(self, port, speed):
             self.port = port
@@ -142,6 +143,46 @@ class terminal:
 
         def progress_end(self):
             self.tqdm(disable=True)
+
+        def wait(self, format, timeout=1000):
+            while True:
+                line = self.ser.read_until()
+                line = line.decode(errors="replace").rstrip()
+                self.log(False, line, end='\n')
+                ret = parse(format, line)
+                if ret != None:
+                    return ret
+
+        def shell_mode(self, prompt):
+            self.shell_prompt = prompt
+
+        def wait_prompt(self, initial=False):
+            if initial:
+                self.ser.write(b"\r\n")
+            found = False
+            data = b""
+            while True:
+                ret = self.ser.read_until(self.shell_prompt.encode())
+                data = data + ret
+                ret = ret.decode(errors="replace")
+                self.log(False, ret, end='\n')
+                if ret.find(self.shell_prompt) > -1:
+                    found = True
+                    if not initial:
+                        break
+                if found and len(ret) == 0:
+                    break
+            return data
+
+        def shell_cmd(self, cmd, timeout=10, initial=False):
+            if initial:
+                self.wait_prompt(initial)
+            cmd = cmd.encode() + b"\r\n"
+            self.ser.write(cmd)
+            ret = self.wait_prompt(False).decode(errors="replace")
+            ret = ret[len(cmd):] 
+            ret = ret[:-len(self.shell_prompt)-2]
+            return ret                  
 
         def loop(self, use_stdin=False, break_after_uploads=False):
             if not self.initial_loop_done:
