@@ -58,7 +58,7 @@ in silicon don't match - you'll get a warning.
 
 ## Requirements
 
-* Python 3.6 or 3.7
+* Python 3.7 or above
 
 * pyserial
 
@@ -72,14 +72,26 @@ in silicon don't match - you'll get a warning.
 
 * pyyaml
 
-* pl2303gpio tool (For pl2303 reset method)
+* pl2303gpio tool ( For pl2303 reset method, linux-only: https://github.com/nekromant/pl2303gpio )
+
+* gdbgui
+
+* arpreq
+
+* netifaces
+
+* netaddr
+
+* getmac
 
 ## Installation
 
 ```
     pip3 install .
 ```
+
 or 
+
 ```
     pip3 install .
 ```
@@ -96,7 +108,7 @@ This tool adds/checks/updates checksums in existing images. The image must alrea
 #### Options 
 
 ```
-rumboot-packimage --help
+~# rumboot-packimage --help
 usage: rumboot-packimage [-h] -f FILE [-i] [-c] [-C] [-r] [-z value]
                          [-a value] [-g key] [-s key value] [-e]
 
@@ -253,6 +265,7 @@ Plusargs parser options:
 The rumboot-xrun tries to find a configuration file on your system in the following locations:
 
 * ~/.rumboot.yaml
+
 * /etc/rumboot.yaml
 
 Example configuration file is provided below:
@@ -396,7 +409,9 @@ Limitations:
 - GDB 'run' command doesn't work correctly and may crash gdb. Use 'load' and 'continue' to start the application
 
 #### Options 
+
 ```
+~# rumboot-gdb --help
 usage: rumboot-gdb [-h] [-l LOG] [-p port] [-b speed] [-v] [-z SPL_PATH] [-L]
                    [-f FILE] [-e] [-R] [--debug-remote DEBUG_REMOTE]
                    [-g GDB_PATH] [-G] -c CHIP_ID [-r method] [--apc-ip APC_IP]
@@ -559,7 +574,7 @@ This will output a list of external memories this tool can write and the spl stu
 that will be used for that
 
 ```
-~$ rumboot-xflash -m help -c basis
+~# rumboot-xflash -m help -c basis
 Memory        i2c0-0x50: rumboot-basis-PostProduction-updater-i2c0-0x50.bin
 Memory        i2c0-0x51: rumboot-basis-PostProduction-updater-i2c0-0x51.bin
 Memory        i2c0-0x52: rumboot-basis-PostProduction-updater-i2c0-0x52.bin
@@ -572,7 +587,7 @@ Memory spi1-internal-cs: rumboot-basis-PostProduction-updater-spi1-internal-cs.b
 Or you can just specify the file you are going to flash instead.
 
 ```
-$ rumboot-xflash -m help -f ../build-test/oi10-PostProduction/rumboot-oi10-PostProduction-simple-iram-hello.bin 
+~# rumboot-xflash -m help -f ../build-test/oi10-PostProduction/rumboot-oi10-PostProduction-simple-iram-hello.bin 
 Memory spi0-internal-cs: rumboot-oi10-PostProduction-updater-spi-flash-0.bin
 Memory              nor: rumboot-oi10-PostProduction-updater-nor-mt150.04.bin
 Memory      nor-bootrom: rumboot-oi10-PostProduction-updater-nor-mt150.04-brom.bin
@@ -581,7 +596,7 @@ Memory      nor-bootrom: rumboot-oi10-PostProduction-updater-nor-mt150.04-brom.b
 ##### Write image to flash
 
 ```
-~$ rumboot-xflash -m spi0-gpio0_5-cs -f rumboot-basis-PostProduction-simple-iram-hello-iram.bin
+~# rumboot-xflash -m spi0-gpio0_5-cs -f rumboot-basis-PostProduction-simple-iram-hello-iram.bin
 
 Detected chip:    basis (1888ВС048)
 Reset method:     None
@@ -595,7 +610,7 @@ Writing image: 100%|████████████████████
 ##### Write image to flash, reset automatically via pl2303
 
 ```
-~$ rumboot-xflash -m spi0-gpio0_5-cs -f rumboot-basis-PostProduction-simple-iram-hello-iram.bin -r pl2303
+~# rumboot-xflash -m spi0-gpio0_5-cs -f rumboot-basis-PostProduction-simple-iram-hello-iram.bin -r pl2303
 
 Detected chip:    basis (1888ВС048)
 Reset method:     None
@@ -609,7 +624,7 @@ Writing image: 100%|████████████████████
 ##### Write raw data to flash, overriding chip id
 
 ```
-~$ rumboot-xflash -c basis -m spi0-gpio0_5-cs -f raw.bin
+~# rumboot-xflash -c basis -m spi0-gpio0_5-cs -f raw.bin
 
 Detected chip:    basis (1888ВС048)
 Reset method:     None
@@ -624,7 +639,7 @@ Writing image: 100%|████████████████████
 ##### Write raw data to flash over network
 
 ```
-~$ rumboot-xflash -c basis -m spi0-gpio0_5-cs -f raw.bin -p socket://10.7.11.59:10001
+~# rumboot-xflash -c basis -m spi0-gpio0_5-cs -f raw.bin -p socket://10.7.11.59:10001
 
 Detected chip:    basis (1888ВС048)
 Reset method:     None
@@ -658,6 +673,7 @@ rumboot-flashrom -p /dev/ttyUSB1 -c basis -- --read img.bin
 * _--read img.bin_ are the flashrom options
 
 ```
+~# rumboot-flashrom --help
 usage: rumboot-flashrom [-h] [-l LOG] [-p port] [-b speed] [-v] -m memory
                         [-z SPL_PATH] [-f FLASHROM_PATH] -c CHIP_ID
                         [-r method] [--apc-ip APC_IP] [--apc-user APC_USER]
@@ -833,7 +849,7 @@ pl2303 reset sequence options:
 ##### Manually start the daemon with typical settings for 'basis' platform
 
 ```
-~$ rumboot-daemon -c basis -p /dev/ttyUSB0 -r pl2303
+~# rumboot-daemon -c basis -p /dev/ttyUSB0 -r pl2303
 Detected chip:    basis (1888ВС048)
 Reset method:     pl2303
 Baudrate:         115200 bps
@@ -888,7 +904,7 @@ Sometimes it's useful to initialize some external memories (e.g. ddr) or execute
 allowing user access to the board. You can specify one or several applications using the -f flag
 
 ```
-~$ rumboot-daemon -c basis -p /dev/ttyUSB0 -r pl2303 -f ddr_init.bin
+~# rumboot-daemon -c basis -p /dev/ttyUSB0 -r pl2303 -f ddr_init.bin
 Detected chip:    basis (1888ВС048)
 Reset method:     pl2303
 Baudrate:         115200 bps
