@@ -131,7 +131,6 @@ class nm6408(chipBase):
     #Let's handle it here
     def __populate_6408_edcl_params():
         edcl = []
-        print("init")
         for i in range(0,16):
             greth = {   
                 "name"   : "GRETH #" + str(i), 
