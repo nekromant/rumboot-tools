@@ -112,8 +112,10 @@ This tool adds/checks/updates checksums in existing images. The image must alrea
 usage: rumboot-packimage [-h] -f FILE [-i] [-c] [-C] [-r] [-z value]
                          [-a value] [-g key] [-s key value] [-e]
 
-rumboot-packimage 1.4 - Universal RumBoot Image Manipulation Tool
-(C) 2018 Andrew Andrianov, RC Module
+rumboot-packimage 0.9.3 - Universal RumBoot Image Manipulation Tool
+
+(C) 2018-2020 Andrew Andrianov <andrew@ncrmnt.org>, RC Module
+https://module.ru
 https://github.com/RC-MODULE
 
 optional arguments:
@@ -146,6 +148,7 @@ optional arguments:
   -e, --reverse-endianness
                         Use this option to reverse endianness of all headers.
                         This will not touch data. For testing only
+
 ```
 
 #### Typical uses
@@ -200,15 +203,20 @@ This tool directly uploads a binary to the target board, executes it and provide
 
 ```
 ~# rumboot-xrun --help
-
-usage: rumboot-xrun [-h] -f FILE [-c chip_id] [-l LOG] [-p port] [-b speed]
-                    [-r method] [--apc-ip APC_IP] [--apc-user APC_USER]
+init
+[!] Using configuration file: /home/necromant/.rumboot.yaml
+usage: rumboot-xrun [-h] [-f FILE] [-c chip_id] [-l LOG] [-p port] [-b speed]
+                    [-e] [-r method] [--apc-ip APC_IP] [--apc-user APC_USER]
                     [--apc-pass APC_PASS] [--apc-port APC_PORT] [-S value]
-                    [-P value] [--pl2303-invert]
+                    [-P value] [--pl2303-invert] [--redd-port REDD_PORT]
+                    [--redd-relay-id REDD_RELAY_ID]
                     [-A [PLUSARGS [PLUSARGS ...]]] [-R] [-I]
+                    [--replay-no-exit]
 
-rumboot-xrun 1.4 - RumBoot X-Modem execution tool
-(C) 2018 Andrew Andrianov, RC Module
+rumboot-xrun 0.9.3 - RumBoot X-Modem execution tool
+
+(C) 2018-2020 Andrew Andrianov <andrew@ncrmnt.org>, RC Module
+https://module.ru
 https://github.com/RC-MODULE
 
 optional arguments:
@@ -216,23 +224,26 @@ optional arguments:
   -f FILE, --file FILE  Image file (may be specified multiple times)
   -R, --rebuild         Attempt to rebuild/update target before uploading
   -I, --stdin           Use stdin redirection to tty
+  --replay-no-exit      Do not exit on panics/rom returns when replaying logs
+                        (for batch analysis)
 
 File Handling:
   -c chip_id, --chip_id chip_id
                         Override chip id (by name or chip_id)
 
-Serial Terminal Settings:
+Connection Settings:
   -l LOG, --log LOG     Log terminal output to file
   -p port, --port port  Serial port to use
   -b speed, --baud speed
                         Serial line speed
+  -e, --edcl            Use edcl for data uploads (when possible)
 
 Reset Sequence options:
   These options control how the target board will be reset
 
   -r method, --reset method
                         Reset sequence to use (apc base mt12505 pl2303
-                        powerhub)
+                        powerhub redd)
 
 apc reset sequence options:
   --apc-ip APC_IP       APC IP Address/hostname
@@ -249,11 +260,17 @@ pl2303 reset sequence options:
                         PL2303 physical port (for -P of pl2303gpio)
   --pl2303-invert       Invert all pl2303 gpio signals
 
+redd reset sequence options:
+  --redd-port REDD_PORT
+                        Redd serial port (e.g. /dev/ttyACM1)
+  --redd-relay-id REDD_RELAY_ID
+                        Redd Relay Id (e.g. A)
+
 Plusargs parser options:
   
-          rumboot-xrun can parse plusargs (similar to verilog simulator) 
-          and use them for runtime file uploads. This option is intended 
-          to be used for 
+          rumboot-xrun can parse plusargs (similar to verilog simulator)
+          and use them for runtime file uploads. This option is intended
+          to be used for
           
 
   -A [PLUSARGS [PLUSARGS ...]], --plusargs [PLUSARGS [PLUSARGS ...]]
@@ -412,73 +429,10 @@ Limitations:
 
 ```
 ~# rumboot-gdb --help
-usage: rumboot-gdb [-h] [-l LOG] [-p port] [-b speed] [-v] [-z SPL_PATH] [-L]
-                   [-f FILE] [-e] [-R] [--debug-remote DEBUG_REMOTE]
-                   [-g GDB_PATH] [-G] -c CHIP_ID [-r method] [--apc-ip APC_IP]
-                   [--apc-user APC_USER] [--apc-pass APC_PASS]
-                   [--apc-port APC_PORT] [-S value] [-P value]
-                   [--pl2303-invert]
-                   ...
+init
+[!] Using configuration file: /home/necromant/.rumboot.yaml
 
-rumboot-gdb 0.9.1 - Debugger launcher tool
-
-(C) 2018-2020 Andrew Andrianov <andrew@ncrmnt.org>, RC Module
-https://module.ru
-https://github.com/RC-MODULE
-
-positional arguments:
-  remaining             Extra gdb arguments (e.g. filename)
-
-optional arguments:
-  -h, --help            show this help message and exit
-  -v, --verbose         Print serial debug messages during preload phase
-  -z SPL_PATH, --spl-path SPL_PATH
-                        Path for SPL writers (Debug only)
-  -L, --load            Load binary on start
-  -f FILE, --file FILE  Application ELF file to debug
-  -e, --exec            Execute supplied binary on start (Implies --load)
-  -R, --rebuild         Attempt to rebuild binary
-  --debug-remote DEBUG_REMOTE
-                        Debug gdb<-->stub communications
-  -g GDB_PATH, --gdb-path GDB_PATH
-                        Path to flashrom binary
-  -G, --gdb-gui         Start GDB gui
-  -c CHIP_ID, --chip_id CHIP_ID
-                        Chip Id (numeric or name)
-
-Serial Terminal Settings:
-  -l LOG, --log LOG     Log terminal output to file
-  -p port, --port port  Serial port to use
-  -b speed, --baud speed
-                        Serial line speed
-
-Reset Sequence options:
-  These options control how the target board will be reset
-
-  -r method, --reset method
-                        Reset sequence to use (apc base mt12505 pl2303
-                        powerhub)
-
-apc reset sequence options:
-  --apc-ip APC_IP       APC IP Address/hostname
-  --apc-user APC_USER   APC IP username
-  --apc-pass APC_PASS   APC IP username
-  --apc-port APC_PORT   APC Power port
-
-mt12505 reset sequence options:
-  -S value, --ft232-serial value
-                        FT232 serial number for MT125.05
-
-pl2303 reset sequence options:
-  -P value, --pl2303-port value
-                        PL2303 physical port (for -P of pl2303gpio)
-  --pl2303-invert       Invert all pl2303 gpio signals
 ```
-
-
-#### Typical usage
-##### Launch commandline gdb
-
 ```
   rumboot-gdb -c oi10 -f rumboot-oi10-PostProduction-simple-iram-hello
 ```
@@ -512,13 +466,16 @@ This tool allows you to quickly program different flashes attached to the target
 
 ```
 ~# rumboot-xflash --help
-usage: rumboot-xflash [-h] -f FILE [-c chip_id] [-l LOG] [-p port] [-b speed]
-                      [-v] -m memory [-z SPL_PATH] [-r method]
+init
+[!] Using configuration file: /home/necromant/.rumboot.yaml
+usage: rumboot-xflash [-h] [-f FILE] [-c chip_id] [-l LOG] [-p port]
+                      [-b speed] [-e] [-v] -m memory [-z SPL_PATH] [-r method]
                       [--apc-ip APC_IP] [--apc-user APC_USER]
                       [--apc-pass APC_PASS] [--apc-port APC_PORT] [-S value]
-                      [-P value] [--pl2303-invert]
+                      [-P value] [--pl2303-invert] [--redd-port REDD_PORT]
+                      [--redd-relay-id REDD_RELAY_ID]
 
-rumboot-xflash 0.9.1 - RumBoot X-Modem firmware update tool
+rumboot-xflash 0.9.3 - RumBoot X-Modem firmware update tool
 
 (C) 2018-2020 Andrew Andrianov <andrew@ncrmnt.org>, RC Module
 https://module.ru
@@ -537,18 +494,19 @@ File Handling:
   -c chip_id, --chip_id chip_id
                         Override chip id (by name or chip_id)
 
-Serial Terminal Settings:
+Connection Settings:
   -l LOG, --log LOG     Log terminal output to file
   -p port, --port port  Serial port to use
   -b speed, --baud speed
                         Serial line speed
+  -e, --edcl            Use edcl for data uploads (when possible)
 
 Reset Sequence options:
   These options control how the target board will be reset
 
   -r method, --reset method
                         Reset sequence to use (apc base mt12505 pl2303
-                        powerhub)
+                        powerhub redd)
 
 apc reset sequence options:
   --apc-ip APC_IP       APC IP Address/hostname
@@ -565,14 +523,13 @@ pl2303 reset sequence options:
                         PL2303 physical port (for -P of pl2303gpio)
   --pl2303-invert       Invert all pl2303 gpio signals
 
+redd reset sequence options:
+  --redd-port REDD_PORT
+                        Redd serial port (e.g. /dev/ttyACM1)
+  --redd-relay-id REDD_RELAY_ID
+                        Redd Relay Id (e.g. A)
+
 ```
-
-#### Typical Usage
-##### Find out what memories a chip has
-
-This will output a list of external memories this tool can write and the spl stub names
-that will be used for that
-
 ```
 ~# rumboot-xflash -m help -c basis
 Memory        i2c0-0x50: rumboot-basis-PostProduction-updater-i2c0-0x50.bin
@@ -674,14 +631,17 @@ rumboot-flashrom -p /dev/ttyUSB1 -c basis -- --read img.bin
 
 ```
 ~# rumboot-flashrom --help
-usage: rumboot-flashrom [-h] [-l LOG] [-p port] [-b speed] [-v] -m memory
+init
+[!] Using configuration file: /home/necromant/.rumboot.yaml
+usage: rumboot-flashrom [-h] [-l LOG] [-p port] [-b speed] [-e] [-v] -m memory
                         [-z SPL_PATH] [-f FLASHROM_PATH] -c CHIP_ID
                         [-r method] [--apc-ip APC_IP] [--apc-user APC_USER]
                         [--apc-pass APC_PASS] [--apc-port APC_PORT] [-S value]
-                        [-P value] [--pl2303-invert]
+                        [-P value] [--pl2303-invert] [--redd-port REDD_PORT]
+                        [--redd-relay-id REDD_RELAY_ID]
                         ...
 
-rumboot-flashrom 0.9.1 - flashrom wrapper tool
+rumboot-flashrom 0.9.3 - flashrom wrapper tool
 
 (C) 2018-2020 Andrew Andrianov <andrew@ncrmnt.org>, RC Module
 https://module.ru
@@ -703,18 +663,19 @@ optional arguments:
   -c CHIP_ID, --chip_id CHIP_ID
                         Chip Id (numeric or name)
 
-Serial Terminal Settings:
+Connection Settings:
   -l LOG, --log LOG     Log terminal output to file
   -p port, --port port  Serial port to use
   -b speed, --baud speed
                         Serial line speed
+  -e, --edcl            Use edcl for data uploads (when possible)
 
 Reset Sequence options:
   These options control how the target board will be reset
 
   -r method, --reset method
                         Reset sequence to use (apc base mt12505 pl2303
-                        powerhub)
+                        powerhub redd)
 
 apc reset sequence options:
   --apc-ip APC_IP       APC IP Address/hostname
@@ -731,10 +692,13 @@ pl2303 reset sequence options:
                         PL2303 physical port (for -P of pl2303gpio)
   --pl2303-invert       Invert all pl2303 gpio signals
 
-```
-#### Typical Usage
-##### Detect attached SPI flash
+redd reset sequence options:
+  --redd-port REDD_PORT
+                        Redd serial port (e.g. /dev/ttyACM1)
+  --redd-relay-id REDD_RELAY_ID
+                        Redd Relay Id (e.g. A)
 
+```
 ```
 ~# rumboot-flashrom -c basis -m spi0-gpio0_5-cs 
 Detected chip:    basis (1888ВС048)
@@ -948,7 +912,7 @@ _rumboot-combine_ is a simple to tool to compose a chain of several image file. 
 ~# rumboot-combine --help
 usage: rumboot-combine [-h] -i INPUT -o OUTPUT [-a ALIGN]
 
-rumboot-combine 0.9.1 - RumBoot Image Merger Tool
+rumboot-combine 0.9.3 - RumBoot Image Merger Tool
 
 (C) 2018-2020 Andrew Andrianov <andrew@ncrmnt.org>, RC Module
 https://module.ru
@@ -963,6 +927,7 @@ optional arguments:
   -a ALIGN, --align ALIGN
                         Set alignment pattern of images in bytes or via
                         keyword (SD, physmap, ini)
+
 ```
 
 
