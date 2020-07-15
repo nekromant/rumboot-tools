@@ -8,7 +8,12 @@ class edcl_generic_uploader(basic_uploader):
     formats = {
         "mm7705": "\x00boot: Waiting for a valid image @ {:x}"
     }
+
     def action(self, trigger, result):
+        tp = self.term.formats.guess(self.term.runlist[0])
+        if tp.name != "RumBootV1":
+            return False
+
         print("WARNING: Bootloader doesn't support xmodem, forcing edcl upload")
         self.term.xfer.selectTransport("edcl")
         if not self.term.xfer.push(result[0]):
@@ -25,7 +30,6 @@ class dumb_chips_uploader(basic_uploader):
                 self.term.progress.update(increment)     
 
         tp = self.term.formats.guess(self.term.runlist[0])
-
         if self.term.hack("silentRom"):
             print("WARNING: Bootloader doesn't support xmodem, forcing edcl upload")
             self.term.xfer.selectTransport("edcl")
