@@ -66,6 +66,7 @@ class edcl_packet:
         print("len: ", self.plen)
         print("seq: ", self.seq)
         print("RWNAK: ", self.e_rwnak())
+        print("------")
     def data(self):
         return self.payload
 
@@ -78,30 +79,43 @@ class edcl():
     swap_endian = False
     seq = 0
 
+    no_response = 0
+    naks = 0
+
     def __init__(self):        
         rc = socket.socket(socket.AF_INET, # Internet
                              socket.SOCK_DGRAM) # UDP
         rc.bind(("0.0.0.0", 0x8088))
         self.sock = rc
-        self.sock.settimeout(1)
+        self.sock.settimeout(0.1)
 
     def set_max_payload(self, p):
         self.maxpayload = p
 
-    def xfer(self, packet, checkrwnak=True, retries=8):
+    def xfer(self, packet, checkrwnak=True, retries=32):
+        rcv = edcl_packet()
         for i in range(0,retries):
             packet.seq = self.seq
-            self.seq = self.seq + 1
+            sentlen = 0
             try:
                 self.sock.sendto(packet.serialize(), (self.remote_ip, self.remote_port))
                 data, addr = self.sock.recvfrom(struct.calcsize(edcl_packet.FORMAT) + self.maxpayload)
-                packet.deserialize(data)
+                rcv.deserialize(data)
             except Exception as e:
+                self.seq = self.seq + 1
+                self.no_response+=1
                 continue
 
-            if checkrwnak and packet.e_rwnak():
+            if checkrwnak and rcv.e_rwnak():
+                if rcv.seq == self.seq:
+                    print("edcl: Lost a few packets, resending")
+                if self.seq != rcv.seq:
+                    print("edcl: Sync lost. expecting %d got %d" % (self.seq+1, rcv.seq))
+                self.seq = rcv.seq
                 continue
-            return packet
+            
+            self.seq = self.seq + 1
+            return rcv
         raise Exception("EDCL Transfer failed")
 
     def _read_raw_(self, address, len):
@@ -155,7 +169,7 @@ class edcl():
                 towrite = self.maxpayload
             else:
                 towrite = length - l
-            
+
             self._write_raw(address + l, data[l:l+towrite])
             if callback:
                 callback(len, l + towrite, towrite)
@@ -170,7 +184,7 @@ class edcl():
             length = fl.tell() - offset
 
         fl.seek(offset)
-        chunksize = 4096
+        chunksize = self.maxpayload * 10
         def wrapcb(total, position, lastwrite):
             if callback:
                 callback(length, position, lastwrite)
@@ -189,7 +203,7 @@ class edcl():
             needclose = True
         else:
             needclose = False
-        chunksize = 4096
+        chunksize = self.maxpayload * 10
         def wrapcb(total, position, lastwrite):
             if callback:
                 callback(length, position, lastwrite)
@@ -207,7 +221,8 @@ class edcl():
         tx = edcl_packet()
         try:
             rx = self.xfer(tx, False, 1)
+            self.seq = rx.seq
+            return (tx.address == rx.address) and (tx.e_len() == rx.e_len())
         except Exception as e:
             return False
-        self.seq = rx.seq
-        return (tx.address == rx.address and tx.len == rx.len)
+
