@@ -5,6 +5,7 @@ class mm7705(chipBase):
     chip_id=1
     chip_rev=1
     skipsync=True
+    spl_address=0x48000
     warning='''
     This chip has a RumBoot V1 bootloader. 
     RumBootV2 may be flashed onto SPI flash and executed from internal memory
