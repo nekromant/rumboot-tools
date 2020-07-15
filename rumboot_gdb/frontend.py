@@ -85,7 +85,7 @@ def cli():
                         help="Application ELF file to debug",
                         type=str,
                         required=False)
-    parser.add_argument("-e", "--exec",
+    parser.add_argument("-x", "--exec",
                         help="Execute supplied binary on start (Implies --load)",
                         action='store_true',
                         default=False,
