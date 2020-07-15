@@ -10,6 +10,7 @@ class edclmanager(object):
     edcl = None
     verbose = False
     chips = ChipDb("rumboot.chips")
+    warned = []
     def __init__(self):
         self.edcl = edcl()
 
@@ -38,9 +39,10 @@ class edclmanager(object):
             #TODO: Implement a better solution to find non-used IP on the subnet
             params["ip"] = params["ip"].replace(".0", ".76")
             self.AddStaticARP(chip, params)
-        if not self.check_reachability(params["ip"]):
+        if not self.check_reachability(params["ip"]) and not params["ip"] in self.warned:
             print("WARNING: IP address %s is not in your subnet." % params["ip"])
             print("WARNING: Please check network interface settings.")
+            self.warned.append(params["ip"])
             return None
 
         if self.verbose:
@@ -101,8 +103,9 @@ class edclmanager(object):
         self.edcl.send_from_file(address + 4, image, callback, 4)
         self.edcl.send_from_file(address    , image, None, 0, 4)
 
-    def connect(self, chip, retry=3):
-        for i in range(1,retry):
+    def connect(self, chip, timeout=5):
+        start = time.clock_gettime(time.CLOCK_MONOTONIC)
+        while start + timeout > time.clock_gettime(time.CLOCK_MONOTONIC):
             ret = self.scan(chip)
             if ret != []:
                 return ret
