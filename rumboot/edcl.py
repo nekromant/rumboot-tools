@@ -43,6 +43,9 @@ class edcl_packet:
 
     def serialize(self):
         self.update()
+        #Make sure we're 4-byte aligned
+        self.offset  = self.address & 0x3
+        self.address = self.address & ~0x3
         ret = struct.pack(self.FORMAT, self.offset, self.control, socket.htonl(self.address)) + self.payload
         return ret
 
@@ -56,8 +59,8 @@ class edcl_packet:
         self.seq = self.e_seq()
         
     def add_data(self, data):
-        self.payload = data
-        self.plen = len(data)
+        self.payload += data
+        self.plen = len(self.payload)
 
     def dump(self):
         print("addr: ", self.address)
@@ -98,6 +101,8 @@ class edcl():
     def xfer(self, packet, checkrwnak=True, retries=32):
         rcv = edcl_packet()
         noreply = False
+        while packet.plen % 4:
+            packet.add_data(b'\x00')
 
         for i in range(0,retries):
             packet.seq = self.seq
@@ -131,7 +136,6 @@ class edcl():
             if rcv.e_seq() == packet.e_seq():
                 self.seq = self.seq + 1                
                 return rcv
-
         raise Exception("EDCL Transfer failed")
 
     def _read_raw_(self, address, len):
