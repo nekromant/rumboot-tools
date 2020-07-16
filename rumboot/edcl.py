@@ -79,21 +79,26 @@ class edcl():
     swap_endian = False
     seq = 0
 
-    no_response = 0
-    naks = 0
+    stats = {
+        "noreply" : 0,
+        "lostack" : 0,
+        "rwnak": 0,
+        "badseq" : 0
+    }
 
     def __init__(self):        
         rc = socket.socket(socket.AF_INET, # Internet
                              socket.SOCK_DGRAM) # UDP
         rc.bind(("0.0.0.0", 0x8088))
         self.sock = rc
-        self.sock.settimeout(0.1)
 
     def set_max_payload(self, p):
         self.maxpayload = p
 
     def xfer(self, packet, checkrwnak=True, retries=32):
         rcv = edcl_packet()
+        noreply = False
+
         for i in range(0,retries):
             packet.seq = self.seq
             sentlen = 0
@@ -102,20 +107,31 @@ class edcl():
                 data, addr = self.sock.recvfrom(struct.calcsize(edcl_packet.FORMAT) + self.maxpayload)
                 rcv.deserialize(data)
             except Exception as e:
-                self.seq = self.seq + 1
-                self.no_response+=1
+                self.stats["noreply"] +=1
+                noreply = True
                 continue
 
-            if checkrwnak and rcv.e_rwnak():
-                if rcv.seq == self.seq:
-                    print("edcl: Lost a few packets, resending")
-                if self.seq != rcv.seq:
-                    print("edcl: Sync lost. expecting %d got %d" % (self.seq+1, rcv.seq))
-                self.seq = rcv.seq
-                continue
-            
-            self.seq = self.seq + 1
-            return rcv
+            if not checkrwnak:
+                return rcv
+
+            if rcv.e_rwnak():
+                self.stats["rwnak"] +=1
+                if noreply and rcv.e_seq() == packet.e_seq() + 1:
+                    noreply = False
+                    self.seq = rcv.e_seq()
+                    self.stats["lostack"] +=1
+                    continue
+
+                if rcv.e_seq() != packet.e_seq():
+                    self.stats["badseq"] +=1
+                    print("edcl: Sync lost. got %d expected %d" % (rcv.e_seq(), packet.e_seq()))
+                    self.seq = rcv.e_seq()
+                    continue
+
+            if rcv.e_seq() == packet.e_seq():
+                self.seq = self.seq + 1                
+                return rcv
+
         raise Exception("EDCL Transfer failed")
 
     def _read_raw_(self, address, len):
@@ -215,13 +231,28 @@ class edcl():
         if needclose:
             fl.close()
 
+    def reconnect(self):
+        return self.connect(remote_ip=self.remote_ip, remote_port=self.remote_port)
+
     def connect(self, remote_ip="192.168.144.9", remote_port=0x9099):
+        self.sock.settimeout(0.3)
         self.remote_ip = remote_ip
         self.remote_port = remote_port
         tx = edcl_packet()
+
+        # Get rid of any residual data we may get
+        # Works around some rare corner-cases
+        try: 
+            self.sock.recvfrom(4096)
+        except:
+            pass
+
         try:
             rx = self.xfer(tx, False, 1)
-            self.seq = rx.seq
+            if rx.e_rwnak():
+                return False
+            self.seq = rx.e_seq() + 1
+            self.sock.settimeout(0.1)
             return (tx.address == rx.address) and (tx.e_len() == rx.e_len())
         except Exception as e:
             return False
