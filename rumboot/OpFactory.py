@@ -4,7 +4,6 @@ from parse import *
 class OpFactory(classLoader):
     objects = dict()
     def __init__(self, objectpath, terminal):
-        print(self, objectpath, terminal)
         super().__init__(objectpath)
         self.term = terminal
         for name,cl in self.classes.items():
