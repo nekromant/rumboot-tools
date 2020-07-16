@@ -98,7 +98,7 @@ def cli():
     term.add_binaries(opts.file[0][0])
     if opts.edcl and c.edcl != None:
         term.xfer.selectTransport("edcl")
-        print("Preferred data transport:      %s" % term.xfer.how)
+    print("Preferred data transport:        %s" % term.xfer.how)
 
     reset.resetToHost()
     term.loop()
