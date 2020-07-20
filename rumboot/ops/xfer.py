@@ -33,6 +33,32 @@ class basic_uploader(base):
             return 1
         return True
 
+class smart_uploader(basic_uploader):
+    formats = {
+        "upload" : "UPLOAD to {:x}. 'X' for X-modem, 'E' for EDCL"
+    }
+
+    def action(self, trigger, result):
+        if (self.term.xfer.how == "xmodem"):
+            self.sync("X")
+
+        if not self.term.xfer.push(self.term.chip.spl_address):
+            print("Upload failed")
+            return 1
+
+        if (self.term.xfer.how != "xmodem"):
+            ser = self.term.ser
+            ser.write('E'.encode())
+        return True
+
+class smart_downloader(basic_uploader):
+    formats = {
+        "upload" : "DOWNLOAD to {:x}. 'X' for X-modem, 'E' for EDCL"
+    }
+
+    def action(self, trigger, result):
+        #TODO:....
+        pass
 
 
 class runtime(basic_uploader):
