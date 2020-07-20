@@ -42,7 +42,7 @@ class smart_uploader(basic_uploader):
         if (self.term.xfer.how == "xmodem"):
             self.sync("X")
 
-        if not self.term.xfer.push(self.term.chip.spl_address):
+        if not self.term.xfer.push(result[0]):
             print("Upload failed")
             return 1
 
