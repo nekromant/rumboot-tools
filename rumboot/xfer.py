@@ -87,12 +87,14 @@ class xferXmodem1k(xferXmodem):
 
 class xferEdcl(xferBase):
     edcl = None
+    force_static_arp = False
     def __init__(self, terminal):
         super().__init__(terminal)
 
     def connect(self, chip):
         if not self.edcl:
             self.edcl = edclmanager()
+            self.edcl.force_static_arp = self.force_static_arp
             if not self.edcl.connect(chip):
                 print("ERROR: Failed to establish edcl connection")
                 return False

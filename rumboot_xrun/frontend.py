@@ -82,6 +82,7 @@ def cli():
     term = terminal(opts.port[0], opts.baud[0])
     term.set_chip(c)
     term.plusargs = plusargs
+    term.xfer.xfers["edcl"].force_static_arp = opts.force_static_arp
 
     try:
         romdump = open(dump_path + c.romdump, "r")

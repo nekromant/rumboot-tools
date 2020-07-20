@@ -112,7 +112,7 @@ This tool adds/checks/updates checksums in existing images. The image must alrea
 usage: rumboot-packimage [-h] -f FILE [-i] [-c] [-C] [-r] [-z value]
                          [-a value] [-g key] [-s key value] [-e]
 
-rumboot-packimage 0.9.3 - Universal RumBoot Image Manipulation Tool
+rumboot-packimage 0.9.4 - Universal RumBoot Image Manipulation Tool
 
 (C) 2018-2020 Andrew Andrianov <andrew@ncrmnt.org>, RC Module
 https://module.ru
@@ -203,17 +203,17 @@ This tool directly uploads a binary to the target board, executes it and provide
 
 ```
 ~# rumboot-xrun --help
-init
 [!] Using configuration file: /home/necromant/.rumboot.yaml
 usage: rumboot-xrun [-h] [-f FILE] [-c chip_id] [-l LOG] [-p port] [-b speed]
-                    [-e] [-r method] [--apc-ip APC_IP] [--apc-user APC_USER]
-                    [--apc-pass APC_PASS] [--apc-port APC_PORT] [-S value]
-                    [-P value] [--pl2303-invert] [--redd-port REDD_PORT]
+                    [-e] [--force-static-arp] [-r method] [--apc-ip APC_IP]
+                    [--apc-user APC_USER] [--apc-pass APC_PASS]
+                    [--apc-port APC_PORT] [-S value] [-P value]
+                    [--pl2303-invert] [--redd-port REDD_PORT]
                     [--redd-relay-id REDD_RELAY_ID]
                     [-A [PLUSARGS [PLUSARGS ...]]] [-R] [-I]
                     [--replay-no-exit]
 
-rumboot-xrun 0.9.3 - RumBoot X-Modem execution tool
+rumboot-xrun 0.9.4 - RumBoot X-Modem execution tool
 
 (C) 2018-2020 Andrew Andrianov <andrew@ncrmnt.org>, RC Module
 https://module.ru
@@ -237,6 +237,7 @@ Connection Settings:
   -b speed, --baud speed
                         Serial line speed
   -e, --edcl            Use edcl for data uploads (when possible)
+  --force-static-arp    Always add static ARP entries
 
 Reset Sequence options:
   These options control how the target board will be reset
@@ -429,8 +430,78 @@ Limitations:
 
 ```
 ~# rumboot-gdb --help
-init
 [!] Using configuration file: /home/necromant/.rumboot.yaml
+usage: rumboot-gdb [-h] [-l LOG] [-p port] [-b speed] [-e]
+                   [--force-static-arp] [-v] [-z SPL_PATH] [-L] [-f FILE] [-x]
+                   [-R] [--debug-remote] [--debug-serial] [-g GDB_PATH] [-G]
+                   -c CHIP_ID [-r method] [--apc-ip APC_IP]
+                   [--apc-user APC_USER] [--apc-pass APC_PASS]
+                   [--apc-port APC_PORT] [-S value] [-P value]
+                   [--pl2303-invert] [--redd-port REDD_PORT]
+                   [--redd-relay-id REDD_RELAY_ID]
+                   ...
+
+rumboot-gdb 0.9.4 - Debugger launcher tool
+
+(C) 2018-2020 Andrew Andrianov <andrew@ncrmnt.org>, RC Module
+https://module.ru
+https://github.com/RC-MODULE
+
+positional arguments:
+  remaining             Extra gdb arguments (e.g. filename)
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -v, --verbose         Print serial debug messages during preload phase
+  -z SPL_PATH, --spl-path SPL_PATH
+                        Path for SPL writers (Debug only)
+  -L, --load            Load binary on start
+  -f FILE, --file FILE  Application ELF file to debug
+  -x, --exec            Execute supplied binary on start (Implies --load)
+  -R, --rebuild         Attempt to rebuild binary
+  --debug-remote        Send 'set debug remote 1' to gdb for debugging
+  --debug-serial        Send 'set debug serial 1' to gdb for debugging
+  -g GDB_PATH, --gdb-path GDB_PATH
+                        Path to flashrom binary
+  -G, --gdb-gui         Start GDB gui
+  -c CHIP_ID, --chip_id CHIP_ID
+                        Chip Id (numeric or name)
+
+Connection Settings:
+  -l LOG, --log LOG     Log terminal output to file
+  -p port, --port port  Serial port to use
+  -b speed, --baud speed
+                        Serial line speed
+  -e, --edcl            Use edcl for data uploads (when possible)
+  --force-static-arp    Always add static ARP entries
+
+Reset Sequence options:
+  These options control how the target board will be reset
+
+  -r method, --reset method
+                        Reset sequence to use (apc base mt12505 pl2303
+                        powerhub redd)
+
+apc reset sequence options:
+  --apc-ip APC_IP       APC IP Address/hostname
+  --apc-user APC_USER   APC IP username
+  --apc-pass APC_PASS   APC IP username
+  --apc-port APC_PORT   APC Power port
+
+mt12505 reset sequence options:
+  -S value, --ft232-serial value
+                        FT232 serial number for MT125.05
+
+pl2303 reset sequence options:
+  -P value, --pl2303-port value
+                        PL2303 physical port (for -P of pl2303gpio)
+  --pl2303-invert       Invert all pl2303 gpio signals
+
+redd reset sequence options:
+  --redd-port REDD_PORT
+                        Redd serial port (e.g. /dev/ttyACM1)
+  --redd-relay-id REDD_RELAY_ID
+                        Redd Relay Id (e.g. A)
 
 ```
 ```
@@ -466,16 +537,16 @@ This tool allows you to quickly program different flashes attached to the target
 
 ```
 ~# rumboot-xflash --help
-init
 [!] Using configuration file: /home/necromant/.rumboot.yaml
 usage: rumboot-xflash [-h] [-f FILE] [-c chip_id] [-l LOG] [-p port]
-                      [-b speed] [-e] [-v] -m memory [-z SPL_PATH] [-r method]
-                      [--apc-ip APC_IP] [--apc-user APC_USER]
-                      [--apc-pass APC_PASS] [--apc-port APC_PORT] [-S value]
-                      [-P value] [--pl2303-invert] [--redd-port REDD_PORT]
+                      [-b speed] [-e] [--force-static-arp] [-v] -m memory
+                      [-z SPL_PATH] [-r method] [--apc-ip APC_IP]
+                      [--apc-user APC_USER] [--apc-pass APC_PASS]
+                      [--apc-port APC_PORT] [-S value] [-P value]
+                      [--pl2303-invert] [--redd-port REDD_PORT]
                       [--redd-relay-id REDD_RELAY_ID]
 
-rumboot-xflash 0.9.3 - RumBoot X-Modem firmware update tool
+rumboot-xflash 0.9.4 - RumBoot X-Modem firmware update tool
 
 (C) 2018-2020 Andrew Andrianov <andrew@ncrmnt.org>, RC Module
 https://module.ru
@@ -500,6 +571,7 @@ Connection Settings:
   -b speed, --baud speed
                         Serial line speed
   -e, --edcl            Use edcl for data uploads (when possible)
+  --force-static-arp    Always add static ARP entries
 
 Reset Sequence options:
   These options control how the target board will be reset
@@ -631,17 +703,17 @@ rumboot-flashrom -p /dev/ttyUSB1 -c basis -- --read img.bin
 
 ```
 ~# rumboot-flashrom --help
-init
 [!] Using configuration file: /home/necromant/.rumboot.yaml
-usage: rumboot-flashrom [-h] [-l LOG] [-p port] [-b speed] [-e] [-v] -m memory
-                        [-z SPL_PATH] [-f FLASHROM_PATH] -c CHIP_ID
-                        [-r method] [--apc-ip APC_IP] [--apc-user APC_USER]
+usage: rumboot-flashrom [-h] [-l LOG] [-p port] [-b speed] [-e]
+                        [--force-static-arp] [-v] -m memory [-z SPL_PATH]
+                        [-f FLASHROM_PATH] -c CHIP_ID [-r method]
+                        [--apc-ip APC_IP] [--apc-user APC_USER]
                         [--apc-pass APC_PASS] [--apc-port APC_PORT] [-S value]
                         [-P value] [--pl2303-invert] [--redd-port REDD_PORT]
                         [--redd-relay-id REDD_RELAY_ID]
                         ...
 
-rumboot-flashrom 0.9.3 - flashrom wrapper tool
+rumboot-flashrom 0.9.4 - flashrom wrapper tool
 
 (C) 2018-2020 Andrew Andrianov <andrew@ncrmnt.org>, RC Module
 https://module.ru
@@ -669,6 +741,7 @@ Connection Settings:
   -b speed, --baud speed
                         Serial line speed
   -e, --edcl            Use edcl for data uploads (when possible)
+  --force-static-arp    Always add static ARP entries
 
 Reset Sequence options:
   These options control how the target board will be reset
@@ -912,7 +985,7 @@ _rumboot-combine_ is a simple to tool to compose a chain of several image file. 
 ~# rumboot-combine --help
 usage: rumboot-combine [-h] -i INPUT -o OUTPUT [-a ALIGN]
 
-rumboot-combine 0.9.3 - RumBoot Image Merger Tool
+rumboot-combine 0.9.4 - RumBoot Image Merger Tool
 
 (C) 2018-2020 Andrew Andrianov <andrew@ncrmnt.org>, RC Module
 https://module.ru

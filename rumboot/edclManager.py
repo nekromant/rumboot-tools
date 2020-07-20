@@ -11,6 +11,8 @@ class edclmanager(object):
     verbose = False
     chips = ChipDb("rumboot.chips")
     warned = []
+    force_static_arp = False
+
     def __init__(self):
         self.edcl = edcl()
 
@@ -34,11 +36,11 @@ class edclmanager(object):
             return object.__getattribute__(self.edcl, key)
 
     def try_connect(self, chip, params):
-        if self.buggy_ip(params):
+        if self.buggy_ip(params) or self.force_static_arp:
             #FIXME: This logic sucks. 
             #TODO: Implement a better solution to find non-used IP on the subnet
             params["ip"] = params["ip"].replace(".0", ".76")
-            self.AddStaticARP(chip, params)
+            self.prepareStaticARP(chip, params)
         if not self.check_reachability(params["ip"]) and not params["ip"] in self.warned:
             print("WARNING: IP address %s is not in your subnet." % params["ip"])
             print("WARNING: Please check network interface settings.")
@@ -83,21 +85,38 @@ class edclmanager(object):
     def test_chip(self, chip):
         pass
 
-    def AddStaticARP(self, chip, params):
-        print("WARNING: Chip '%s' has broken EDCL ARP, working around" % chip.__name__)
-        if arpreq.arpreq(params["ip"]):
-            print("Static ARP record already exists, good")
-            return
+    def showArpWarning(self, cmd):
+        print("WARNING: Trying to add ARP record via 'sudo'/'runas'.")
+        print("WARNING: If that doesn't work please run manually: %s" % cmd)
+
+    def dropARP(self, chip, params):
+        if platform.system() == 'Linux':
+            cmd = "sudo arp -d %s" % params["ip"]
+        elif platform.system() == 'Windows': 
+            cmd = "runas /user:Administrator arp /d %s" % params["ip"]
+        else:
+            raise("FATAL: Don't know how to add static ARP on %s", platform.system())
+        os.system(cmd)
+        self.showArpWarning(cmd)
+
+    def addARP(self, chip, params):
         if platform.system() == 'Linux':
             cmd = "sudo arp -s %s %s" % (params["ip"], params["mac"])
         elif platform.system() == 'Windows': 
             cmd = "runas /user:Administrator arp /s %s %s" % (params["ip"], params["mac"].upper().replace(":","-"))
         else:
             raise("FATAL: Don't know how to add static ARP on %s", platform.system())
-        print("WARNING: Trying to add ARP record via 'sudo'. If that doesn't work")
-        print("WARNING: please run manually: %s" % cmd)
-        print("WARNING: Sorry for that bug.")
         os.system(cmd)
+        self.showArpWarning(cmd)
+        
+    def prepareStaticARP(self, chip, params):
+        if arpreq.arpreq(params["ip"]) and not self.force_static_arp:
+            print("Static ARP record already exists, good")
+            return
+            
+        if self.force_static_arp:
+            self.dropARP(chip, params)
+        self.addARP(chip, params)
 
     def smartupload(self, address, image, callback = None):
         self.edcl.send_from_file(address + 4, image, callback, 4)
@@ -109,4 +128,4 @@ class edclmanager(object):
             ret = self.scan(chip)
             if ret != []:
                 return ret
-        
+    

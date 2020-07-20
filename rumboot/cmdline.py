@@ -106,6 +106,12 @@ class arghelper():
                         action="store_true",
                         default=False,
                         required=False)
+        group.add_argument('--force-static-arp',
+                        help="Always add static ARP entries",
+                        action="store_true",
+                        default=False,
+                        required=False)
+
 
     def add_resetseq_options(self, parser, rfactory):
         group = parser.add_argument_group('Reset Sequence options', "These options control how the target board will be reset")

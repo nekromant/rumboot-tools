@@ -75,7 +75,7 @@ def cli():
         term.logstream = opts.log
     
     term.verbose = opts.verbose
-
+    term.xfer.xfers["edcl"].force_static_arp = opts.force_static_arp
 
     try:
         spl = c.memories[mem]
