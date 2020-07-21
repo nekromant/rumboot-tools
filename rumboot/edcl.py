@@ -210,12 +210,17 @@ class edcl():
                 callback(length, position, lastwrite)
 
         while True:
-            chunk = fl.read(chunksize)
+            toread = chunksize
+            if toread > length:
+                toread = length
+            chunk = fl.read(length)
             if len(chunk) == 0:
                 break
             self.write(address, chunk, wrapcb)
             address = address + chunksize
-
+            length -= toread
+            if length == 0:
+                break
         
     def recv_to_file(self, address, length, fl, callback = None):
         if type(fl) == str:
