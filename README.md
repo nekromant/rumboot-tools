@@ -22,7 +22,7 @@ Sounds like too much? How you are you expected to use them in your app?
 
 * If rumboot-xflash doesn't work with your SPI Flash chip, check out _rumboot-flashrom_ instead
 
-* Have only one board for a few developers? Want easy remote access during COVID-19 epidemic? Check out _rumboot-daemon_
+* Have only one board for a few developers? Want easy remote access during COVID-19 or some other epidemic? Check out _rumboot-daemon_. 
 
 * Want to combine a set of tests into one image? Check out the _rumboot-combine_ tool.
 
@@ -45,16 +45,42 @@ rpi4           | BCM2711 (Raspberry Pi 4)| little    | 4      | 255    | 2      
 
 Since different chips have different ROM loaders, default baudrates, flash memories and etc., some tools require you either set ChipId explicitly (via -c option) or try their best to guess it from image file header. Only newer (rumboot V2 and later) image formats have a dedicated field called chip_id. 
 
-For some board (namely, older RC Module's chip) there's a build of newer bootloader that can be programmed into SPI Flash and NAND and provide booting via newer V2 images as well as UART upload.
-
 You can either specify chip id via it's number or via platform name, whichever suits you. (`-c 2` and `-c mb7707` do the same).
 
-Thirdparty chips that are used for testing and prototyping always have chip id as 255. 
+For rumboot v2 and later, if the chip id doesn't match the one in silicon, the image is considered invalid
 
-The Chip Revision may be used to distinguish different versions of the same chip, if any. It is only
-supported by Rumboot V2 headers and later. If Chip Revision of the file you are uploading and the one stored 
+Thirdparty chips that are used for testing and prototyping always have chip id set as 255. 
+
+The chip revision may be used to distinguish different versions of the same chip, if any. It is only
+supported by Rumboot V2 headers and later. If Chip revision of the file you are uploading and the one stored 
 in silicon don't match - you'll get a warning.
 
+## EDCL Notes
+
+### Basic stuff
+Uart is the simplest possible interface for all debugging stuff, but it's also quite slow if you are going
+to send huge files (e.g. linux kernel, initrd, etc.) Starting with version 0.9.4 rumboot-tools support a side-channel to do data transfers. Right now the only possible sidechannel is EDCL.
+
+EDCL stands for 'Ethernet communications debug link'. It provides a way to access physical memory via a special protocol over UDP. It exists in all RC Module's chips (except 'basis' platform). The protocol has *NO* security at all, so please disable edcl in a production enviroment. If you didn't get it, I'll write it in *bold*:
+
+*NEVER ENABLE EDCL IN A PRODUCTION ENVIRONMENT* 
+
+### Seting up
+
+EDCL IP and MAC adresses are hardcoded in silicon. Therefore putting several same chips in one LAN is not likely to work. The recommended setup is a dedicated network interface directly connected to the target board.
+the interface should have an IP _192.168.0.1_ netmask _255.255.0.0_
+
+After the interface setup is done, just add _-e_ option for xrun/xflash and enjoy
+
+### ARP Bugs and workarounds
+
+Some old chips have an invalid IP set as 192.168.0.0. The OS will discard ARP replies as invalid. However since EDCL only checks mac, we can set a static ARP record. The xrun does that automatically when needed using sudo/runas on linux/windows respectively. If a static record exists, no static record is added.
+
+### IP clash bug and workarounds 
+
+Okay, so despite the warning above, you want to use several different chips in the same LAN and noticed that different chips (e.g. mm7705 and oi10) have the same IP, though MACs are unique. There's a special flag called 
+--force-static-arp that make xrun/xflash always drop arp existing records (if any) and add proper ones.
+Just note that this usage case is 'officially' unsupported. 
 
 ## Requirements
 
@@ -308,7 +334,7 @@ If no configuration file can be found in any location, the default serial port w
 
 
 #### Typical usage
-##### Execute a file
+##### Execute a file on bare metal enviroment
 
 ```
 ~# rumboot-xrun -f myimage.bin -p /dev/ttyUSB0
@@ -366,6 +392,164 @@ boot: host: Back in rom, code 0
 This command waits for bootrom prompt, uploads a file via xmodem and prints everything received to stdout acting pretty much the same, as your favorite terminal program. The exit code from the program will be the exit code of rumboot-run (0 in the example above), therefore you can rumboot-xrun in your scripts during unit-testing.
 
 NOTE: Make sure the jumpers on the board are set to 'host mode'. After running the command press the reset button or supply power to the board.
+
+##### Start u-boot and enter interactive prompt
+
+```
+~# rumboot-xrun -f spl/u-boot-spl-dtb.rbi -f u-boot-dtb.img -e -I -r pl2303
+
+Detected chip:    oi10 (1888ВМ018(A)/1888ВМ01H4)
+pl2303: /dev/ttyUSB8 detected at physical port 2
+Reset method:               pl2303
+Baudrate:                   115200 bps
+Port:                       /dev/ttyUSB8
+Preferred data transport:   xmodem
+
+
+
+    RC Module's                           
+   _______  ______ ___  / /_  ____  ____  / /_
+  / ___/ / / /  ` \/  \/  \/  \/ /
+ / /  / /_/ / / / / / / /_/ / /_/ / /_/ / /_  
+/_/   \__,_/_/ /_/ /_/_.___/\____/\____/\__/  
+oi10 | Production | HEAD-0a2dc3a8
+--- RumBoot Configuration ---
+Force Host Mode: enabled
+Selftest:        disabled
+EDCL/RMAP:       enabled
+UART speed:      115200 bps
+Max SPL size:    131072 bytes
+SD Card:         Inserted
+CPU ECC:         enabled
+NOR/SRAM ECC:    disabled
+Direct NOR boot: disabled
+Reset cause:     SCTL: 0x800 SPR_DBCR0: 0x0
+---          ---          ---
+boot: host: Entering Host Mode
+boot: host: GRETH0 EDCL MAC: ec:17:66:e:10:0 IP: 192.168.1.48
+boot: host: GRETH1 EDCL MAC: ec:17:66:e:10:1 IP: 192.168.1.49
+boot: host: Hit 'X' for X-Modem upload
+Sending binary: 43.0kB [00:06, 6.73kB/s]                                        
+
+
+
+boot: host: Received 44032 bytes, executing in 100ms
+boot: host: --- Boot Image Header ---
+boot: host: Magic:            0xb01dface
+boot: host: Header version:   2
+boot: host: Chip Id:          4
+boot: host: Chip Revision:    1
+boot: host: Data length:      43907
+boot: host: Header CRC32:     0xb6bc96ec
+boot: host: Data CRC32:       0x6fd63f77
+boot: host: ---        ---        ---
+
+U-Boot SPL 2020.04-rc1-g67f6b3d9a6-dirty (Jul 21 2020 - 11:50:55 +0300)
+Testing SDRAM...
+Trying to boot from RUMBOOT
+Skip rumboot chain - host mode
+Trying to boot from X-MODEM/EDCL
+UPLOAD to 0x21e00000. 'X' for X-modem, 'E' for EDCL
+Sending binary: 296kB [00:29, 10.4kB/s]                                         
+ xyzModem - CRC mode, 0(SOH)/296(STX)/0(CAN) packets, 0 retries
+Loaded 302430 bytes
+The image has been loaded
+
+
+U-Boot 2020.04-rc1-g67f6b3d9a6-dirty (Jul 21 2020 - 11:50:55 +0300)
+
+CPU:   RC Module PowerPC 476FP core
+Model: RCM MB150-02
+DRAM:  32 MiB
+MMC:   mmc0@D002C000: 0
+Loading Environment from MMC... OK
+In:    uart0@D0029000
+Out:   uart0@D0029000
+Err:   uart0@D0029000
+Net:   eth0: greth0@D002A000
+Hit any key to stop autoboot:  0 
+=>
+
+```
+
+This command resets the board, uploads u-boot spl, u-boot and enters interactive mode for you to play with.
+The uploads are performed using xmodem.
+
+##### Start u-boot and enter interactive prompt, prefer edcl for uploads
+
+```
+~# rumboot-xrun -f spl/u-boot-spl-dtb.rbi -f u-boot-dtb.img -e -I -r pl2303
+
+Detected chip:    oi10 (1888ВМ018(A)/1888ВМ01H4)
+pl2303: /dev/ttyUSB8 detected at physical port 2
+Reset method:               pl2303
+Baudrate:                   115200 bps
+Port:                       /dev/ttyUSB8
+Preferred data transport:   edcl
+
+
+
+    RC Module's                           
+   _______  ______ ___  / /_  ____  ____  / /_
+  / ___/ / / /  ` \/  \/  \/  \/ /
+ / /  / /_/ / / / / / / /_/ / /_/ / /_/ / /_  
+/_/   \__,_/_/ /_/ /_/_.___/\____/\____/\__/  
+oi10 | Production | HEAD-0a2dc3a8
+--- RumBoot Configuration ---
+Force Host Mode: enabled
+Selftest:        disabled
+EDCL/RMAP:       enabled
+UART speed:      115200 bps
+Max SPL size:    131072 bytes
+SD Card:         Inserted
+CPU ECC:         enabled
+NOR/SRAM ECC:    disabled
+Direct NOR boot: disabled
+Reset cause:     SCTL: 0x800 SPR_DBCR0: 0x0
+---          ---          ---
+boot: host: Entering Host Mode
+boot: host: GRETH0 EDCL MAC: ec:17:66:e:10:0 IP: 192.168.1.48
+boot: host: GRETH1 EDCL MAC: ec:17:66:e:10:1 IP: 192.168.1.49
+boot: host: Hit 'X' for X-Modem upload
+Connected: oi10 (Greth #1)
+Sending binary: 100%|█████████████████████▉| 42.9k/42.9k [00:00<00:00, 1.15MB/s]
+boot: host: --- Boot Image Header ---
+boot: host: Magic:            0xb01dface
+boot: host: Header version:   2
+boot: host: Chip Id:          4
+boot: host: Chip Revision:    1
+boot: host: Data length:      43907
+boot: host: Header CRC32:     0xb6bc96ec
+boot: host: Data CRC32:       0x6fd63f77
+boot: host: ---        ---        ---
+
+U-Boot SPL 2020.04-rc1-g67f6b3d9a6-dirty (Jul 21 2020 - 11:50:55 +0300)
+Testing SDRAM...
+Trying to boot from RUMBOOT
+Skip rumboot chain - host mode
+Trying to boot from X-MODEM/EDCL
+UPLOAD to 0x21e00000. 'X' for X-modem, 'E' for EDCL
+Sending binary: 100%|███████████████████████▉| 295k/295k [00:00<00:00, 1.18MB/s]
+The image has been loaded
+
+
+U-Boot 2020.04-rc1-g67f6b3d9a6-dirty (Jul 21 2020 - 11:50:55 +0300)
+
+CPU:   RC Module PowerPC 476FP core
+Model: RCM MB150-02
+DRAM:  32 MiB
+MMC:   mmc0@D002C000: 0
+Loading Environment from MMC... OK
+In:    uart0@D0029000
+Out:   uart0@D0029000
+Err:   uart0@D0029000
+Net:   eth0: greth0@D002A000
+Hit any key to stop autoboot:  0 
+=>
+```
+
+This command resets the board, uploads u-boot spl, u-boot and enters interactive mode for you to play with.
+The uploads are performed using edcl side-channel.
 
 ##### Execute a file, custom port/speed, automatically reset board via pl2303
 
