@@ -85,7 +85,7 @@ def cli():
 
     if opts.spl_path != None:
         spl_path = opts.spl_path
-        print("SPL               %s" % (spl_path + c.memories[mem]))
+        print("SPL                              %s" % (spl_path + c.memories[mem]))
 
     spl = spl_path + c.memories[mem]
 
