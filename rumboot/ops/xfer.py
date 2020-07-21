@@ -11,12 +11,14 @@ class basic_uploader(base):
     def __init__(self, term):
         super().__init__(term)
 
-    def sync(self, syncword):
+    def sync(self, syncword, short = False):
         ser = self.term.ser
         if self.term.replay:
             return
         while True:
             ser.write(syncword.encode())
+            if short:
+                break
             while True:
                 tmp1 = ser.read(1)
                 tmp2 = ser.read(1)
@@ -40,15 +42,14 @@ class smart_uploader(basic_uploader):
 
     def action(self, trigger, result):
         if (self.term.xfer.how == "xmodem"):
-            self.sync("X")
+            self.sync("X", True)
 
         if not self.term.xfer.push(result[0]):
             print("Upload failed")
             return 1
 
         if (self.term.xfer.how != "xmodem"):
-            ser = self.term.ser
-            ser.write('E'.encode())
+            self.sync('E', True)
         return True
 
 class smart_downloader(basic_uploader):
