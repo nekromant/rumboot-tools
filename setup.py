@@ -21,7 +21,6 @@ setup(
         "tqdm", 
         "pyyaml", 
         "gdbgui", 
-        "arpreq", 
         "netifaces", 
         "netaddr",
         "getmac"

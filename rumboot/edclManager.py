@@ -1,11 +1,16 @@
-from rumboot.edcl import edcl
-from rumboot.chipDb import ChipDb
+import subprocess
 import os
 import platform
-import arpreq
-import netifaces as ni
 import time
+
+import netifaces as ni
 from netaddr import IPNetwork, IPAddress
+from parse import parse
+
+from rumboot.edcl import edcl
+from rumboot.chipDb import ChipDb
+
+
 class edclmanager(object):
     edcl = None
     verbose = False
@@ -109,8 +114,39 @@ class edclmanager(object):
         os.system(cmd)
         self.showArpWarning(cmd)
         
+    def listARP(self):
+        ret = {}
+        if platform.system() == 'Linux':
+            cmd = "/usr/sbin/arp -n"
+        elif platform.system() == 'Windows': 
+            cmd = "arp -a"
+        else:
+            raise("FATAL: I don't know how to query ARP on %s", platform.system())
+        out = subprocess.Popen(cmd.split(" "), 
+                stdout=subprocess.PIPE, 
+                stderr=subprocess.PIPE)
+        stdout,stderr = out.communicate()
+        if platform.system() == 'Linux':
+            for l in stdout.decode().split("\n"):
+                result = parse("{:<} ether {:>} {:>} {:>}", l)
+                if result == None:
+                    continue
+                ret[result[0]]=result[1]
+        elif  platform.system() == 'Windows': 
+            for l in stdout.decode().split("\n"):
+                result = parse("{:<} {:>} {:>}", l)
+                if result == None:
+                    continue
+                ret[result[0]]=result[1].replace("-",":")
+        return ret
+
+    def getARP(self, ip):
+        tbl = self.listARP()
+        if ip in tbl:
+            return tbl[ip]
+
     def prepareStaticARP(self, chip, params):
-        if arpreq.arpreq(params["ip"]) and not self.force_static_arp:
+        if self.getARP(params["ip"]) and not self.force_static_arp:
             print("Static ARP record already exists, good")
             return
             
