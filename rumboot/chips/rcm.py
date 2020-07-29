@@ -108,10 +108,18 @@ class bbp3(chipBase):
     chip_rev=1
     welcome='host'
     baudrate=115200
+    spl_address=0x8000
     memories = {
         "spi0-cs0": "rumboot-bbp3-PostProduction-updater-spi0-cs0.bin",
     }
     romdump = "bbp3-v1.dmp"    
+    edcl = [
+        {   
+            "name"   : "GRETH", 
+            "ip"     : "192.168.1.48", 
+            "mac"    : "ec:17:66:ae:de:30"
+        }
+    ]
 
 class nm6408(chipBase):
     part="1888ВС058"
