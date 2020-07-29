@@ -65,9 +65,12 @@ class engine():
         print("--- --- --- --- --- --- --- --- --- ")
         self.terminal = term
 
-    def reset():
-        
+    def reset(self):
+        pass
 
+    def run(self, spl, stdout=None):
+        pass
+    
     def read32(self, addr):
         pass
 
