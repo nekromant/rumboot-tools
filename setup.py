@@ -21,6 +21,7 @@ setup(
         "tqdm", 
         "pyyaml", 
         "gdbgui", 
+        "hexdump",
         "netifaces", 
         "netaddr",
         "getmac"

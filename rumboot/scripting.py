@@ -5,6 +5,7 @@ import threading
 import time
 
 from parse import parse
+from hexdump import hexdump
 
 from rumboot.chipDb import ChipDb
 from rumboot.ImageFormatDb import ImageFormatDb
@@ -14,8 +15,14 @@ from rumboot.terminal import terminal
 import rumboot_xrun
 import rumboot
 
+#TODO: Passthrough all missing methods to self.xfer
+#TODO: Preload sio spl, when required
+#TODO: Implement missing API in xfer.py for edcl and serial
 
 class engine():
+    def preload(self):
+        self.reset()
+
     def __init__(self, target_chip=None, transport="xmodem", args=None):
         resets  = ResetSeqFactory("rumboot.resetseq")
         formats = ImageFormatDb("rumboot.images")
@@ -64,43 +71,53 @@ class engine():
         print("Preferred data transport:   %s" % term.xfer.how)
         print("--- --- --- --- --- --- --- --- --- ")
         self.terminal = term
+        self.xfer = term.xfer
 
     def reset(self):
-        pass
+        self.reset.resetToHost()
 
+    #TODO: stdout processing
     def run(self, spl, stdout=None):
-        pass
-    
+        self.term.add_binaries(spl)
+        self.terminal.add_binaries(spl)
+        return self.terminal.loop(False,True)
+
     def read32(self, addr):
-        pass
+        return self.xfer.read32(addr)
 
     def write32(self, addr, data):
-        pass
+        return self.xfer.write32(addr, data)
 
     def read8(self, addr):
-        pass
+        return self.xfer.read8(addr)
 
     def write8(self, addr, data):
-        pass
+        return self.xfer.write8(addr,data)
 
     def read16(self, addr):
-        pass
+        return self.xfer.read16(addr)
 
     def write16(self, addr, data):
-        pass
+        return self.xfer.write16(addr,data)
 
     def read64(self, addr):
-        pass
+        return self.xfer.read64(addr)
 
     def write64(self, addr, data):
-        pass
+        return self.xfer.write64(addr,data)
+
+    def read(self, addr, len):
+        return self.xfer.read(addr, len)
+
+    def write(self, addr, data):
+        return self.xfer.write(addr, data)
 
     def dump(self, addr, len):
-        pass
+        data = self.read(addr, len)
+        hexdump(data)
 
     def upload(self, file, addr):
         pass
 
     def download(self, file, addr, length):
         pass
-
