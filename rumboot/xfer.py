@@ -7,6 +7,9 @@ class xferBase():
     def __init__(self, terminal):
         self.term = terminal
         pass
+
+    def reconnect(self):
+        pass
     
     def connect(self, chip):
         self.connected = True
@@ -103,6 +106,10 @@ class xferEdcl(xferBase):
     def _recv(self, stream, desc='Sending stream'):
         pass
 
+    def reconnect(self):
+        if self.edcl != None:
+            self.edcl.reconnect()
+
     def write32(self, address, data):
         return self.edcl.write32(address, data)
 
@@ -158,5 +165,8 @@ class xferManager(xferBase):
         else:
             raise Exception("Failed to connect transport")
 
+    def reconnect(self):
+        self.xfer.reconnect()
+        
     def _recv(self, stream, desc='Receiving stream'):
         return super()._recv(stream, desc=desc)
