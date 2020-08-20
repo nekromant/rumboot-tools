@@ -12,7 +12,7 @@ class apc(base):
     outlet = 8
 
     def __init__(self, opts):
-        self.passwd = opts.apc_passwd
+        self.passwd = opts.apc_pass
         self.host   = opts.apc_host
         self.user   = opts.apc_user
         self.outlet = opts.apc_outlet
