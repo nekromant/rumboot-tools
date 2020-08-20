@@ -1,27 +1,29 @@
 import os
-import time
+from time import sleep
 import socket
 from rumboot.resetseq.resetSeqBase import base
 
 class apc(base):
     name = "apc"
-    host = "elvenblade"
+    host = "192.168.10.2"
     port = 23
     user = "whiteblade"
     passwd = "ash2wert"
     outlet = 8
 
     def __init__(self, opts):
-        pass
+        self.passwd = opts["apc-passwd"]
+        self.host   = opts["apc-host"]
+        self.user   = opts["apc-user"]
+        self.outlet = opts["apc-outlet"]
 
 
     def expect(self, f, inw, outw):
         while True:
             tmp = f.readline()
             if len(tmp) == 0:
-                time.sleep(0.2)
+                sleep(0.2)
                 pass
-            print(tmp, end='')
             if inw in tmp:
                 f.write(outw + "\r")
                 f.flush()
@@ -46,23 +48,25 @@ class apc(base):
              self.expect(f, "Enter 'YES' to continue or <ENTER> to cancel", "YES")
              self.expect(f, "Press <ENTER> to continue...", "")
              s.close()
+             sleep(2) #Power bricks have huge caps. Let power stabilize
 
     def resetWithCustomFlags(self, flags=[]):
-        print("Please, power-cycle board")
+        return self.resetToHost(flags)
 
     def resetToHost(self, flags = []):
         self.power(0)
+        sleep(3)
         self.power(1)
 
     def resetToNormal(self, flags = []):
         self.power(0)
+        sleep(3)
         self.power(1)
 
     def add_argparse_options(parser):
-        parser.add_argument("--apc-ip",
+        parser.add_argument("--apc-host",
                             help="APC IP Address/hostname",
-#                            default="192.168.10.2",
-                            default="elvenblade",
+                            default="192.168.10.2",
                             required=False)
         parser.add_argument("--apc-user",
                             help="APC IP username",
@@ -72,7 +76,7 @@ class apc(base):
                             help="APC IP username",
                             default="ash2wert",
                             required=False)
-        parser.add_argument("--apc-port",
-                            help="APC Power port",
-                            default=0,
+        parser.add_argument("--apc-outlet",
+                            help="APC power outlet to use",
+                            default=8,
                             required=False)
