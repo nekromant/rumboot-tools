@@ -64,16 +64,19 @@ class smart_downloader(basic_uploader):
 
 class runtime(basic_uploader):
     formats = {
-        "runtime"           : "UPLOAD: {} to {:x}",
+        "runtime"           : "UPLOAD: {} to {:x}. 'X' for X-modem, 'E' for EDCL",
     }
 
     def action(self, trigger, result):
         arg = result[0]
         fl = self.term.plusargs[arg]
         stream = open(fl, 'rb')
-        print("Sending %s via xmodem" % fl)
+        if (self.term.xfer.how == "xmodem"):
+            self.sync("X", True)
         ret = self.term.xfer.send(stream, result[1], "Uploading")
         stream.close()  
+        if (self.term.xfer.how != "xmodem"):
+            self.sync('E', True)
         return ret
 
 
