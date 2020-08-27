@@ -221,6 +221,7 @@ class edcl():
             length -= toread
             if length == 0:
                 break
+#        print(self.stats)
         
     def recv_to_file(self, address, length, fl, callback = None):
         if type(fl) == str:
@@ -239,6 +240,7 @@ class edcl():
             rd = rd + chunksize
         if needclose:
             fl.close()
+#        print(self.stats)
 
     def reconnect(self):
         return self.connect(remote_ip=self.remote_ip, remote_port=self.remote_port)
@@ -262,6 +264,8 @@ class edcl():
                 return False
             self.seq = rx.e_seq() + 1
             self.sock.settimeout(0.1)
+            for shit in self.stats:
+                self.stats[shit]=0
             return (tx.address == rx.address) and (tx.e_len() == rx.e_len())
         except Exception as e:
             return False

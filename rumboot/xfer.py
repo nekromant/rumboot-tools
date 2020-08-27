@@ -39,14 +39,15 @@ class xferBase():
         else:
             raise Exception("Transport not connected")
 
-    def _recv(self, stream, desc="Sending stream"):
+    def _recv(self, stream, srcaddr, total, desc="Sending stream"):
+        print("FATAL: NOT IMPLEMENTED")        
         pass
 
-    def recv(self, stream, desc="Receiving stream"):
+    def recv(self, stream, srcaddr, total, desc="Receiving stream"):
         if type(stream) is str:
             stream = open(stream, 'wb')
         if self.connected:
-            return self._recv(self, stream, desc)
+            return self._recv(stream, srcaddr, total, desc=desc)
         else:
             raise Exception("Failed to enable transport")
 
@@ -81,8 +82,19 @@ class xferXmodem(xferBase):
         terminal.progress_end()
         return ret
  
-    def _recv(self, stream, desc='Receiving stream'):
-        pass
+    def _recv(self, stream, srcaddr, total, desc='Receiving stream'):
+        terminal = self.term
+        increment = self.increment
+        #terminal.progress_start(desc, total)
+        self.last_ok = 0
+        def callback(total_packets, success_count, error_count):
+            if self.last_ok != success_count and success_count != 0:
+                terminal.progress_update(total_packets * increment, success_count * increment, increment)
+            self.last_ok = success_count
+        #FixMe: modem.recv doesn't support callback mechanism
+        ret = self.modem.recv(stream, crc_mode=0, retry=128)
+        #terminal.progress_end()
+        return ret
 
 class xferXmodem1k(xferXmodem):
     mode = "xmodem1k"
@@ -103,8 +115,10 @@ class xferEdcl(xferBase):
                 return False
         return super().connect(chip)
         
-    def _recv(self, stream, desc='Sending stream'):
-        pass
+    def _recv(self, stream, srcaddr, total, desc="Sending stream"):
+        def prg(total_bytes, position, increment):
+            self.term.progress_update(total_bytes, position, increment) 
+        return self.edcl.recv_to_file(srcaddr, total, stream, callback=prg)
 
     def reconnect(self):
         if self.edcl != None:
@@ -165,8 +179,14 @@ class xferManager(xferBase):
         else:
             raise Exception("Failed to connect transport")
 
+    def recv(self, stream, srcaddr, total, desc="Receiving data"):
+        if self.xfer.connect(self.chip):
+            return self.xfer.recv(stream, srcaddr, total, desc=desc)
+        else:
+            raise Exception("Failed to connect transport")
+
     def reconnect(self):
         self.xfer.reconnect()
         
-    def _recv(self, stream, desc='Receiving stream'):
-        return super()._recv(stream, desc=desc)
+#    def _recv(self, stream, desc='Receiving stream'):
+#        return super()._recv(stream, desc=desc)

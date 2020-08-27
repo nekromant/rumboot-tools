@@ -15,9 +15,11 @@ class edcl_generic_uploader(basic_uploader):
             return False
 
         print("WARNING: Bootloader doesn't support xmodem, forcing edcl upload")
+        old = self.term.xfer.how
         self.term.xfer.selectTransport("edcl")
         if not self.term.xfer.push(result[0]):
             return 1
+        self.term.xfer.selectTransport(old)
         return True
 
 
@@ -31,10 +33,12 @@ class dumb_chips_uploader(basic_uploader):
 
         tp = self.term.formats.guess(self.term.runlist[0])
         if self.term.hack("silentRom"):
-            print("WARNING: Bootloader doesn't support xmodem, forcing edcl upload")
+            print("WARNING: Bootloader doesn't support xmodem, forcing initial edcl upload")
+            old = self.term.xfer.how
             self.term.xfer.selectTransport("edcl")
             if not self.term.xfer.push(self.term.chip.spl_address):
                 return 1
+            self.term.xfer.selectTransport(old)
 
         #Some chip-specific hacks
         if tp.name == "Legacy K1879XB1YA":

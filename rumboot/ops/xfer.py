@@ -1,5 +1,6 @@
 from rumboot.ops.base import base
 import tqdm
+import time
 
 class basic_uploader(base):
     formats = {
@@ -54,11 +55,26 @@ class smart_uploader(basic_uploader):
 
 class smart_downloader(basic_uploader):
     formats = {
-        "upload" : "DOWNLOAD to {:x}. 'X' for X-modem, 'E' for EDCL"
+        "upload" : "DOWNLOAD: {:d} bytes from {:x} to {}. 'X' for X-modem, 'E' for EDCL"
     }
 
     def action(self, trigger, result):
-        #TODO:....
+        print(result)
+        arg = result[2]
+        if arg in self.term.plusargs:
+            fl = self.term.plusargs[arg]
+        else:
+            fl = arg
+        stream = open(fl, 'wb')
+
+        if (self.term.xfer.how == "xmodem"):
+            self.sync("X", True)
+
+        self.term.xfer.recv(stream, result[1], result[0])
+
+        if (self.term.xfer.how != "xmodem"):
+            self.sync("E", True)
+
         pass
 
 
