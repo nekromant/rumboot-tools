@@ -9,6 +9,12 @@ class chipZynq(chipBase):
     welcome='Zynq> '
     baudrate=115200
     memories = {}
+    spl_address = 0x100
+    hacks = {
+        "skipsync"   : True, # Doesn't Send U\r\n\r\n at the start. All legacy stuff
+        "silentRom"  : False, # Bootrom is totally silent
+        "noxmodem"   : False,  # Chip lacks xmodem implementation
+    }
 
 class chipRPI4(chipBase):
     name="rpi4"
