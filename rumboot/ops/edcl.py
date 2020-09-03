@@ -40,7 +40,9 @@ class dumb_chips_uploader(basic_uploader):
                 return 1
             self.term.xfer.selectTransport(old)
 
-        #Some chip-specific hacks
+        if not tp:
+            return True
+
         if tp.name == "Legacy K1879XB1YA":
             self.term.xfer.write32(0x00100010, 0x00100014)
             return True
