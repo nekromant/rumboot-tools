@@ -184,13 +184,13 @@ class terminal:
             ret = ret[:-len(self.shell_prompt)-2]
             return ret                  
 
-        def loop(self, use_stdin=False, break_after_uploads=False):
+        def loop(self, use_stdin=False, break_after_uploads=False, timeout=-1):
             if not self.initial_loop_done:
                 self.initial_loop_done = True
                 self.opf.on_start()
 
             return_code = 0
-
+            time_start = time.time()
             if use_stdin:
                 old_settings = termios.tcgetattr(sys.stdin)
             try:
@@ -215,6 +215,10 @@ class terminal:
                                 self.ser.write(insym.encode())
                     else:
                         line = self.ser.readline()
+
+                    if timeout >= 0 and time.time() - time_start > timeout:
+                        return_code = 5
+                        break
 
                     if line == b'':
                         continue
