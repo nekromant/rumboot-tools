@@ -11,7 +11,7 @@ class edcl_generic_uploader(basic_uploader):
 
     def action(self, trigger, result):
         tp = self.term.formats.guess(self.term.runlist[0])
-        if tp.name != "RumBootV1":
+        if not tp or tp.name != "RumBootV1":
             return False
 
         print("WARNING: Bootloader doesn't support xmodem, forcing edcl upload")
