@@ -49,7 +49,6 @@ def cli():
     print("Baudrate:         %d bps" % int(opts.baud[0]))
     print("Serial Port:      %s" % opts.port[0])
     print("Listen address:   %s" % opts.listen)
-    reset.resetToHost()
 
     term = terminal(opts.port[0], opts.baud[0])
     srv = server(term, opts.listen[0])
