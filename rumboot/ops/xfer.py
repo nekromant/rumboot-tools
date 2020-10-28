@@ -6,7 +6,8 @@ class basic_uploader(base):
     formats = {
         "first_upload"      : "boot: host: Hit '{}' for X-Modem upload",
         "first_upload_basis"  : "boot: host: Hit 'X' for xmodem upload",
-        "upload_uboot": "Trying to boot from UART"
+        "upload_uboot": "Trying to boot from UART",
+        "uboot_xmodem": "## Ready for binary (xmodem) download to {} at {} bps..."
         }
 
     def __init__(self, term):
