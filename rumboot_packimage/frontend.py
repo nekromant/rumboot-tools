@@ -107,11 +107,12 @@ def cli():
             return 1
         t.relocate(opts.relocate[0])
 
-    for f in opts.flag:
-        if not hasattr(t, "flag"):
-            print("ERROR: Image flags are not supported by this image format")
-            return 1
-        t.flag(f[0],f[1])
+    if opts.flag:
+        for f in opts.flag:
+            if not hasattr(t, "flag"):
+                print("ERROR: Image flags are not supported by this image format")
+                return 1
+            t.flag(f[0],f[1])
 
     if opts.add_zeroes:
         t.add_zeroes(opts.add_zeroes[0])

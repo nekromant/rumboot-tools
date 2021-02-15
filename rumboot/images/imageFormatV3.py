@@ -108,6 +108,7 @@ class ImageFormatV3(ImageFormatBase):
         self.header["relocation"] = int(address, 16)
 
     def dump_header(self, raw=False, format=False):
+        self.read_flags()
         self.hide_field("flags")
         if not self.flag("CRYPT"):
             self.hide_field("encryption_slot")
@@ -119,7 +120,6 @@ class ImageFormatV3(ImageFormatBase):
             self.hide_field("priority")
         self.hide_field("reserved")
         super().dump_header(raw, format)
-        self.read_flags()
         self.dump_field("flags", False, self.serialize_flags(), raw)
 
     def check(self):
