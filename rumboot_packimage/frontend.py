@@ -30,6 +30,10 @@ def cli():
     parser.add_argument("-r", "--raw",
                         help="Display raw header field names",
                         action="store_true")
+    parser.add_argument('-R', '--relocate',
+                        nargs=1, metavar=('relocation'),
+                        help='''Tell bootrom to relocate the image at the specified address before executing it. Only RumBootV3 and above
+                        ''')
     parser.add_argument('-z', '--add_zeroes',
                         nargs=1, metavar=('value'),
                         help='''This option will add N bytes of zeroes to the end of the file (after checksummed area).
@@ -39,6 +43,11 @@ def cli():
     parser.add_argument('-a', '--align',
                         nargs=1, metavar=('value'),
                         help='''Pad resulting image size to specified alignment
+                        ''')
+    parser.add_argument('-F', '--flag',
+                        action="append",
+                        nargs=2, metavar=('value'),
+                        help='''Set image flag to a desired value. Only RumBootV3 or above
                         ''')
     parser.add_argument('-g', '--get',
                         nargs=1, metavar=('key'),
@@ -91,6 +100,18 @@ def cli():
         t.fix_checksums(calc_data)
         print("Wrote valid checksums to image header")
         opts.info = True
+
+    if opts.relocate:
+        if not hasattr(t, "relocate"):
+            print("ERROR: Relocation is not supported by this image format")
+            return 1
+        t.relocate(opts.relocate[0])
+
+    for f in opts.flag:
+        if not hasattr(t, "flag"):
+            print("ERROR: Image flags are not supported by this image format")
+            return 1
+        t.flag(f[0],f[1])
 
     if opts.add_zeroes:
         t.add_zeroes(opts.add_zeroes[0])

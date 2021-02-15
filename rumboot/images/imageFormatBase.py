@@ -83,7 +83,6 @@ class ImageFormatBase:
             show = True
             if (f[1] in self.hidden):
                 show = False
-                break
 
             if (show and f[3]):
                 self.dump_field(f, raw=raw)
