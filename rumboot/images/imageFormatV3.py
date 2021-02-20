@@ -106,6 +106,7 @@ class ImageFormatV3(ImageFormatBase):
     def relocate(self, address):
         self.flag("RELOC", True)
         self.header["relocation"] = int(address, 16)
+        self.write_header()
 
     def dump_header(self, raw=False, format=False):
         self.read_flags()

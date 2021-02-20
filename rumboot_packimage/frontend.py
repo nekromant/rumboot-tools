@@ -86,6 +86,15 @@ def cli():
         if not opts.checksum:
             print("WARNING: Add -c option to update checksums!")
 
+    if opts.relocate:
+        if not hasattr(t, "relocate"):
+            print("ERROR: Relocation is not supported by this image format")
+            return 1
+        t.relocate(opts.relocate[0])
+        opts.info = True
+        if not opts.checksum:
+            print("WARNING: Add -c option to update checksums!")
+
     if opts.get:
         print("0x%x" % t.get(opts.get[0]))
         return 0
@@ -101,11 +110,6 @@ def cli():
         print("Wrote valid checksums to image header")
         opts.info = True
 
-    if opts.relocate:
-        if not hasattr(t, "relocate"):
-            print("ERROR: Relocation is not supported by this image format")
-            return 1
-        t.relocate(opts.relocate[0])
 
     if opts.flag:
         for f in opts.flag:
