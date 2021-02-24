@@ -48,10 +48,9 @@ class ImageFormatV2(ImageFormatBase):
 
     def dump_header(self, raw=False, format=False):
         #Hide all unused entry points
-        #for i in range(2, 9):
-        #    key = "entry" + str(i)
-        #    self.hide_field(key)
-
+        for i in range(1, 10):
+            key = "entry" + str(i)
+            self.hide_field(key)
         #Dump fields
         super().dump_header(raw, format)
 
