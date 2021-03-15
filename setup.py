@@ -24,11 +24,11 @@ setup(
         "hexdump",
         "netifaces", 
         "netaddr",
-        "getmac"
+        "getmac",
+        "pyusb>=1.0.0"
         ],
 
     extras_require = {
-        "usb": ["pyusb>=1.0.0"]
     },
     entry_points = {
         "console_scripts": [

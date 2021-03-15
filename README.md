@@ -98,7 +98,7 @@ Just note that this usage case is 'officially' unsupported.
 
 * pyyaml
 
-* pl2303gpio tool ( For pl2303 reset method, linux-only: https://github.com/nekromant/pl2303gpio )
+* pyusb
 
 * gdbgui
 
@@ -284,7 +284,7 @@ mt12505 reset sequence options:
 
 pl2303 reset sequence options:
   -P value, --pl2303-port value
-                        PL2303 physical port (for -P of pl2303gpio)
+                        PL2303 physical port
   --pl2303-invert       Invert all pl2303 gpio signals
 
 redd reset sequence options:
@@ -399,7 +399,7 @@ NOTE: Make sure the jumpers on the board are set to 'host mode'. After running t
 ~# rumboot-xrun -f spl/u-boot-spl-dtb.rbi -f u-boot-dtb.img -e -I -r pl2303
 
 Detected chip:    oi10 (1888ВМ018(A)/1888ВМ01H4)
-pl2303: /dev/ttyUSB8 detected at physical port 2
+pl2303: /dev/ttyUSB8 detected at USB path 2-1.2
 Reset method:               pl2303
 Baudrate:                   115200 bps
 Port:                       /dev/ttyUSB8
@@ -481,7 +481,7 @@ The uploads are performed using xmodem.
 ~# rumboot-xrun -f spl/u-boot-spl-dtb.rbi -f u-boot-dtb.img -e -I -r pl2303
 
 Detected chip:    oi10 (1888ВМ018(A)/1888ВМ01H4)
-pl2303: /dev/ttyUSB8 detected at physical port 2
+pl2303: /dev/ttyUSB8 detected at USB path 2-1.2
 Reset method:               pl2303
 Baudrate:                   115200 bps
 Port:                       /dev/ttyUSB8
@@ -678,7 +678,7 @@ mt12505 reset sequence options:
 
 pl2303 reset sequence options:
   -P value, --pl2303-port value
-                        PL2303 physical port (for -P of pl2303gpio)
+                        PL2303 physical port
   --pl2303-invert       Invert all pl2303 gpio signals
 
 redd reset sequence options:
@@ -776,7 +776,7 @@ mt12505 reset sequence options:
 
 pl2303 reset sequence options:
   -P value, --pl2303-port value
-                        PL2303 physical port (for -P of pl2303gpio)
+                        PL2303 physical port
   --pl2303-invert       Invert all pl2303 gpio signals
 
 redd reset sequence options:
@@ -946,7 +946,7 @@ mt12505 reset sequence options:
 
 pl2303 reset sequence options:
   -P value, --pl2303-port value
-                        PL2303 physical port (for -P of pl2303gpio)
+                        PL2303 physical port
   --pl2303-invert       Invert all pl2303 gpio signals
 
 redd reset sequence options:
@@ -1061,7 +1061,7 @@ mt12505 reset sequence options:
 
 pl2303 reset sequence options:
   -P value, --pl2303-port value
-                        PL2303 physical port (for -P of pl2303gpio)
+                        PL2303 physical port
   --pl2303-invert       Invert all pl2303 gpio signals
 ```
 
@@ -1142,7 +1142,7 @@ The ddr_init.bin in the example above should initialize the ddr memory and retur
 
 rumboot-xrun, rumboot-xflash and rumboot-daemon all accept the _-r_ option that configures the way boards are reset. The following reset methods are available: 
 
-* pl2303 (linux-only) - uses an external tool called pl2303gpio. The two GPIO lines of PL2303HXA should be connected to reset and power lines. Most RC Module's reference boards have this circuit. rumboot-tools will try to guess the correct device if more than one pl2303 device are connected.
+* pl2303 (linux-only) - Uses PL2303 chip GPIO for power and reset control. The two GPIO lines of PL2303HXA should be connected to reset and power lines. Most RC Module's reference boards have this circuit. rumboot-tools will try to guess the correct device if more than one pl2303 device are connected.
 
 * mt12505 - Uses MT12505 board for power control. Internal RC Module's hardware. Don't use.
 
