@@ -1,0 +1,5 @@
+0.9.5: 
+    * Better handling of V3 flags
+    * Replace pl2303gpio with libusb calls (Thanks, Mikhail!)
+    * Implement compression/decomression support for V3 images
+0.9.4: Initial PyPi release
