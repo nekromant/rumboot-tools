@@ -33,9 +33,12 @@ class ImageFormatBase:
             self.fd = open(inFile, 'r+b')
         else:
             self.fd = inFile
+        self.read_file_size()
+        self.header_size = 66
+
+    def read_file_size(self):
         self.fd.seek(0, os.SEEK_END)
         self.file_size = self.fd.tell()
-        self.header_size = 66
         self.fd.seek(0, os.SEEK_SET)
 
     def field_exists(self, name):

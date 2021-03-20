@@ -1,3 +1,5 @@
+import os
+import heatshrink2
 from rumboot.images.imageFormatBase import ImageFormatBase
 
 class ImageFormatV3(ImageFormatBase):
@@ -6,14 +8,14 @@ class ImageFormatV3(ImageFormatBase):
     3.0 are backwars compatible with V2
 
     enum rumboot_header_flags {
-        RUMBOOT_FLAG_COMPRESS = (1 << 0), // NOT_YET_IMPLEMENTED: This image is compressed
+        RUMBOOT_FLAG_COMPRESS = (1 << 0), This image is compressed via heatshrink
         RUMBOOT_FLAG_ENCRYPT  = (1 << 1), // NOT_YET_IMPLEMENTED: Image is encrypted, decrypt data from OTP
         RUMBOOT_FLAG_SIGNED   = (1 << 2), // NOT_YET_IMPLEMENTED: Image is signed, need signature verification
         RUMBOOT_FLAG_SMP      = (1 << 3), // NOT_YET_IMPLEMENTED: SMP Image
         RUMBOOT_FLAG_DECAPS   = (1 << 4), // NOT_YET_IMPLEMENTED: Remove header during relocation
         RUMBOOT_FLAG_RELOCATE = (1 << 5), // NOT_YET_IMPLEMENTED: Relocate image before execution
         RUMBOOT_FLAG_SYNC     = (1 << 6), // NOT_YET_IMPLEMENTED: Wait for the image to finish before exiting
-        RUMBOOT_FLAG_RESERVED = (1 << 7), // Reserved
+        RUMBOOT_FLAG_KILL     = (1 << 7), // Reserved
     };
 
     struct __attribute__((packed)) rumboot_bootheader {
@@ -47,7 +49,7 @@ class ImageFormatV3(ImageFormatBase):
     MAGIC = 0xb01dface
     VERSION = 3
 
-    flags = ["GZIP", "CRYPT", "SIGN", "SMP", "DECAPS", "RELOC", "SYNC", "RSVD"]
+    flags = ["COMPRESS", "CRYPT", "SIGN", "SMP", "DECAPS", "RELOC", "SYNC", "KILL"]
     _flags = {}
     format = [
         [4, "magic", "0x%x", "Magic"],
@@ -142,3 +144,31 @@ class ImageFormatV3(ImageFormatBase):
     def fix_checksums(self, calc_data = True):
        self.write_flags()
        super().fix_checksums(calc_data)
+
+    def compress(self):
+        if self.flag("COMPRESS"):
+            print("WARN: Image already compressed!")
+            return
+        uncompressed_length = self.file_size - self.get_header_length()
+        self.fd.seek(self.get_header_length(), os.SEEK_SET)
+        data = self.fd.read(uncompressed_length)
+        data = heatshrink2.compress(data)
+        self.fd.seek(self.get_header_length(), os.SEEK_SET)
+        self.fd.truncate(self.get_header_length())
+        self.fd.write(data)
+        self.flag("COMPRESS", True)
+        self.read_file_size()
+
+    def decompress(self):
+        if not self.flag("COMPRESS"):
+            print("WARN: Image not compressed, can't decompress!")
+            return
+        compressed_length = self.file_size - self.get_header_length()
+        self.fd.seek(self.get_header_length(), os.SEEK_SET)
+        data = self.fd.read(compressed_length)
+        data = heatshrink2.decompress(data)
+        self.fd.seek(self.get_header_length(), os.SEEK_SET)
+        self.fd.truncate(self.get_header_length())
+        self.fd.write(data)
+        self.flag("COMPRESS", False)
+        self.read_file_size()

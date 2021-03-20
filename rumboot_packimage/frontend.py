@@ -34,6 +34,14 @@ def cli():
                         nargs=1, metavar=('relocation'),
                         help='''Tell bootrom to relocate the image at the specified address before executing it. Only RumBootV3 and above
                         ''')
+    parser.add_argument('-Z', '--compress',
+                        action="store_true",
+                        help='''Compress image data with heatshrink algorithm (V3 or above only)
+                        ''')
+    parser.add_argument('-U', '--decompress',
+                        action="store_true",
+                        help='''Decompress image data with heatshrink algorithm (V3 or above only)
+                        ''')
     parser.add_argument('-z', '--add_zeroes',
                         nargs=1, metavar=('value'),
                         help='''This option will add N bytes of zeroes to the end of the file (after checksummed area).
@@ -86,6 +94,24 @@ def cli():
         if not opts.checksum:
             print("WARNING: Add -c option to update checksums!")
 
+    if opts.compress:
+        if not hasattr(t, "compress"):
+            print("ERROR: Image (de)compression is not supported by this image format")
+            return 1
+        t.compress()
+        opts.checksum_fix_length = True
+        opts.checksum = True
+        opts.info = True
+
+    if opts.decompress:
+        if not hasattr(t, "decompress"):
+            print("ERROR: Image (de)compression is not supported by this image format")
+            return 1
+        t.decompress()
+        opts.checksum_fix_length = True
+        opts.checksum = True
+        opts.info = True
+
     if opts.relocate:
         if not hasattr(t, "relocate"):
             print("ERROR: Relocation is not supported by this image format")
@@ -102,6 +128,13 @@ def cli():
     if opts.reverse_endianness:
         t.swap_endian()
 
+    if opts.flag:
+        for f in opts.flag:
+            if not hasattr(t, "flag"):
+                print("ERROR: Image flags are not supported by this image format")
+                return 1
+            t.flag(f[0],bool(f[1]))
+
     if (opts.checksum_fix_length):
         t.fix_length()
         opts.info = True
@@ -110,14 +143,6 @@ def cli():
         print("Wrote valid checksums to image header")
         opts.info = True
 
-
-    if opts.flag:
-        for f in opts.flag:
-            if not hasattr(t, "flag"):
-                print("ERROR: Image flags are not supported by this image format")
-                return 1
-            t.flag(f[0],f[1])
-
     if opts.add_zeroes:
         t.add_zeroes(opts.add_zeroes[0])
 
@@ -125,6 +150,7 @@ def cli():
         t.align(opts.align[0])
 
     if opts.info:
+        t.read_header()
         t.dump_header(opts.raw)
 
     return 0
