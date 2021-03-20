@@ -26,6 +26,7 @@ setup(
         "netaddr",
         "getmac",
         "pyusb>=1.0.0"
+        "heatshrink2==0.10.0"
         ],
 
     extras_require = {
