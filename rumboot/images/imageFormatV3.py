@@ -113,10 +113,8 @@ class ImageFormatV3(ImageFormatBase):
     def dump_header(self, raw=False, format=False):
         self.read_flags()
         self.hide_field("flags")
-        if not self.flag("CRYPT"):
-            self.hide_field("encryption_slot")
-        if not self.flag("SIGN"):
-            self.hide_field("certificate_slot")
+        self.hide_field("encryption_slot")
+        self.hide_field("certificate_slot")
         if not self.flag("RELOC"):
             self.hide_field("relocation")
         if self.header["priority"] == 0:
