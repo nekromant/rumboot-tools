@@ -8,14 +8,14 @@ class ImageFormatV3(ImageFormatBase):
     3.0 are backwars compatible with V2
 
     enum rumboot_header_flags {
-        RUMBOOT_FLAG_COMPRESS = (1 << 0), This image is compressed via heatshrink
-        RUMBOOT_FLAG_ENCRYPT  = (1 << 1), // NOT_YET_IMPLEMENTED: Image is encrypted, decrypt data from OTP
-        RUMBOOT_FLAG_SIGNED   = (1 << 2), // NOT_YET_IMPLEMENTED: Image is signed, need signature verification
-        RUMBOOT_FLAG_SMP      = (1 << 3), // NOT_YET_IMPLEMENTED: SMP Image
-        RUMBOOT_FLAG_DECAPS   = (1 << 4), // NOT_YET_IMPLEMENTED: Remove header during relocation
-        RUMBOOT_FLAG_RELOCATE = (1 << 5), // NOT_YET_IMPLEMENTED: Relocate image before execution
-        RUMBOOT_FLAG_SYNC     = (1 << 6), // NOT_YET_IMPLEMENTED: Wait for the image to finish before exiting
-        RUMBOOT_FLAG_KILL     = (1 << 7), // Reserved
+        RUMBOOT_FLAG_COMPRESS = (1 << 0), /** Image data is compressed with heatshrink */
+        RUMBOOT_FLAG_DATA     = (1 << 1), /** Image file contains only data to be loaded, it shouldn't be executed */
+        RUMBOOT_FLAG_RESERVED = (1 << 2), /** Reserved for further usage */ 
+        RUMBOOT_FLAG_SMP      = (1 << 3), /** SMP Image. If supported by target CPU cluster, all cores will start execution */
+        RUMBOOT_FLAG_DECAPS   = (1 << 4), /** Remove header before executing and move data to the beginning */
+        RUMBOOT_FLAG_RELOCATE = (1 << 5), /** Relocate image before execution to the address in relocation field */
+        RUMBOOT_FLAG_SYNC     = (1 << 6), /** Wait for the image to finish before exiting */
+        RUMBOOT_FLAG_KILL     = (1 << 7), /** Issue a reset to the target CPU before operating */
     };
 
     struct __attribute__((packed)) rumboot_bootheader {
@@ -49,7 +49,7 @@ class ImageFormatV3(ImageFormatBase):
     MAGIC = 0xb01dface
     VERSION = 3
 
-    flags = ["COMPRESS", "CRYPT", "SIGN", "SMP", "DECAPS", "RELOC", "SYNC", "KILL"]
+    flags = ["COMPRESS", "DATA", "SIGN", "SMP", "DECAPS", "RELOC", "SYNC", "KILL"]
     _flags = {}
     format = [
         [4, "magic", "0x%x", "Magic"],
@@ -152,7 +152,7 @@ class ImageFormatV3(ImageFormatBase):
         uncompressed_length = self.file_size - self.get_header_length()
         self.fd.seek(self.get_header_length(), os.SEEK_SET)
         data = self.fd.read(uncompressed_length)
-        data = heatshrink2.compress(data)
+        data = heatshrink2.compress(data, window_sz2=11, lookahead_sz2=4)
         self.fd.seek(self.get_header_length(), os.SEEK_SET)
         self.fd.truncate(self.get_header_length())
         self.fd.write(data)
@@ -166,7 +166,7 @@ class ImageFormatV3(ImageFormatBase):
         compressed_length = self.file_size - self.get_header_length()
         self.fd.seek(self.get_header_length(), os.SEEK_SET)
         data = self.fd.read(compressed_length)
-        data = heatshrink2.decompress(data)
+        data = heatshrink2.decompress(data,window_sz2=11, lookahead_sz2=4)
         self.fd.seek(self.get_header_length(), os.SEEK_SET)
         self.fd.truncate(self.get_header_length())
         self.fd.write(data)
