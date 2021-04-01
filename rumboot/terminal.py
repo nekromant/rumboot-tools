@@ -177,7 +177,7 @@ class terminal:
         def shell_cmd(self, cmd, timeout=10, initial=False):
             if initial:
                 self.wait_prompt(initial)
-            cmd = cmd.encode() + b"\r\n"
+            cmd = cmd.encode() + b"\r"
             self.ser.write(cmd)
             ret = self.wait_prompt(False).decode(errors="replace")
             ret = ret[len(cmd):] 
