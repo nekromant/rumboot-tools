@@ -135,12 +135,13 @@ This tool adds/checks/updates checksums in existing images. The image must alrea
 
 ```
 ~# rumboot-packimage --help
-usage: rumboot-packimage [-h] -f FILE [-i] [-c] [-C] [-r] [-z value]
-                         [-a value] [-g key] [-s key value] [-e]
+usage: rumboot-packimage [-h] -f FILE [-i] [-c] [-C] [-r] [-R relocation] [-Z]
+                         [-U] [-z value] [-a value] [-F value value] [-g key]
+                         [-s key value] [-e]
 
-rumboot-packimage 0.9.4 - Universal RumBoot Image Manipulation Tool
+rumboot-packimage 0.9.5 - Universal RumBoot Image Manipulation Tool
 
-(C) 2018-2020 Andrew Andrianov <andrew@ncrmnt.org>, RC Module
+(C) 2018-2021 Andrew Andrianov <andrew@ncrmnt.org>, RC Module
 https://module.ru
 https://github.com/RC-MODULE
 
@@ -156,6 +157,13 @@ optional arguments:
                         --checksum, but always overrides length with the
                         actual length of file
   -r, --raw             Display raw header field names
+  -R relocation, --relocate relocation
+                        Tell bootrom to relocate the image at the specified
+                        address before executing it. Only RumBootV3 and above
+  -Z, --compress        Compress image data with heatshrink algorithm (V3 or
+                        above only)
+  -U, --decompress      Decompress image data with heatshrink algorithm (V3 or
+                        above only)
   -z value, --add_zeroes value
                         This option will add N bytes of zeroes to the end of
                         the file (after checksummed area). This is required to
@@ -164,6 +172,9 @@ optional arguments:
                         option
   -a value, --align value
                         Pad resulting image size to specified alignment
+  -F value value, --flag value value
+                        Set image flag to a desired value. Only RumBootV3 or
+                        above
   -g key, --get key     Get a single field from header. Nothing else will be
                         printed. NOTE: The value will be formatted as hex
   -s key value, --set key value
@@ -231,17 +242,17 @@ This tool directly uploads a binary to the target board, executes it and provide
 ~# rumboot-xrun --help
 [!] Using configuration file: /home/necromant/.rumboot.yaml
 usage: rumboot-xrun [-h] [-f FILE] [-c chip_id] [-l LOG] [-p port] [-b speed]
-                    [-e] [--force-static-arp] [-r method] [--apc-ip APC_IP]
-                    [--apc-user APC_USER] [--apc-pass APC_PASS]
-                    [--apc-port APC_PORT] [-S value] [-P value]
-                    [--pl2303-invert] [--redd-port REDD_PORT]
+                    [-e] [--force-static-arp] [-r method]
+                    [--apc-host APC_HOST] [--apc-user APC_USER]
+                    [--apc-pass APC_PASS] [--apc-outlet APC_OUTLET] [-S value]
+                    [-P value] [--pl2303-invert] [--redd-port REDD_PORT]
                     [--redd-relay-id REDD_RELAY_ID]
                     [-A [PLUSARGS [PLUSARGS ...]]] [-R] [-I]
                     [--replay-no-exit]
 
-rumboot-xrun 0.9.4 - RumBoot X-Modem execution tool
+rumboot-xrun 0.9.5 - RumBoot X-Modem execution tool
 
-(C) 2018-2020 Andrew Andrianov <andrew@ncrmnt.org>, RC Module
+(C) 2018-2021 Andrew Andrianov <andrew@ncrmnt.org>, RC Module
 https://module.ru
 https://github.com/RC-MODULE
 
@@ -273,10 +284,11 @@ Reset Sequence options:
                         powerhub redd)
 
 apc reset sequence options:
-  --apc-ip APC_IP       APC IP Address/hostname
+  --apc-host APC_HOST   APC IP Address/hostname
   --apc-user APC_USER   APC IP username
   --apc-pass APC_PASS   APC IP username
-  --apc-port APC_PORT   APC Power port
+  --apc-outlet APC_OUTLET
+                        APC power outlet to use
 
 mt12505 reset sequence options:
   -S value, --ft232-serial value
@@ -614,78 +626,6 @@ Limitations:
 
 ```
 ~# rumboot-gdb --help
-[!] Using configuration file: /home/necromant/.rumboot.yaml
-usage: rumboot-gdb [-h] [-l LOG] [-p port] [-b speed] [-e]
-                   [--force-static-arp] [-v] [-z SPL_PATH] [-L] [-f FILE] [-x]
-                   [-R] [--debug-remote] [--debug-serial] [-g GDB_PATH] [-G]
-                   -c CHIP_ID [-r method] [--apc-ip APC_IP]
-                   [--apc-user APC_USER] [--apc-pass APC_PASS]
-                   [--apc-port APC_PORT] [-S value] [-P value]
-                   [--pl2303-invert] [--redd-port REDD_PORT]
-                   [--redd-relay-id REDD_RELAY_ID]
-                   ...
-
-rumboot-gdb 0.9.4 - Debugger launcher tool
-
-(C) 2018-2020 Andrew Andrianov <andrew@ncrmnt.org>, RC Module
-https://module.ru
-https://github.com/RC-MODULE
-
-positional arguments:
-  remaining             Extra gdb arguments (e.g. filename)
-
-optional arguments:
-  -h, --help            show this help message and exit
-  -v, --verbose         Print serial debug messages during preload phase
-  -z SPL_PATH, --spl-path SPL_PATH
-                        Path for SPL writers (Debug only)
-  -L, --load            Load binary on start
-  -f FILE, --file FILE  Application ELF file to debug
-  -x, --exec            Execute supplied binary on start (Implies --load)
-  -R, --rebuild         Attempt to rebuild binary
-  --debug-remote        Send 'set debug remote 1' to gdb for debugging
-  --debug-serial        Send 'set debug serial 1' to gdb for debugging
-  -g GDB_PATH, --gdb-path GDB_PATH
-                        Path to flashrom binary
-  -G, --gdb-gui         Start GDB gui
-  -c CHIP_ID, --chip_id CHIP_ID
-                        Chip Id (numeric or name)
-
-Connection Settings:
-  -l LOG, --log LOG     Log terminal output to file
-  -p port, --port port  Serial port to use
-  -b speed, --baud speed
-                        Serial line speed
-  -e, --edcl            Use edcl for data uploads (when possible)
-  --force-static-arp    Always add static ARP entries
-
-Reset Sequence options:
-  These options control how the target board will be reset
-
-  -r method, --reset method
-                        Reset sequence to use (apc base mt12505 pl2303
-                        powerhub redd)
-
-apc reset sequence options:
-  --apc-ip APC_IP       APC IP Address/hostname
-  --apc-user APC_USER   APC IP username
-  --apc-pass APC_PASS   APC IP username
-  --apc-port APC_PORT   APC Power port
-
-mt12505 reset sequence options:
-  -S value, --ft232-serial value
-                        FT232 serial number for MT125.05
-
-pl2303 reset sequence options:
-  -P value, --pl2303-port value
-                        PL2303 physical port
-  --pl2303-invert       Invert all pl2303 gpio signals
-
-redd reset sequence options:
-  --redd-port REDD_PORT
-                        Redd serial port (e.g. /dev/ttyACM1)
-  --redd-relay-id REDD_RELAY_ID
-                        Redd Relay Id (e.g. A)
 
 ```
 ```
@@ -724,15 +664,15 @@ This tool allows you to quickly program different flashes attached to the target
 [!] Using configuration file: /home/necromant/.rumboot.yaml
 usage: rumboot-xflash [-h] [-f FILE] [-c chip_id] [-l LOG] [-p port]
                       [-b speed] [-e] [--force-static-arp] [-v] -m memory
-                      [-z SPL_PATH] [-r method] [--apc-ip APC_IP]
+                      [-z SPL_PATH] [-r method] [--apc-host APC_HOST]
                       [--apc-user APC_USER] [--apc-pass APC_PASS]
-                      [--apc-port APC_PORT] [-S value] [-P value]
+                      [--apc-outlet APC_OUTLET] [-S value] [-P value]
                       [--pl2303-invert] [--redd-port REDD_PORT]
                       [--redd-relay-id REDD_RELAY_ID]
 
-rumboot-xflash 0.9.4 - RumBoot X-Modem firmware update tool
+rumboot-xflash 0.9.5 - RumBoot X-Modem firmware update tool
 
-(C) 2018-2020 Andrew Andrianov <andrew@ncrmnt.org>, RC Module
+(C) 2018-2021 Andrew Andrianov <andrew@ncrmnt.org>, RC Module
 https://module.ru
 https://github.com/RC-MODULE
 
@@ -765,10 +705,11 @@ Reset Sequence options:
                         powerhub redd)
 
 apc reset sequence options:
-  --apc-ip APC_IP       APC IP Address/hostname
+  --apc-host APC_HOST   APC IP Address/hostname
   --apc-user APC_USER   APC IP username
   --apc-pass APC_PASS   APC IP username
-  --apc-port APC_PORT   APC Power port
+  --apc-outlet APC_OUTLET
+                        APC power outlet to use
 
 mt12505 reset sequence options:
   -S value, --ft232-serial value
@@ -891,15 +832,16 @@ rumboot-flashrom -p /dev/ttyUSB1 -c basis -- --read img.bin
 usage: rumboot-flashrom [-h] [-l LOG] [-p port] [-b speed] [-e]
                         [--force-static-arp] [-v] -m memory [-z SPL_PATH]
                         [-f FLASHROM_PATH] -c CHIP_ID [-r method]
-                        [--apc-ip APC_IP] [--apc-user APC_USER]
-                        [--apc-pass APC_PASS] [--apc-port APC_PORT] [-S value]
-                        [-P value] [--pl2303-invert] [--redd-port REDD_PORT]
+                        [--apc-host APC_HOST] [--apc-user APC_USER]
+                        [--apc-pass APC_PASS] [--apc-outlet APC_OUTLET]
+                        [-S value] [-P value] [--pl2303-invert]
+                        [--redd-port REDD_PORT]
                         [--redd-relay-id REDD_RELAY_ID]
                         ...
 
-rumboot-flashrom 0.9.4 - flashrom wrapper tool
+rumboot-flashrom 0.9.5 - flashrom wrapper tool
 
-(C) 2018-2020 Andrew Andrianov <andrew@ncrmnt.org>, RC Module
+(C) 2018-2021 Andrew Andrianov <andrew@ncrmnt.org>, RC Module
 https://module.ru
 https://github.com/RC-MODULE
 
@@ -935,10 +877,11 @@ Reset Sequence options:
                         powerhub redd)
 
 apc reset sequence options:
-  --apc-ip APC_IP       APC IP Address/hostname
+  --apc-host APC_HOST   APC IP Address/hostname
   --apc-user APC_USER   APC IP username
   --apc-pass APC_PASS   APC IP username
-  --apc-port APC_PORT   APC Power port
+  --apc-outlet APC_OUTLET
+                        APC power outlet to use
 
 mt12505 reset sequence options:
   -S value, --ft232-serial value
@@ -1169,9 +1112,9 @@ _rumboot-combine_ is a simple to tool to compose a chain of several image file. 
 ~# rumboot-combine --help
 usage: rumboot-combine [-h] -i INPUT -o OUTPUT [-a ALIGN]
 
-rumboot-combine 0.9.4 - RumBoot Image Merger Tool
+rumboot-combine 0.9.5 - RumBoot Image Merger Tool
 
-(C) 2018-2020 Andrew Andrianov <andrew@ncrmnt.org>, RC Module
+(C) 2018-2021 Andrew Andrianov <andrew@ncrmnt.org>, RC Module
 https://module.ru
 https://github.com/RC-MODULE
 
