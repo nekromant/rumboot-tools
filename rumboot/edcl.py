@@ -110,6 +110,8 @@ class edcl():
             try:
                 self.sock.sendto(packet.serialize(), (self.remote_ip, self.remote_port))
                 data, addr = self.sock.recvfrom(struct.calcsize(edcl_packet.FORMAT) + self.maxpayload)
+                if addr[0] != self.remote_ip:
+                    continue
                 rcv.deserialize(data)
             except Exception as e:
                 self.stats["noreply"] +=1
@@ -246,7 +248,7 @@ class edcl():
         return self.connect(remote_ip=self.remote_ip, remote_port=self.remote_port)
 
     def connect(self, remote_ip="192.168.144.9", remote_port=0x9099):
-        self.sock.settimeout(0.3)
+        self.sock.settimeout(0.6) # the timeout should include ARP request timeout overwise the requests will be accumulated and next requests will be delayed
         self.remote_ip = remote_ip
         self.remote_port = remote_port
         tx = edcl_packet()
@@ -261,7 +263,9 @@ class edcl():
         try:
             rx = self.xfer(tx, False, 1)
             if rx.e_rwnak():
-                return False
+                self.seq = rx.e_seq()
+            else:
+                self.seq = rx.e_seq() + 1
             self.seq = rx.e_seq() + 1
             self.sock.settimeout(0.1)
             for shit in self.stats:

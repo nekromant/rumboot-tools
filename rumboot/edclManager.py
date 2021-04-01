@@ -158,9 +158,8 @@ class edclmanager(object):
         self.edcl.send_from_file(address + 4, image, callback, 4)
         self.edcl.send_from_file(address    , image, None, 0, 4)
 
-    def connect(self, chip, timeout=5):
-        start = time.clock_gettime(time.CLOCK_MONOTONIC)
-        while start + timeout > time.clock_gettime(time.CLOCK_MONOTONIC):
+    def connect(self, chip):
+        for i in range(3):
             ret = self.scan(chip)
             if ret != []:
                 return ret
