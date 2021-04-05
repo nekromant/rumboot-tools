@@ -67,8 +67,9 @@ class ImageFormatV3(ImageFormatBase):
         [1, "priority",          "0x%x", "Priority"],
         [8, "bootarg0",          "0x%x", "Boot Arg 0"],
         [8, "bootarg1",          "0x%x", "Boot Arg 1"],
+        [4, "reserved",          "0x%x", ""],
         [4, "header_crc32",      "0x%x", "Header CRC32"],
-        [8, "bootsource",        "0x%x", ""],
+        [4, "bootsource",        "0x%x", ""],
     ]
 
     header = {}
