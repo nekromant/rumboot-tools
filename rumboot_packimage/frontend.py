@@ -151,7 +151,8 @@ def cli():
 
     if opts.info:
         t.read_header()
-        if not t.dump_header(opts.raw):
+        #Return non-zero on invalid data/header crc, except for error-injection cases
+        if not t.dump_header(opts.raw) and not opts.set:
             return 1
 
 
