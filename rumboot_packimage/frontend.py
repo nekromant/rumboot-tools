@@ -151,6 +151,8 @@ def cli():
 
     if opts.info:
         t.read_header()
-        t.dump_header(opts.raw)
+        if not t.dump_header(opts.raw):
+            return 1
+
 
     return 0

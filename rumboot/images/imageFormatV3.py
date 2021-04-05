@@ -121,8 +121,9 @@ class ImageFormatV3(ImageFormatBase):
         if self.header["priority"] == 0:
             self.hide_field("priority")
         self.hide_field("reserved")
-        super().dump_header(raw, format)
+        ret = super().dump_header(raw, format)
         self.dump_field("flags", False, self.serialize_flags(), raw)
+        return ret;
 
     def check(self):
         if (super().check()):

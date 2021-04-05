@@ -52,7 +52,7 @@ class ImageFormatV2(ImageFormatBase):
             key = "entry" + str(i)
             self.hide_field(key)
         #Dump fields
-        super().dump_header(raw, format)
+        return super().dump_header(raw, format)
 
     def check(self):
         if (super().check()):

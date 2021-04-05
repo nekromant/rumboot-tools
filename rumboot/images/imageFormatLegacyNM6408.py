@@ -18,14 +18,16 @@ class ImageFormatLegacyNM6408(ImageFormatBase):
         return 8
 
     def dump_header(self, raw=False, format=False):
-        super().dump_header(raw, format)
+        valid = super().dump_header(raw, format)
         crc32 = self.read32(-4, os.SEEK_END)
         self.header["data_crc32"] = crc32
         if (crc32 == self.data_crc32):
             hmatch = "Valid"
         else:
             hmatch = "Invalid, expected: 0x{:X}".format(self.data_crc32)
+            valid = False
         self.dump_field([4, "data_crc32", "0x%x", "Data CRC32"],  True, hmatch)
+        return valid
 
     def read_header(self):
         offset = 0

@@ -74,6 +74,7 @@ class ImageFormatBase:
 
     def dump_header(self, raw=False, format=False):
         #Hide fields that need comments from printout
+        valid = True
         self.hide_field("header_crc32")
         self.hide_field("data_crc32")
         self.hide_field("data_length")
@@ -94,6 +95,7 @@ class ImageFormatBase:
             hmatch = "Valid"
         else:
             hmatch = "Invalid, expected: 0x{:X}".format(self.header_crc32)
+            valid = False
 
         if (hmatch != "Valid"):
             dmatch = "Skipped, invalid header checksum"
@@ -101,6 +103,7 @@ class ImageFormatBase:
             dmatch = "Valid"
         else:
             dmatch = "Invalid, expected: {:X}".format(self.data_crc32)
+            valid = False
 
         actual = False
         if (self.file_size - self.get_header_length() != self.header["data_length"]):
@@ -112,7 +115,7 @@ class ImageFormatBase:
             self.dump_field("header_crc32", False, hmatch, raw)
         if (self.field_exists("data_crc32")):
             self.dump_field("data_crc32",   False, dmatch, raw)
-
+        return valid
 
     def read_header(self):
         offset = 0
