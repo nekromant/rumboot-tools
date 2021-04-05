@@ -3,7 +3,7 @@ from rumboot.images.imageFormatBase import ImageFormatBase
 import os
 
 
-class ImageFormatElfV2(ImageFormatV3):
+class ImageFormatElfV3(ImageFormatV3):
     MAGIC =  0x464c457f
     name = "ELF"
 
@@ -18,7 +18,11 @@ class ImageFormatElfV2(ImageFormatV3):
             self.header["flags"] = 0
             self.header["data_length"] = self.file_size
             self.header["chip_id"] = 0
-            self.header["bootsource"] = 0            
+            self.header["bootsource"] = 0
+            self.header["target_cpu"] = 0
+            self.header["priority"] = 0
+            self.header["bootarg0"] = 0
+            self.header["bootarg1"] = 0
             self.file_size = self.file_size + self.get_header_length()
             self.write_header()
             self.dump_header()
