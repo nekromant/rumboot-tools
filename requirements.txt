@@ -14,7 +14,7 @@ hexdump==3.3
 itsdangerous==1.1.0
 Jinja2==2.11.3
 MarkupSafe==1.1.1
-monotonic==1.5
+monotonic==1.6
 netaddr==0.8.0
 netifaces==0.10.9
 parse==1.19.0
