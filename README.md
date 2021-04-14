@@ -139,7 +139,7 @@ usage: rumboot-packimage [-h] -f FILE [-i] [-c] [-C] [-r] [-R relocation] [-Z]
                          [-U] [-z value] [-a value] [-F value value] [-g key]
                          [-s key value] [-e]
 
-rumboot-packimage 0.9.5 - Universal RumBoot Image Manipulation Tool
+rumboot-packimage 0.9.6 - Universal RumBoot Image Manipulation Tool
 
 (C) 2018-2021 Andrew Andrianov <andrew@ncrmnt.org>, RC Module
 https://module.ru
@@ -250,7 +250,7 @@ usage: rumboot-xrun [-h] [-f FILE] [-c chip_id] [-l LOG] [-p port] [-b speed]
                     [-A [PLUSARGS [PLUSARGS ...]]] [-R] [-I]
                     [--replay-no-exit]
 
-rumboot-xrun 0.9.5 - RumBoot X-Modem execution tool
+rumboot-xrun 0.9.6 - RumBoot X-Modem execution tool
 
 (C) 2018-2021 Andrew Andrianov <andrew@ncrmnt.org>, RC Module
 https://module.ru
@@ -670,7 +670,7 @@ usage: rumboot-xflash [-h] [-f FILE] [-c chip_id] [-l LOG] [-p port]
                       [--pl2303-invert] [--redd-port REDD_PORT]
                       [--redd-relay-id REDD_RELAY_ID]
 
-rumboot-xflash 0.9.5 - RumBoot X-Modem firmware update tool
+rumboot-xflash 0.9.6 - RumBoot X-Modem firmware update tool
 
 (C) 2018-2021 Andrew Andrianov <andrew@ncrmnt.org>, RC Module
 https://module.ru
@@ -839,7 +839,7 @@ usage: rumboot-flashrom [-h] [-l LOG] [-p port] [-b speed] [-e]
                         [--redd-relay-id REDD_RELAY_ID]
                         ...
 
-rumboot-flashrom 0.9.5 - flashrom wrapper tool
+rumboot-flashrom 0.9.6 - flashrom wrapper tool
 
 (C) 2018-2021 Andrew Andrianov <andrew@ncrmnt.org>, RC Module
 https://module.ru
@@ -1112,7 +1112,7 @@ _rumboot-combine_ is a simple to tool to compose a chain of several image file. 
 ~# rumboot-combine --help
 usage: rumboot-combine [-h] -i INPUT -o OUTPUT [-a ALIGN]
 
-rumboot-combine 0.9.5 - RumBoot Image Merger Tool
+rumboot-combine 0.9.6 - RumBoot Image Merger Tool
 
 (C) 2018-2021 Andrew Andrianov <andrew@ncrmnt.org>, RC Module
 https://module.ru
