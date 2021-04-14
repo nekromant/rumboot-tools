@@ -57,6 +57,11 @@ def cli():
                         nargs=2, metavar=('value'),
                         help='''Set image flag to a desired value. Only RumBootV3 or above
                         ''')
+    parser.add_argument('--set-data',
+                        action="append",
+                        nargs=2, metavar=('offset', 'value'),
+                        help='''Sets data at byte 'offset' to value 'offset'
+                        ''')
     parser.add_argument('-g', '--get',
                         nargs=1, metavar=('key'),
                         help='''Get a single field from header. Nothing else will be printed.
@@ -127,6 +132,10 @@ def cli():
 
     if opts.reverse_endianness:
         t.swap_endian()
+
+    if opts.set_data:
+        for f in opts.set_data:
+            t.write8(t.get_header_length() + int(f[0]), int(f[1]))
 
     if opts.flag:
         for f in opts.flag:
