@@ -36,6 +36,18 @@ class ImageFormatBase:
         self.read_file_size()
         self.header_size = 66
 
+    def wrap(self):
+        self.fd.seek(0, os.SEEK_SET)
+        tmp = self.fd.read(self.file_size)
+        self.file_size = self.file_size + self.get_header_length()
+        for n,v in enumerate(self.header):
+            self.header[v] = 0
+        self.header["magic"] = self.MAGIC
+        self.write_header()
+        self.dump_header()
+        self.fd.seek(self.get_header_length(), os.SEEK_SET)
+        self.fd.write(tmp)
+
     def read_file_size(self):
         self.fd.seek(0, os.SEEK_END)
         self.file_size = self.fd.tell()

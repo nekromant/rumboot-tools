@@ -62,6 +62,12 @@ class ImageFormatV2(ImageFormatBase):
     def __init__(self, inFile):
         super().__init__(inFile)
     
+    def wrap(self):
+        super().wrap()
+        self.header["version"] = 2
+        self.write_header()
+        return True
+
     def get_chip_id(self):
         return self.header['chip_id']
 

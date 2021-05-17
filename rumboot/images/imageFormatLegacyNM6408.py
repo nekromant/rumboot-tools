@@ -64,6 +64,11 @@ class ImageFormatLegacyNM6408(ImageFormatBase):
     def get_chip_rev(self):
         return 1
 
+    def wrap(self):
+        self.write32(-4, 0, os.SEEK_END)
+        super().wrap()
+        return True
+
 #   Because somebody fucked up implementing a usual crc32 in bootrom, we have
 #   to reinvent the wheel. 
     def crc32(self, from_byte, to_byte=-1):

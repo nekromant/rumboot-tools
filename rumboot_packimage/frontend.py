@@ -78,14 +78,28 @@ def cli():
                         help='''Use this option to reverse endianness of all headers. This will not touch data.
                                 For testing only
                         ''')
+    parser.add_argument('-w', '--wrap',
+                        nargs=1,
+                        help='''Use this option to wrap arbitrary data to V1/V2/V3 images.
+                        ''')
 
     opts = parser.parse_args()
     formats = ImageFormatDb("rumboot.images");
-    t = formats.guess(opts.file);
+    t = formats.guess(opts.file)
+
+    if opts.wrap:
+        if t != False:
+            print(f"File {opts.file.name} already wrapped into rumboot format ({t})")
+            return 1            
+        t = formats.wrap(opts.file, opts.wrap[0])
+        print(f"Wrapped file {opts.file} to {t}")
 
     calc_data = True
     if (t == False):
-        print("ERROR: Not a valid image, see README.md")
+        if opts.wrap:
+            print("ERROR: Not a valid image, see README.md")
+        else:
+            print("ERROR: Failed to wrap data into image for some reason")
         return 1
 
     if opts.set != None:
@@ -163,6 +177,5 @@ def cli():
         #Return non-zero on invalid data/header crc, except for error-injection cases
         if not t.dump_header(opts.raw) and not opts.set:
             return 1
-
 
     return 0

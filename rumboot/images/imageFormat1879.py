@@ -29,6 +29,9 @@ class ImageFormatLegacyK1879XB1YA(ImageFormatBase):
 
         return False
 
+    def wrap(self):
+        return True
+
     def fix_checksums(self, calc_data=True):
         self.fd.seek(16)
         k4 = self.fd.read(4*1024 - 16)

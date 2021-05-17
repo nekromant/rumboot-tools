@@ -7,3 +7,11 @@ class ImageFormatDb(classLoader):
             if tmp.check():
                 return tmp
         return False
+
+    def wrap(self, ifile, fmt):
+        for n,f in self.classes.items():
+            if fmt in n:
+                tmp = f(ifile)
+                if tmp.wrap():
+                    return tmp
+        return False

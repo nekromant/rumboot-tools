@@ -1,8 +1,8 @@
 from rumboot.images.imageFormatBase import ImageFormatBase
 
-class ImageFormatLegacy(ImageFormatBase):
+class ImageFormatV1(ImageFormatBase):
     """
-    This class works with TX1888 images
+    This class works with 1888TX018 (V1) images
     struct bootheader
     {
         uint32_t magic;
@@ -28,10 +28,12 @@ class ImageFormatLegacy(ImageFormatBase):
 
     def __init__(self, inFile):
         super().__init__(inFile)
-        #TODO:
 
     def get_chip_id(self):
         return 1
 
     def get_chip_rev(self):
-        return 1    
+        return 1 
+
+    def wrap(self):
+        return super().wrap()
