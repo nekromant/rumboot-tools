@@ -12,7 +12,7 @@ gevent-websocket==0.10.1
 greenlet==1.1.0
 hexdump==3.3
 itsdangerous==2.0.0
-Jinja2==2.11.3
+Jinja2==3.0.0
 MarkupSafe==2.0.0
 monotonic==1.6
 netaddr==0.8.0
