@@ -96,7 +96,7 @@ def cli():
 
     calc_data = True
     if (t == False):
-        if opts.wrap:
+        if not opts.wrap:
             print("ERROR: Not a valid image, see README.md")
         else:
             print("ERROR: Failed to wrap data into image for some reason")

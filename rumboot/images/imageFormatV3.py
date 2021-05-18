@@ -74,6 +74,10 @@ class ImageFormatV3(ImageFormatBase):
 
     header = {}
 
+    def read_header(self):
+        super().read_header()
+        self.read_flags()
+
     def read_flags(self):
         for k,f in enumerate(self.flags):
             if (self.header["flags"] & (1<<k)):

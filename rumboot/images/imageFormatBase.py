@@ -44,10 +44,10 @@ class ImageFormatBase:
             self.header[v] = 0
         self.header["magic"] = self.MAGIC
         self.write_header()
-        self.dump_header()
         self.fd.seek(self.get_header_length(), os.SEEK_SET)
         self.fd.write(tmp)
-
+        self.read_header()
+        
     def read_file_size(self):
         self.fd.seek(0, os.SEEK_END)
         self.file_size = self.fd.tell()
