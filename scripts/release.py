@@ -23,7 +23,7 @@ with fileinput.FileInput("rumboot/__init__.py", inplace=True, backup='.bak') as 
     for line in file:
         print(line.replace(oldversion, newversion), end='')
 
-os.system("git add rumboot/README.md")
+os.system("git add README.md")
 os.system("git add rumboot/__init__.py")
 os.system(f'git commit -s -m "v{newversion}" release')
 os.system(f'git tag v{newversion}')
