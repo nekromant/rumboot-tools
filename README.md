@@ -136,10 +136,11 @@ This tool adds/checks/updates checksums in existing images. The image must alrea
 ```
 ~# rumboot-packimage --help
 usage: rumboot-packimage [-h] -f FILE [-i] [-c] [-C] [-r] [-R relocation] [-Z]
-                         [-U] [-z value] [-a value] [-F value value] [-g key]
-                         [-s key value] [-e]
+                         [-U] [-z value] [-a value] [-F value value]
+                         [--set-data offset value] [-g key] [-s key value]
+                         [-e] [-w WRAP]
 
-rumboot-packimage 0.9.6 - Universal RumBoot Image Manipulation Tool
+rumboot-packimage 0.9.7 - Universal RumBoot Image Manipulation Tool
 
 (C) 2018-2021 Andrew Andrianov <andrew@ncrmnt.org>, RC Module
 https://module.ru
@@ -175,6 +176,8 @@ optional arguments:
   -F value value, --flag value value
                         Set image flag to a desired value. Only RumBootV3 or
                         above
+  --set-data offset value
+                        Sets data at byte 'offset' to value 'offset'
   -g key, --get key     Get a single field from header. Nothing else will be
                         printed. NOTE: The value will be formatted as hex
   -s key value, --set key value
@@ -185,6 +188,8 @@ optional arguments:
   -e, --reverse-endianness
                         Use this option to reverse endianness of all headers.
                         This will not touch data. For testing only
+  -w WRAP, --wrap WRAP  Use this option to wrap arbitrary data to V1/V2/V3
+                        images.
 
 ```
 
@@ -250,7 +255,7 @@ usage: rumboot-xrun [-h] [-f FILE] [-c chip_id] [-l LOG] [-p port] [-b speed]
                     [-A [PLUSARGS [PLUSARGS ...]]] [-R] [-I]
                     [--replay-no-exit]
 
-rumboot-xrun 0.9.6 - RumBoot X-Modem execution tool
+rumboot-xrun 0.9.7 - RumBoot X-Modem execution tool
 
 (C) 2018-2021 Andrew Andrianov <andrew@ncrmnt.org>, RC Module
 https://module.ru
@@ -670,7 +675,7 @@ usage: rumboot-xflash [-h] [-f FILE] [-c chip_id] [-l LOG] [-p port]
                       [--pl2303-invert] [--redd-port REDD_PORT]
                       [--redd-relay-id REDD_RELAY_ID]
 
-rumboot-xflash 0.9.6 - RumBoot X-Modem firmware update tool
+rumboot-xflash 0.9.7 - RumBoot X-Modem firmware update tool
 
 (C) 2018-2021 Andrew Andrianov <andrew@ncrmnt.org>, RC Module
 https://module.ru
@@ -839,7 +844,7 @@ usage: rumboot-flashrom [-h] [-l LOG] [-p port] [-b speed] [-e]
                         [--redd-relay-id REDD_RELAY_ID]
                         ...
 
-rumboot-flashrom 0.9.6 - flashrom wrapper tool
+rumboot-flashrom 0.9.7 - flashrom wrapper tool
 
 (C) 2018-2021 Andrew Andrianov <andrew@ncrmnt.org>, RC Module
 https://module.ru
@@ -1112,7 +1117,7 @@ _rumboot-combine_ is a simple to tool to compose a chain of several image file. 
 ~# rumboot-combine --help
 usage: rumboot-combine [-h] -i INPUT -o OUTPUT [-a ALIGN]
 
-rumboot-combine 0.9.6 - RumBoot Image Merger Tool
+rumboot-combine 0.9.7 - RumBoot Image Merger Tool
 
 (C) 2018-2021 Andrew Andrianov <andrew@ncrmnt.org>, RC Module
 https://module.ru

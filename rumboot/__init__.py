@@ -1,4 +1,4 @@
-__version__ = "0.9.7"
+__version__ = "0.9.8"
 __copyright__ = """
 (C) 2018-2021 Andrew Andrianov <andrew@ncrmnt.org>, RC Module
 https://module.ru
