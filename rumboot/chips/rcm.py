@@ -57,6 +57,7 @@ class basis(chipBase):
     chip_rev=1
     welcome='host'
     baudrate=115200
+    spl_address = 0x40000
     memories = {
         "i2c0-0x50": "rumboot-basis-PostProduction-updater-i2c0-0x50.bin",
         "i2c0-0x51": "rumboot-basis-PostProduction-updater-i2c0-0x51.bin", 
