@@ -162,18 +162,17 @@ def cli():
         t.align(opts.align[0])
         opts.checksum_fix_length = True
 
-    if opts.add_zeroes:
-        t.add_zeroes(opts.add_zeroes[0])
-
     if (opts.checksum_fix_length):
         t.fix_length()
         opts.info = True
-    elif opts.checksum:
+    
+    if opts.checksum or opts.checksum_fix_length:
         t.fix_checksums(calc_data)
         print("Wrote valid checksums to image header")
         opts.info = True
 
-
+    if opts.add_zeroes:
+        t.add_zeroes(opts.add_zeroes[0])
 
     if opts.info:
         t.read_header()
