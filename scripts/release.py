@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-import rumboot
+
 import os
 import fileinput
 import shutil
@@ -11,11 +11,13 @@ def increment_ver(version):
     version[2] = str(int(version[2]) + 1)
     return '.'.join(version)
 
+os.system(f"pip3 install .")
+import rumboot
+
 oldversion = rumboot.__version__
 newversion = increment_ver(rumboot.__version__)
 print(f"Preparing for {newversion} release")
 
-os.system(f"pip3 install .")
 os.system(f"python3 scripts/update_readme.py > README.new")
 os.system(f"mv README.new README.md")
 
@@ -25,7 +27,7 @@ with fileinput.FileInput("rumboot/__init__.py", inplace=True, backup='.bak') as 
 
 os.system("git add README.md")
 os.system("git add rumboot/__init__.py")
-os.system(f'git commit -s -m \"v{newversion}\" release')
+os.system(f'git commit -s -m \"v{newversion} release\"')
 os.system(f'git tag v{newversion}')
 os.system(f"git push origin master")
 os.system(f"git push github master")
