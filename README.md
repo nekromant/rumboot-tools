@@ -140,7 +140,7 @@ usage: rumboot-packimage [-h] -f FILE [-i] [-c] [-C] [-r] [-R relocation] [-Z]
                          [--set-data offset value] [-g key] [-s key value]
                          [-e] [-w WRAP]
 
-rumboot-packimage 0.9.7 - Universal RumBoot Image Manipulation Tool
+rumboot-packimage 0.9.9 - Universal RumBoot Image Manipulation Tool
 
 (C) 2018-2021 Andrew Andrianov <andrew@ncrmnt.org>, RC Module
 https://module.ru
@@ -152,11 +152,11 @@ optional arguments:
   -i, --info            Show information about the image
   -c, --checksum        This option will modify the file! Calculates valid
                         checksums to the header. The length is set to cover
-                        the full length of file only if it's non-zero.
+                        the full length of file ONLY if it's zero.
   -C, --checksum_fix_length
                         This option will modify the file! The same as
-                        --checksum, but always overrides length with the
-                        actual length of file
+                        --checksum/-c, but always overrides length to covert
+                        the full length of file
   -r, --raw             Display raw header field names
   -R relocation, --relocate relocation
                         Tell bootrom to relocate the image at the specified
@@ -172,7 +172,8 @@ optional arguments:
                         during simulation. Normally, you do not need this
                         option
   -a value, --align value
-                        Pad resulting image size to specified alignment
+                        Pad resulting image size to specified alignment.
+                        Remember to add -C to have correct checksums!
   -F value value, --flag value value
                         Set image flag to a desired value. Only RumBootV3 or
                         above
@@ -255,7 +256,7 @@ usage: rumboot-xrun [-h] [-f FILE] [-c chip_id] [-l LOG] [-p port] [-b speed]
                     [-A [PLUSARGS [PLUSARGS ...]]] [-R] [-I]
                     [--replay-no-exit]
 
-rumboot-xrun 0.9.7 - RumBoot X-Modem execution tool
+rumboot-xrun 0.9.9 - RumBoot X-Modem execution tool
 
 (C) 2018-2021 Andrew Andrianov <andrew@ncrmnt.org>, RC Module
 https://module.ru
@@ -675,7 +676,7 @@ usage: rumboot-xflash [-h] [-f FILE] [-c chip_id] [-l LOG] [-p port]
                       [--pl2303-invert] [--redd-port REDD_PORT]
                       [--redd-relay-id REDD_RELAY_ID]
 
-rumboot-xflash 0.9.7 - RumBoot X-Modem firmware update tool
+rumboot-xflash 0.9.9 - RumBoot X-Modem firmware update tool
 
 (C) 2018-2021 Andrew Andrianov <andrew@ncrmnt.org>, RC Module
 https://module.ru
@@ -844,7 +845,7 @@ usage: rumboot-flashrom [-h] [-l LOG] [-p port] [-b speed] [-e]
                         [--redd-relay-id REDD_RELAY_ID]
                         ...
 
-rumboot-flashrom 0.9.7 - flashrom wrapper tool
+rumboot-flashrom 0.9.9 - flashrom wrapper tool
 
 (C) 2018-2021 Andrew Andrianov <andrew@ncrmnt.org>, RC Module
 https://module.ru
@@ -1117,7 +1118,7 @@ _rumboot-combine_ is a simple to tool to compose a chain of several image file. 
 ~# rumboot-combine --help
 usage: rumboot-combine [-h] -i INPUT -o OUTPUT [-a ALIGN]
 
-rumboot-combine 0.9.7 - RumBoot Image Merger Tool
+rumboot-combine 0.9.9 - RumBoot Image Merger Tool
 
 (C) 2018-2021 Andrew Andrianov <andrew@ncrmnt.org>, RC Module
 https://module.ru
