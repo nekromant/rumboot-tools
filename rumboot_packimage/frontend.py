@@ -21,11 +21,11 @@ def cli():
                         action="store_true")
     parser.add_argument("-c", "--checksum",
                         help='''This option will modify the file! Calculates valid checksums to the header.
-                        The length is set to cover the full length of file only if it's non-zero. 
+                        The length is set to cover the full length of file ONLY if it's zero. 
                         ''',
                         action="store_true")
     parser.add_argument("-C", "--checksum_fix_length",
-                        help="This option will modify the file! The same as --checksum, but always overrides length with the actual length of file",
+                        help="This option will modify the file! The same as --checksum/-c, but always overrides length to covert the full length of file",
                         action="store_true")
     parser.add_argument("-r", "--raw",
                         help="Display raw header field names",
@@ -50,7 +50,7 @@ def cli():
                         ''')
     parser.add_argument('-a', '--align',
                         nargs=1, metavar=('value'),
-                        help='''Pad resulting image size to specified alignment
+                        help='''Pad resulting image size to specified alignment. Remember to add -C to have correct checksums!
                         ''')
     parser.add_argument('-F', '--flag',
                         action="append",
@@ -92,7 +92,7 @@ def cli():
             print(f"File {opts.file.name} already wrapped into rumboot format ({t})")
             return 1            
         t = formats.wrap(opts.file, opts.wrap[0])
-        print(f"Wrapped file {opts.file} to {t}")
+        print(f"Wrapped file {opts.file.name} with {t.name} header")
 
     calc_data = True
     if (t == False):
@@ -158,6 +158,13 @@ def cli():
                 return 1
             t.flag(f[0],bool(f[1]))
 
+    if opts.align:
+        t.align(opts.align[0])
+        opts.checksum_fix_length = True
+
+    if opts.add_zeroes:
+        t.add_zeroes(opts.add_zeroes[0])
+
     if (opts.checksum_fix_length):
         t.fix_length()
         opts.info = True
@@ -166,11 +173,7 @@ def cli():
         print("Wrote valid checksums to image header")
         opts.info = True
 
-    if opts.add_zeroes:
-        t.add_zeroes(opts.add_zeroes[0])
 
-    if opts.align:
-        t.align(opts.align[0])
 
     if opts.info:
         t.read_header()

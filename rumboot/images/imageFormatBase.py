@@ -39,13 +39,13 @@ class ImageFormatBase:
     def wrap(self):
         self.fd.seek(0, os.SEEK_SET)
         tmp = self.fd.read(self.file_size)
-        self.file_size = self.file_size + self.get_header_length()
         for n,v in enumerate(self.header):
             self.header[v] = 0
         self.header["magic"] = self.MAGIC
         self.write_header()
         self.fd.seek(self.get_header_length(), os.SEEK_SET)
         self.fd.write(tmp)
+        self.read_file_size()
         self.read_header()
         
     def read_file_size(self):
@@ -119,7 +119,7 @@ class ImageFormatBase:
 
         actual = False
         if (self.file_size - self.get_header_length() != self.header["data_length"]):
-            actual = "Actual length {}".format(self.file_size - self.get_header_length())
+            actual = "Actual data length {}".format(self.file_size - self.get_header_length())
 
         if (self.field_exists("data_length")):
             self.dump_field("data_length",  False, actual, raw)
@@ -153,7 +153,6 @@ class ImageFormatBase:
     def fix_length(self):
         self.header["data_length"] = self.file_size - self.get_header_length()
         self.data_length = self.header["data_length"]
-        self.fix_checksums()
 
     def fix_checksums(self, calc_data = True):
         self.header["data_length"] = self.data_length
