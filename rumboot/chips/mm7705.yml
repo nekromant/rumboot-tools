@@ -1,0 +1,43 @@
+--- !Chip
+name: mm7705
+part: 1888TX018
+chip_id: 1
+chip_rev: 1
+gdb: gdb
+baudrate: 1000000
+skipsync: True
+spl_address: 0x48000
+baudrate: 115200
+warning: >
+  This chip has a RumBoot V1 bootloader.
+  RumBootV2 may be flashed onto SPI flash and executed from internal memory
+  to provide additional functionality, e.g. xmodem loading
+  Please be careful not wipe it! Recovery will be only possible via JTAG/EDCL
+welcome: host
+memories:
+  spi: "rumboot-mm7705-PostProduction-updater-spiflash.bin"
+dumps: {}
+hacks:
+  skipsync: True  # Doesn't Send U\r\n\r\n at the start.
+edcl:
+  - name: "Greth 100Mbit #0"
+    ip: "192.168.1.2"
+    mac: "ec:17:66:00:00:02"
+
+  - name: "Greth 100Mbit #1"
+    ip: "192.168.1.3"
+    mac: "ec:17:66:00:00:03"
+
+  - name: "Greth 100Mbit #2"
+    ip: "192.168.1.0"
+    mac: "ec:17:66:00:00:00"
+
+  - name: "Greth 1Gbit #0"
+    ip: "192.168.1.49"
+    mac: "ec:17:66:77:05:01"
+
+  - name: "Greth 1Gbit #1"
+    ip: "192.168.1.48"
+    mac: "ec:17:66:77:05:00"
+romdump: "mm7705-v1.dmp"
+...

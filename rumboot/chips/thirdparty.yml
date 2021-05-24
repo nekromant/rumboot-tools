@@ -1,0 +1,37 @@
+--- !Chip
+name: rpi4
+part: BCM2711 (Raspberry Pi 4)
+chip_id: 255
+chip_rev: 2
+gdb: gdb
+baudrate: 115200
+warning: ~
+welcome: "U-Boot> "
+memories: {}
+dumps: {}
+hacks:
+  skipsync: False  # Doesn't Send U\r\n\r\n at the start. All legacy stuff
+  edclArpBug: False  # EDCL doesn't have a valid IP, needs a static ARP entry (mb7707)
+  silentRom: False  # Bootrom is totally silent
+  noxmodem: False  # Chip lacks xmodem implementation
+  noedcl: False  # Chip lacks edcl implementation
+edcl: ~
+...
+
+--- !Chip
+name: zed
+part: Xilinx Zynq series (Zed Board, Tang Hex, ...)
+chip_id: 255
+chip_rev: 1
+gdb: gdb
+welcome: "Zynq> "
+baudrate: 115200
+warning: ~
+memories: {}
+spl_address:  0x100
+hacks:
+  skipsync: True  # Doesn't Send U\r\n\r\n at the start. All legacy stuff
+  silentRom: False  # Bootrom is totally silent
+  noxmodem: False  # Chip lacks xmodem implementation
+edcl: ~
+...

@@ -1,0 +1,29 @@
+--- !Chip
+name: oi10
+part: "1888BM018(A)/1888BM01H4"
+chip_id: 4
+chip_rev: 1
+welcome: host
+baudrate: 115200
+stub: "rumboot-oi10-PostProduction-gdb-stub.bin"
+romdump: "oi10-v1.dmp"
+gdb: "powerpc-rcm-elf-gdb"
+spl_address: 0xC0000000
+warning: ~
+memories: {}
+dumps: {}
+hacks:
+  skipsync: False  # Doesn't Send U\r\n\r\n at the start. All legacy stuff
+  edclArpBug: False  # EDCL doesn't have a valid IP, needs a static ARP entry (mb7707)
+  silentRom: False  # Bootrom is totally silent
+  noxmodem: False  # Chip lacks xmodem implementation
+  noedcl: False  # Chip lacks edcl implementation
+edcl:
+  - name: "Greth #1" 
+    ip: "192.168.1.48"
+    mac: "ec:17:66:0e:10:00"
+
+  - name: "Greth #2"
+    ip: "192.168.1.49"
+    mac: "ec:17:66:0e:10:01"
+...

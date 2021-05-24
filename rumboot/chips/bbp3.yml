@@ -1,0 +1,24 @@
+--- !Chip
+name: bbp3
+chip_id: 5
+chip_rev: 1
+baudrate: 115200
+welcome: host
+spl_address: 0x8000
+gdb: gdb
+warning: ~
+memories:
+  spi0-cs0: "rumboot-bbp3-PostProduction-updater-spi0-cs0.bin"
+romdump: "bbp3-v1.dmp"
+dumps: {}
+hacks:
+  skipsync: False  # Doesn't Send U\r\n\r\n at the start. All legacy stuff
+  edclArpBug: False  # EDCL doesn't have a valid IP, needs a static ARP entry (mb7707)
+  silentRom: False  # Bootrom is totally silent
+  noxmodem: False  # Chip lacks xmodem implementation
+  noedcl: False  # Chip lacks edcl implementation
+edcl:
+  - name: GRETH 
+    ip: "192.168.1.48"
+    mac: "ec:17:66:ae:de:30"
+...
