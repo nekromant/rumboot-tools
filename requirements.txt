@@ -4,7 +4,7 @@ dnspython==2.1.0
 eventlet==0.31.0
 Flask==2.0.0
 Flask-Compress==1.9.0
-Flask-SocketIO==5.0.3
+Flask-SocketIO==5.1.0
 gdbgui==0.14.0.2
 getmac==0.8.2
 gevent==21.1.2
