@@ -30,3 +30,4 @@ six==1.16.0
 tqdm==4.60.0
 Werkzeug==2.0.1
 xmodem==0.4.6
+heatshrink2==0.10.0
