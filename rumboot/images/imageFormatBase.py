@@ -9,7 +9,7 @@ class ImageFormatBase:
     data_offset = 68
     endian = "little"
     debug = False
-    logger = False;
+    logger = False
     tblfmt = "%-24s"
     header_crc32 = 0
     data_crc32   = 0
@@ -29,12 +29,13 @@ class ImageFormatBase:
 
     name = "Base"
     def __init__(self, inFile):
+        self.header = {}
         if (type(inFile) is str):
             self.fd = open(inFile, 'r+b')
         else:
             self.fd = inFile
         self.read_file_size()
-        self.header_size = 66
+        self.header_size = self.get_header_length()
 
     def wrap(self):
         self.fd.seek(0, os.SEEK_SET)
@@ -102,8 +103,7 @@ class ImageFormatBase:
 
             if (show and f[3]):
                 self.dump_field(f, raw=raw)
-
-        if (self.header["header_crc32"] == self.header_crc32):
+        if (not "header_crc32" in self.header or self.header["header_crc32"] == self.header_crc32):
             hmatch = "Valid"
         else:
             hmatch = "Invalid, expected: 0x{:X}".format(self.header_crc32)
@@ -111,7 +111,7 @@ class ImageFormatBase:
 
         if (hmatch != "Valid"):
             dmatch = "Skipped, invalid header checksum"
-        elif (self.header["data_crc32"] == self.data_crc32):
+        elif (not "data_crc32" in self.header or self.header["data_crc32"] == self.data_crc32):
             dmatch = "Valid"
         else:
             dmatch = "Invalid, expected: {:X}".format(self.data_crc32)
@@ -136,12 +136,12 @@ class ImageFormatBase:
             offset = offset + f[0]
         self.header_crc32 = self.crc32(0, self.get_header_checksum_length())
 
-        if (self.header["data_length"] == 0):
+        if (not "data_length" in self.header or self.header["data_length"] == 0):
             self.data_length = self.file_size - self.get_header_length()
         else:
             self.data_length = self.header["data_length"]
             #Only compute data crc32 for a valid header checksum
-        if (self.header["header_crc32"] == self.header_crc32):
+        if (not "header_crc32" in self.header or self.header["header_crc32"] == self.header_crc32):
             self.data_crc32 = self.crc32(self.get_header_length(), self.get_header_length() + self.data_length)
 
     def write_header(self):

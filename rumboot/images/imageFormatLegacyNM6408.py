@@ -1,7 +1,5 @@
 from rumboot.images.imageFormatBase import ImageFormatBase
 import os
-
-
 class ImageFormatLegacyNM6408(ImageFormatBase):
     MAGIC =  0x12345678
     name = "NM6408 (Legacy)"
@@ -12,7 +10,7 @@ class ImageFormatLegacyNM6408(ImageFormatBase):
 
     def __init__(self, inFile):
         super().__init__(inFile)
-        self.header_size = 8
+        self.header_size = self.get_header_length()
 
     def get_header_length(self):
         return 8
