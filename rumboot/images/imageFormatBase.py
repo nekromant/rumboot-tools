@@ -36,6 +36,9 @@ class ImageFormatBase:
             self.fd = inFile
         self.read_file_size()
         self.header_size = self.get_header_length()
+        #Initialize the header data
+        for f in self.format:
+            self.header[f[1]] = 0
 
     def wrap(self):
         self.fd.seek(0, os.SEEK_SET)
