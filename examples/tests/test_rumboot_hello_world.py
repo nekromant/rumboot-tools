@@ -17,9 +17,8 @@ config = RumbootGetDefaultConfig()
 # test class registration
 RumbootTest(__file__, RumbootHelloWorldTest, description = "Rumboot Hello World Test", config = config)
 
-# test class directories registration example
-# RumbootTestDirectory("subdir1", filter="test_*.py", config = config)
-# RumbootTestDirectory("subdir2", filter="test_*.py", config = config)
+# test class directories registration (optional)
+RumbootTestDirectory(__file__, "subdir_tests", filter="test_*.py", config = config)
 
 
 # standard epilog

@@ -4,6 +4,9 @@
 # ??? from rumboot.cmdline import arghelper
 # ??? from rumboot.terminal import terminal
 import os
+import fnmatch
+import importlib
+# ??? from typing import Dict, List
 # ??? import sys
 # ??? import argparse
 # ??? import rumboot_xrun
@@ -22,10 +25,33 @@ import os
 # ??? # - GUI integration
 # ???
 
-#class TestEntity:
-#    pass
+def makeClassName(package, className):
+    return package + "." + className if package else className
+
+class Test:
+
+    def __init__(self, name, fullName, moduleFileFullPath, testClass, description, config):
+        self.name = name                              # RumbootHelloWorldTest ??? may be deleted
+        self.fullName = fullName                      # subdir_tests.RumbootHelloWorldTest
+        self.moduleFileFullPath = moduleFileFullPath  # /home/user/test/test.py ??? may be deleted
+        self.testClass = testClass
+        self.description = description
+        self.config = config
 
 
+class TestCollection:
+
+    def __init__(self, name, packageName):
+        self.name = name                # subdir_tests ??? may be deleted
+        self.packageName = packageName  # tests.subdir_tests ??? may be renamed
+        self.tests = []
+        self.collections = []
+
+
+__currentTestCollection = TestCollection("", "")
+__rootTestCollection = __currentTestCollection
+
+# ??? really need
 class RumbootTestBase:
 
     def run(self):
@@ -47,16 +73,42 @@ def RumbotApplyOverlay(config, config_or_yaml):
     return config
 
 
-def RumbootTest(testModuleFile, testClass, description = None, config = RumbootGetDefaultConfig()):
-    pass
+def RumbootTest(moduleFilePath, testClass, description = "", config = RumbootGetDefaultConfig()):
+    test = Test(testClass.__name__, makeClassName(__currentTestCollection.packageName, testClass.__name__), os.path.abspath(moduleFilePath), testClass, description, config)
+    __currentTestCollection.tests.append(test)
 
 
-def RumbootTestDirectory(path, filter = None, config = RumbootGetDefaultConfig()):
-    pass
+def RumbootTestDirectory(moduleFilePath, subdirName, filter = "test_*.py", config = RumbootGetDefaultConfig()):
+    global __currentTestCollection
+
+    collection = next((x for x in __currentTestCollection.collections if x.name == subdirName), None)
+    if collection == None:
+        collection = TestCollection(subdirName, makeClassName(__currentTestCollection.packageName, subdirName))
+        __currentTestCollection.collections.append(collection)
+
+    saveCurrentCollection = __currentTestCollection
+    __currentTestCollection = collection
+
+    dirPath = os.path.join(os.path.dirname(os.path.abspath(moduleFilePath)), subdirName)
+    for entry in os.scandir(dirPath):
+        if entry.is_file and fnmatch.fnmatch(entry.name, filter):
+            moduleName = makeClassName(__currentTestCollection.packageName, os.path.splitext(entry.name)[0])
+            importlib.import_module(moduleName)
+
+    __currentTestCollection == saveCurrentCollection
+
+
+# ???
+def __printTestCollection(testCollection):
+    print("=== " + testCollection.name)
+    for test in testCollection.tests:
+        print(vars(test))
+    for collection in testCollection.collections:
+        __printTestCollection(collection)
 
 
 def RumbootTestStartAll():
-    pass
+    __printTestCollection(__rootTestCollection)
 
 # ??? class RumbootTestBase(threading.Thread):
 # ???     terminal = None
