@@ -1,5 +1,6 @@
 --- !Chip
 name: bbp3
+part: 1888BC058
 chip_id: 5
 chip_rev: 1
 baudrate: 115200

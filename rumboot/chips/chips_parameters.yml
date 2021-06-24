@@ -19,4 +19,11 @@ optional:
   - spl_address
   - romdump
   - flashrom
+
+hacks:
+  - skipsync
+  - edclArpBug
+  - silentRom
+  - noxmodem
+  - noedcl
 ...

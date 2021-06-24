@@ -7,6 +7,7 @@ gdb: gdb
 baudrate: 1000000
 skipsync: True
 spl_address: 0x48000
+gdb: gdb
 baudrate: 115200
 warning: >
   This chip has a RumBoot V1 bootloader.
@@ -19,6 +20,10 @@ memories:
 dumps: {}
 hacks:
   skipsync: True  # Doesn't Send U\r\n\r\n at the start.
+  edclArpBug: False
+  silentRom: False  # Bootrom is totally silent
+  noxmodem: False  # Chip lacks xmodem implementation
+  noedcl: False
 edcl:
   - name: "Greth 100Mbit #0"
     ip: "192.168.1.2"

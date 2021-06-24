@@ -6,17 +6,21 @@ chip_rev: 1
 welcome: host
 baudrate: 115200
 spl_address: 0
+gdb: gdb
 warning: >
   This chip has a legacy ROM bootloader.
   RumBoot is flashed onto SPI flash and executed from internal memory
   to provide additional functionality
   Please be careful not wipe it! Recovery will be only possible via JTAG
+dumps: {}
 memories:
   spi0-cs0: "rumboot-nm6408-PostProduction-updater-spi0-cs0.bin"
 hacks:
   skipsync: True  # Doesn't Send U\r\n\r\n at the start. All legacy stuff
+  edclArpBug: False
   silentRom: True  # Bootrom is totally silent
   noxmodem: True  # Chip lacks xmodem implementation
+  noedcl: False
 edcl:
   - name: "GRETH #0"
     ip: "192.168.1.0"
