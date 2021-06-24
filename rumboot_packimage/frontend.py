@@ -1,7 +1,9 @@
-from rumboot.ImageFormatDb import ImageFormatDb
 import argparse
+from distutils.util import strtobool
 import rumboot_packimage
 import rumboot
+from rumboot.ImageFormatDb import ImageFormatDb
+
 
 class RumbootPackimage:
     """RumbootPackimage tool frontend"""
@@ -156,7 +158,7 @@ def cli():
             if not hasattr(t, "flag"):
                 print("ERROR: Image flags are not supported by this image format")
                 return 1
-            t.flag(f[0],bool(f[1]))
+            t.flag(f[0],bool(strtobool(f[1])))
 
     if opts.align:
         t.align(opts.align[0])
