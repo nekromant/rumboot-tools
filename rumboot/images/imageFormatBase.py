@@ -260,7 +260,7 @@ class ImageFormatBase:
         align = int(align)
         if not self.file_size % align:
             return
-        len = align - (self.file_size % align)
+        len = align - ((self.file_size - self.get_header_length()) % align)
         self.file_size += len 
         while len > 0:
             self.fd.write(bytearray([0]))
