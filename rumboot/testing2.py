@@ -2,6 +2,7 @@ import os
 import inspect
 import fnmatch
 import importlib
+import argparse
 
 class TestDesc:
 
@@ -27,29 +28,17 @@ class RumbootTestBase:
         return True
 
 
-class TestCollection:
-
-    def __init__(self):
-        self.tests = {} # { "test_name": TestDesc, "subdir": { ... } }
-
-    def __addTest(self, path, storagePath, testClass, test_params, name):
-        if path == []:
-            if name in storagePath:
-                raise Exception(f"Test {name} already exists")
-            storagePath[name] = TestDesc(testClass, test_params, name)
-        else:
-            if path[0] not in storagePath:
-                storagePath[path[0]] = {}
-            if not isinstance(storagePath[path[0]], dict):
-                raise Exception(f"Test {path[0]} already exists")
-            self.__addTest(path[1:], storagePath[path[0]], testClass, test_params, name)
-
-    def addTest(self, path, testClass, test_params, name):
-        self.__addTest(path, self.tests, testClass, test_params, name)
-
-
-__testCollection = TestCollection()
-__testRootPath = os.path.abspath(os.path.curdir)
+def __addTest(path, storagePath, testClass, test_params, name):
+    if path == []:
+        if name in storagePath:
+            raise Exception(f"Test {name} already exists")
+        storagePath[name] = TestDesc(testClass, test_params, name)
+    else:
+        if path[0] not in storagePath:
+            storagePath[path[0]] = {}
+        if not isinstance(storagePath[path[0]], dict):
+            raise Exception(f"Test {path[0]} already exists")
+        __addTest(path[1:], storagePath[path[0]], testClass, test_params, name)
 
 
 def __registerOneTest(testModulePath, testClass, test_params, name):
@@ -60,7 +49,7 @@ def __registerOneTest(testModulePath, testClass, test_params, name):
     path = pathStr.split(os.sep)
     if path == [""]:
         path = []
-    __testCollection.addTest(path, testClass, test_params, name)
+    __addTest(path, __tests, testClass, test_params, name)
 
 
 def __registerTests(testModulePath, testClass, test_params, name):
@@ -103,6 +92,17 @@ def RumbootTestDirectory(subdirName, filter = "test_*.py"):
             importlib.import_module(moduleName)
 
 
+def __loadEnvironment(opts):
+    if opts.env_path == None:
+        pass
+    else:
+        pass
+
+
+def __setupEnvironment(env):
+    pass
+
+
 # ???
 def __printTestCollection(d):
     for key, value in d.items():
@@ -114,4 +114,18 @@ def __printTestCollection(d):
 
 
 def RumbootStartTesting():
-    __printTestCollection(__testCollection.tests)
+    __printTestCollection(__tests) # ???
+
+
+__tests = {} # { "test_name": TestDesc, "subdir": { ... } }
+__testRootPath = os.path.abspath(os.path.curdir)
+
+# starts before test loading
+__parser = argparse.ArgumentParser(prog="<rumboot test system>", description="Processing all tests")
+__parser.add_argument("-C", "--directory", dest = "root_path", help = "test root directory", default = __testRootPath)
+__parser.add_argument("--env", dest = "env_path", help = "environment yaml file", required = False)
+__opts = __parser.parse_args()
+
+print(__opts) # ???
+
+__env = __loadEnvironment(__opts)
