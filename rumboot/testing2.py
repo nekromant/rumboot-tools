@@ -3,6 +3,11 @@ import inspect
 import fnmatch
 import importlib
 import argparse
+import yaml
+import multiprocessing
+import sys
+
+DEFAULT_ENV_FILE_NAME = "env.yaml"
 
 class TestDesc:
 
@@ -92,40 +97,86 @@ def RumbootTestDirectory(subdirName, filter = "test_*.py"):
             importlib.import_module(moduleName)
 
 
+def __testIterationRecursive(path, tests, func):
+    for key, value in tests.items():
+        fullName = path + ("." if path else "") + key
+        if isinstance(value, TestDesc):
+            func(fullName, value)
+        else:
+            __testIterationRecursive(fullName, value, func)
+
+def __testIteration(func):
+    __testIterationRecursive("", __tests, func)
+
+
+def __loadEnvironmentFromFile(filePath):
+    with open(filePath, 'r') as stream:
+        env = yaml.safe_load(stream)
+    return env
+
+
 def __loadEnvironment(opts):
-    if opts.env_path == None:
-        pass
+    if opts.env_path != None:
+        return __loadEnvironmentFromFile(opts.env_path)
     else:
-        pass
+        if os.path.isfile(DEFAULT_ENV_FILE_NAME):
+            return __loadEnvironmentFromFile(DEFAULT_ENV_FILE_NAME)
+    return {}
 
 
+# ???
 def __setupEnvironment(env):
     pass
 
 
-# ???
-def __printTestCollection(d):
-    for key, value in d.items():
-        if isinstance(value, TestDesc):
-            print(f"{key} - {vars(value)}")
-        else:
-            print(f"=== {key}")
-            __printTestCollection(value)
+def __testExecution(fullName, desc):
+    global __summary_result
+
+    print(f"=== Processing {fullName} ===")
+    if not desc.testClass.suitable(__env):
+        print("The test is not suitable for the environment")
+        return
+
+    terminal = None # ???
+    resetSeq = None # ???
+    test = desc.testClass(terminal, resetSeq, __env, desc.test_params)
+
+    timeoutSec = 60 # ???
+    proc = multiprocessing.Process(target=lambda: sys.exit(0 if test.run() else 1))
+    proc.start()
+    proc.join(timeout = timeoutSec)
+
+    ext_code = proc.exitcode
+    if (ext_code == None):
+        proc.terminate()
+        proc.join()
+        print(f"The test has been terminated by timeout {timeoutSec} seconds")
+        result = False
+    else:
+        result = (ext_code == 0)
+
+    print("Passed" if result else "Fault")
+    __summary_result = __summary_result and result
 
 
 def RumbootStartTesting():
-    __printTestCollection(__tests) # ???
+    __setupEnvironment(__env)
+    __testIteration(__testExecution)
+    print("==========")
+    print("All the tests have been passed" if __summary_result else "Some tests have been fault")
 
 
+__summary_result = True
 __tests = {} # { "test_name": TestDesc, "subdir": { ... } }
 __testRootPath = os.path.abspath(os.path.curdir)
 
+
 # starts before test loading
 __parser = argparse.ArgumentParser(prog="<rumboot test system>", description="Processing all tests")
+
 __parser.add_argument("-C", "--directory", dest = "root_path", help = "test root directory", default = __testRootPath)
 __parser.add_argument("--env", dest = "env_path", help = "environment yaml file", required = False)
-__opts = __parser.parse_args()
 
-print(__opts) # ???
+__opts = __parser.parse_args()
 
 __env = __loadEnvironment(__opts)

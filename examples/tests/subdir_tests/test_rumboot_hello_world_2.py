@@ -3,12 +3,16 @@ from rumboot.testing2 import *
 
 @RTest()
 class RumbootHelloWorldTest2(RumbootTestBase):
-    pass
+
+    def run(self):
+        return False
 
 
 @RTest(test_params = { "key": "value1" }, name = "2TestWithParameter")
 class RumbootHelloWorldTest2(RumbootTestBase):
-    pass
+
+    def run(self):
+        return False
 
 
 @RTest(test_params = [ { "key": "value1" }, { "key": "value2" }, { "key": "value3" } ], name = "2TestWithParameter2")
