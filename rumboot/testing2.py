@@ -1,203 +1,122 @@
-# ??? from rumboot.chipDb import ChipDb
-# ??? from rumboot.ImageFormatDb import ImageFormatDb
-# ??? from rumboot.resetSeq import ResetSeqFactory
-# ??? from rumboot.cmdline import arghelper
-# ??? from rumboot.terminal import terminal
 import os
-import fnmatch
-import importlib
-# ??? from typing import Dict, List
-# ??? import sys
-# ??? import argparse
-# ??? import rumboot_xrun
-# ??? import rumboot
-# ??? from parse import *
-# ??? import atexit
-# ??? import threading
-# ??? import time
-# ???
-# ???
-# ??? # TODO & questions:
-# ??? # - Timeout handling in tests
-# ??? # - Is atexit a good way to call the actual testing?
-# ??? # - Decorator & class instance registration methods
-# ??? # - Helper functions to add tests from directory
-# ??? # - GUI integration
-# ???
+import inspect
 
-def makeClassName(package, className):
-    return package + "." + className if package else className
+class TestDesc:
 
-class Test:
-
-    def __init__(self, name, fullName, moduleFileFullPath, testClass, description, config):
-        self.name = name                              # RumbootHelloWorldTest ??? may be deleted
-        self.fullName = fullName                      # subdir_tests.RumbootHelloWorldTest
-        self.moduleFileFullPath = moduleFileFullPath  # /home/user/test/test.py ??? may be deleted
+    def __init__(self, testClass, test_params, name):
         self.testClass = testClass
-        self.description = description
-        self.config = config
+        self.test_params = test_params
+        self.name = name
 
 
-class TestCollection:
-
-    def __init__(self, name, packageName):
-        self.name = name                # subdir_tests ??? may be deleted
-        self.packageName = packageName  # tests.subdir_tests ??? may be renamed
-        self.tests = []
-        self.collections = []
-
-
-__currentTestCollection = TestCollection("", "")
-__rootTestCollection = __currentTestCollection
-
-# ??? really need
 class RumbootTestBase:
+
+    def suitable(environment):
+        # ??? ToDo
+        return True
+
+    def __init__(self, terminal, resetSeq, environment, test_params):
+        self.terminal = terminal
+        self.resetSeq = resetSeq
+        self.environment = environment
+        self.test_params = test_params
 
     def run(self):
         return True
 
 
-def RumbootGetDefaultConfig():
-    config = {}
-    #
-    # ???
-    #
-    return config
+class TestCollection:
+
+    def __init__(self):
+        self.tests = {} # { "test_name": TestDesc, "subdir": { ... } }
+
+    def __addTest(self, path, storagePath, testClass, test_params, name):
+        if path == []:
+            if name in storagePath:
+                raise Exception(f"Test {name} already exists")
+            storagePath[name] = TestDesc(testClass, test_params, name)
+        else:
+            if path[0] not in storagePath:
+                storagePath[path[0]] = {}
+            if not isinstance(storagePath[path[0]], dict):
+                raise Exception(f"Test {path[0]} already exists")
+            self.__addTest(path[1:], storagePath[path[0]], testClass, test_params, name)
+
+    def addTest(self, path, testClass, test_params, name):
+        self.__addTest(path, self.tests, testClass, test_params, name)
 
 
-def RumbotApplyOverlay(config, config_or_yaml):
-    #
-    # ???
-    #
-    return config
+__testCollection = TestCollection()
+__testRootPath = os.path.abspath(os.path.curdir)
 
 
-def RumbootTest(moduleFilePath, testClass, description = "", config = RumbootGetDefaultConfig()):
-    test = Test(testClass.__name__, makeClassName(__currentTestCollection.packageName, testClass.__name__), os.path.abspath(moduleFilePath), testClass, description, config)
-    __currentTestCollection.tests.append(test)
+def __registerOneTest(testModulePath, testClass, test_params, name):
+    if testClass == None:
+        raise Exception("Test class is not defined")
+    relPath = os.path.relpath(os.path.normpath(testModulePath), __testRootPath)
+    pathStr = os.path.split(relPath)[0]
+    path = pathStr.split(os.sep)
+    if path == [""]:
+        path = []
+    __testCollection.addTest(path, testClass, test_params, name)
 
 
-def RumbootTestDirectory(moduleFilePath, subdirName, filter = "test_*.py", config = RumbootGetDefaultConfig()):
-    global __currentTestCollection
+def __registerTests(testModulePath, testClass, test_params, name):
+    if name == None:
+        name = testClass.__name__
 
-    collection = next((x for x in __currentTestCollection.collections if x.name == subdirName), None)
-    if collection == None:
-        collection = TestCollection(subdirName, makeClassName(__currentTestCollection.packageName, subdirName))
-        __currentTestCollection.collections.append(collection)
-
-    saveCurrentCollection = __currentTestCollection
-    __currentTestCollection = collection
-
-    dirPath = os.path.join(os.path.dirname(os.path.abspath(moduleFilePath)), subdirName)
-    for entry in os.scandir(dirPath):
-        if entry.is_file and fnmatch.fnmatch(entry.name, filter):
-            moduleName = makeClassName(__currentTestCollection.packageName, os.path.splitext(entry.name)[0])
-            importlib.import_module(moduleName)
-
-    __currentTestCollection == saveCurrentCollection
+    if isinstance(test_params, dict):
+        __registerOneTest(testModulePath, testClass, test_params, name)
+    elif isinstance(test_params, list):
+        index = 1
+        for p in test_params:
+            __registerOneTest(testModulePath, testClass, p, f"{name}:{index}")
+            index += 1
+    else:
+        raise Exception("Test params must be dict or list")
 
 
-# ???
-def __printTestCollection(testCollection):
-    print("=== " + testCollection.name)
-    for test in testCollection.tests:
-        print(vars(test))
-    for collection in testCollection.collections:
-        __printTestCollection(collection)
+def RTest(test_params = {}, name = None):
+    testModulePath = os.path.abspath(inspect.stack()[1][1])
+    def decorator(testClass):
+        __registerTests(testModulePath, testClass, test_params, name)
+    return decorator
 
 
-def RumbootTestStartAll():
-    __printTestCollection(__rootTestCollection)
+def RegisterTest(testClass, test_params = {}, name = None):
+    testModulePath = os.path.abspath(inspect.stack()[1][1])
+    __registerTests(testModulePath, testClass, test_params, name)
 
-# ??? class RumbootTestBase(threading.Thread):
-# ???     terminal = None
+
+# def RumbootTestDirectory(moduleFilePath, subdirName, filter = "test_*.py", config = RumbootGetDefaultConfig()):
+#     global __currentTestCollection
+
+#     collection = next((x for x in __currentTestCollection.collections if x.name == subdirName), None)
+#     if collection == None:
+#         collection = TestCollection(subdirName, makeClassName(__currentTestCollection.packageName, subdirName))
+#         __currentTestCollection.collections.append(collection)
+
+#     saveCurrentCollection = __currentTestCollection
+#     __currentTestCollection = collection
+
+#     dirPath = os.path.join(os.path.dirname(os.path.abspath(moduleFilePath)), subdirName)
+#     for entry in os.scandir(dirPath):
+#         if entry.is_file and fnmatch.fnmatch(entry.name, filter):
+#             moduleName = makeClassName(__currentTestCollection.packageName, os.path.splitext(entry.name)[0])
+#             importlib.import_module(moduleName)
+
+#     __currentTestCollection == saveCurrentCollection
+
+
 # ???
-# ???     def prepare(self, terminal):
-# ???         self.terminal = terminal
-# ???
-# ???     def run(self):
-# ???         return self.execute(self.terminal)
-# ???
-# ???
-# ??? class RumbootTestFacility():
-# ???     runlist = []
-# ???     def __init__(self):
-# ???         pass
-# ???
-# ???     def register(self, test):
-# ???         self.runlist.append(test())
-# ???
-# ???     def run(self, terminal, reset):
-# ???         for r in self.runlist:
-# ???             reset.resetToHost()
-# ???             r.prepare(terminal)
-# ???             r.start()
-# ???             print("test done", r.join())
-# ???
-# ???
-# ??? __g_facility = RumbootTestFacility()
-# ???
-# ???
-# ??? def RumbootTest(arg):
-# ???     print("Registering test", arg)
-# ???     __g_facility.register(arg)
-# ???
-# ???
-# ??? def intialize_testing(target_chip=None):
-# ???     resets  = ResetSeqFactory("rumboot.resetseq")
-# ???     formats = ImageFormatDb("rumboot.images")
-# ???     chips   = ChipDb("rumboot.chips")
-# ???     c       = chips[target_chip]
-# ???
-# ???     parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter,
-# ???                                      description="rumboot-factorytest {} - RumBoot Board Testing Framework\n".format(rumboot.__version__) +
-# ???                                     rumboot.__copyright__)
-# ???     helper = arghelper()
-# ???
-# ???     helper.add_terminal_opts(parser)
-# ???     helper.add_resetseq_options(parser, resets)
-# ???
-# ???     opts = parser.parse_args()
-# ???
-# ???     dump_path = os.path.dirname(__file__) + "/romdumps/"
-# ???
-# ???     helper.detect_terminal_options(opts, c)
-# ???
-# ???     print("Detected chip:    %s (%s)" % (c.name, c.part))
-# ???     if c == None:
-# ???         print("ERROR: Failed to auto-detect chip type")
-# ???         return 1
-# ???     if opts.baud == None:
-# ???         opts.baud = [ c.baudrate ]
-# ???
-# ???     reset = resets[opts.reset[0]](opts)
-# ???     term = terminal(opts.port[0], opts.baud[0])
-# ???     term.set_chip(c)
-# ???
-# ???     try:
-# ???         romdump = open(dump_path + c.romdump, "r")
-# ???         term.add_dumps({'rom' : romdump})
-# ???     except:
-# ???         pass
-# ???
-# ???     if opts.log:
-# ???         term.logstream = opts.log
-# ???
-# ???     print("Reset method:               %s" % (reset.name))
-# ???     print("Baudrate:                   %d bps" % int(opts.baud[0]))
-# ???     print("Port:                       %s" % opts.port[0])
-# ???     if opts.edcl and c.edcl != None:
-# ???         term.xfer.selectTransport("edcl")
-# ???     print("Preferred data transport:   %s" % term.xfer.how)
-# ???     print("--- --- --- --- --- --- ")
-# ???
-# ???     return term, reset
-# ???
-# ???
-# ???
-# ??? @atexit.register
-# ??? def execute():
-# ???     term, reset = intialize_testing("mm7705")
-# ???     __g_facility.run(term, reset)
-# ???
+def __printTestCollection(d):
+    for key, value in d.items():
+        if isinstance(value, TestDesc):
+            print(f"{key} - {vars(value)}")
+        else:
+            print(f"=== {key}")
+            __printTestCollection(value)
+
+
+def RumbootStartTesting():
+    __printTestCollection(__testCollection.tests)
