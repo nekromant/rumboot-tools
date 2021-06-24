@@ -9,6 +9,7 @@ from rumboot.OpFactory import OpFactory
 from rumboot.chips.base import chipBase
 from rumboot.ImageFormatDb import ImageFormatDb
 from rumboot.xfer import xferManager
+from serial.serialutil import to_bytes
 import socket
 import select
 
@@ -59,10 +60,27 @@ class terminal:
                 self.ser = serial.serial_for_url(self.port, timeout=5)
             self.opf = OpFactory("rumboot.ops", self) 
 
+        def hack_enable_serial_delay(self, delay):
+            if hasattr(self.ser,"__write_orig"):
+                raise("INTERNAL ERROR: serial delay hack already applied")
+
+            def write_delayed(data):
+                data = to_bytes(data)
+                data = [bytes([b]) for b in data]
+                for b in data:
+                    self.ser.__write_orig(b)
+                    time.sleep(delay)
+
+
+            if not hasattr(self.ser, '__write_orig'):
+                self.ser.__write_orig = self.ser.write
+                self.ser.write = write_delayed
 
         def set_chip(self, chip):
             self.chip = chip
             self.xfer.setChip(chip)
+            if self.hack("serial_delay"):
+                self.hack_enable_serial_delay(0.00005)
 
         def tqdm(self, *args, **kwargs):
             self.progress.close()
