@@ -1,5 +1,7 @@
 import os
 import inspect
+import fnmatch
+import importlib
 
 class TestDesc:
 
@@ -88,24 +90,17 @@ def RegisterTest(testClass, test_params = {}, name = None):
     __registerTests(testModulePath, testClass, test_params, name)
 
 
-# def RumbootTestDirectory(moduleFilePath, subdirName, filter = "test_*.py", config = RumbootGetDefaultConfig()):
-#     global __currentTestCollection
-
-#     collection = next((x for x in __currentTestCollection.collections if x.name == subdirName), None)
-#     if collection == None:
-#         collection = TestCollection(subdirName, makeClassName(__currentTestCollection.packageName, subdirName))
-#         __currentTestCollection.collections.append(collection)
-
-#     saveCurrentCollection = __currentTestCollection
-#     __currentTestCollection = collection
-
-#     dirPath = os.path.join(os.path.dirname(os.path.abspath(moduleFilePath)), subdirName)
-#     for entry in os.scandir(dirPath):
-#         if entry.is_file and fnmatch.fnmatch(entry.name, filter):
-#             moduleName = makeClassName(__currentTestCollection.packageName, os.path.splitext(entry.name)[0])
-#             importlib.import_module(moduleName)
-
-#     __currentTestCollection == saveCurrentCollection
+def RumbootTestDirectory(subdirName, filter = "test_*.py"):
+    testModulePath = os.path.abspath(inspect.stack()[1][1])
+    dirModulePath = os.path.split(testModulePath)[0]
+    dirPath = os.path.join(dirModulePath, subdirName)
+    for entry in os.scandir(dirPath):
+        if entry.is_file and fnmatch.fnmatch(entry.name, filter):
+            fullPath = os.path.join(dirPath, os.path.splitext(entry.name)[0])
+            relPath = os.path.relpath(fullPath, __testRootPath)
+            moduleName = relPath.replace(os.path.sep, ".")
+            print(moduleName)
+            importlib.import_module(moduleName)
 
 
 # ???

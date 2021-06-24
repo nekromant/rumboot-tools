@@ -6,12 +6,12 @@ class RumbootHelloWorldTest2(RumbootTestBase):
     pass
 
 
-@RTest(test_params = { "key": "value1" }, name = "TestWithParameter")
+@RTest(test_params = { "key": "value1" }, name = "2TestWithParameter")
 class RumbootHelloWorldTest2(RumbootTestBase):
     pass
 
 
-@RTest(test_params = [ { "key": "value1" }, { "key": "value2" }, { "key": "value3" } ], name = "TestWithParameter2")
+@RTest(test_params = [ { "key": "value1" }, { "key": "value2" }, { "key": "value3" } ], name = "2TestWithParameter2")
 class RumbootHelloWorldTest2(RumbootTestBase):
     pass
 

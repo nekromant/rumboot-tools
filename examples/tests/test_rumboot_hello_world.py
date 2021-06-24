@@ -15,7 +15,7 @@ RegisterTest(RumbootHelloWorldTest, test_params = [ { "key": "value1" }, { "key"
 
 
 # # test class directories registration (optional)
-# RumbootTestDirectory(__file__, "subdir_tests", filter="test_*.py", config = config)
+RumbootTestDirectory("subdir_tests", filter="test_*.py")
 
 
 # standard epilog
