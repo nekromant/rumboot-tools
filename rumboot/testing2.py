@@ -6,6 +6,11 @@ import argparse
 import yaml
 import multiprocessing
 import sys
+from rumboot.resetSeq import ResetSeqFactory
+from rumboot.chipDb import ChipDb
+from rumboot.ImageFormatDb import ImageFormatDb # ???
+from rumboot.cmdline import arghelper # ???
+from rumboot.terminal import terminal
 
 DEFAULT_ENV_FILE_NAME = "env.yaml"
 
@@ -105,6 +110,7 @@ def __testIterationRecursive(path, tests, func):
         else:
             __testIterationRecursive(fullName, value, func)
 
+
 def __testIteration(func):
     __testIterationRecursive("", __tests, func)
 
@@ -124,9 +130,26 @@ def __loadEnvironment(opts):
     return {}
 
 
-# ???
-def __setupEnvironment(env):
-    pass
+# run after test loading
+def __setupEnvironment():
+    __env["connection"] = __env.get("connection", {})
+
+    __env["connection"]["port"] = __env["connection"].get("port", None)
+    if __opts.port:
+        __env["connection"]["port"] = __opts.port[0]
+    __env["connection"]["boud"] = __env["connection"].get("boud", None)
+    if __opts.baud:
+        __env["connection"]["baud"] = __opts.baud[0]
+
+    # ??? defaults from chip
+
+
+def __testEnvironment():
+    if not __env["connection"]["port"]:
+        raise Exception("Serial port is not defined")
+    if not __env["connection"]["baud"]:
+        raise Exception("Serial port baudrate is not defined")
+    # ??? other checks
 
 
 def __testExecution(fullName, desc):
@@ -137,9 +160,10 @@ def __testExecution(fullName, desc):
         print("The test is not suitable for the environment")
         return
 
-    terminal = None # ???
-    resetSeq = None # ???
-    test = desc.testClass(terminal, resetSeq, __env, desc.test_params)
+    reset = __resets[__opts.reset[0]](__opts) # ??? opts
+    term = terminal(__env["connection"]["port"], __env["connection"]["baud"])
+    term.set_chip(__chip)
+    test = desc.testClass(term, reset, __env, desc.test_params)
 
     timeoutSec = 60 # ???
     proc = multiprocessing.Process(target=lambda: sys.exit(0 if test.run() else 1))
@@ -160,23 +184,48 @@ def __testExecution(fullName, desc):
 
 
 def RumbootStartTesting():
-    __setupEnvironment(__env)
+    __setupEnvironment()
+    __testEnvironment()
     __testIteration(__testExecution)
     print("==========")
     print("All the tests have been passed" if __summary_result else "Some tests have been fault")
+
+    print(__env["connection"]["port"]) # ???
+    print(__env["connection"]["baud"]) # ???
+    print(__opts) # ???
 
 
 __summary_result = True
 __tests = {} # { "test_name": TestDesc, "subdir": { ... } }
 __testRootPath = os.path.abspath(os.path.curdir)
+__opts = None
+__env = None
+__resets = None
+__formats = None # ???
+__chips = None
+__chip = None
 
 
 # starts before test loading
+__resets  = ResetSeqFactory("rumboot.resetseq")
+__formats = ImageFormatDb("rumboot.images") # ???
+__chips   = ChipDb("rumboot.chips")
+
 __parser = argparse.ArgumentParser(prog="<rumboot test system>", description="Processing all tests")
 
 __parser.add_argument("-C", "--directory", dest = "root_path", help = "test root directory", default = __testRootPath)
 __parser.add_argument("--env", dest = "env_path", help = "environment yaml file", required = False)
 
+__helper = arghelper() # ???
+__helper.add_terminal_opts(__parser) # ???
+__helper.add_resetseq_options(__parser, __resets) # ???
+__helper.add_file_handling_opts(__parser) # ??? file
+
 __opts = __parser.parse_args()
+
+__chip = __helper.detect_chip_type(__opts, __chips, __formats)
+if __chip == None:
+    raise Exception("Failed to detect chip type")
+print("Detected chip:    %s (%s)" % (__chip.name, __chip.part)) # ???
 
 __env = __loadEnvironment(__opts)
