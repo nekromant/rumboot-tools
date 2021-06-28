@@ -6,7 +6,7 @@ import os
 
 # define test as a class
 class RumbootHelloWorldTest(RumbootTestBase):
-    # ??? timeout = 16
+    timeout = 16
 
     def run(self):
         super().run()
@@ -25,7 +25,7 @@ class RumbootHelloWorldTest(RumbootTestBase):
 # register the tests
 RegisterTest(RumbootHelloWorldTest)
 RegisterTest(RumbootHelloWorldTest, name = "TestWithName")
-RegisterTest(RumbootHelloWorldTest, test_params = { "key": "value" }, name = "TestWithParameter")
+RegisterTest(RumbootHelloWorldTest, test_params = { "key": "value", "timeout": 180 }, name = "TestWithParameter")
 RegisterTest(RumbootHelloWorldTest, test_params = [ { "key": "value1" }, { "key": "value2" }, { "key": "value3" } ], name = "TestsWithParameter")
 
 

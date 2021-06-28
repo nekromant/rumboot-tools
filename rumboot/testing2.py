@@ -26,6 +26,7 @@ class TestDesc:
 import time
 
 class RumbootTestBase:
+    timeout = 5 * 60
 
     def suitable(environment):
         # ??? ToDo
@@ -173,20 +174,24 @@ def __testExecution(fullName, desc):
         print("The test is not suitable for the environment")
         return
 
-    timeoutSec = 60 # ???
+    timeout_sec = desc.testClass.timeout
+    if "timeout" in desc.test_params:
+        timeout_sec = desc.test_params["timeout"]
+
+    print(f"timeout = {timeout_sec}") # ???
+
     proc = multiprocessing.Process(target=lambda: __testExecutionInProcess(desc))
     proc.start()
-    proc.join(timeout = timeoutSec)
+    proc.join(timeout = timeout_sec)
 
     ext_code = proc.exitcode
     if (ext_code == None):
         proc.terminate()
         proc.join()
-        print(f"The test has been terminated by timeout {timeoutSec} seconds")
+        print(f"The test has been terminated by timeout {timeout_sec} seconds")
         result = False
     else:
         result = (ext_code == 0)
-    # ??? result = test.run() # ???
 
     print("Passed" if result else "Fault")
     __summary_result = __summary_result and result

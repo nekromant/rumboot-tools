@@ -3,6 +3,7 @@ from rumboot.testing2 import *
 
 @RTest()
 class RumbootHelloWorldTest2(RumbootTestBase):
+    timeout = 60
 
     def run(self):
         return False
@@ -10,6 +11,7 @@ class RumbootHelloWorldTest2(RumbootTestBase):
 
 @RTest(test_params = { "key": "value1" }, name = "2TestWithParameter")
 class RumbootHelloWorldTest2(RumbootTestBase):
+    timeout = 61
 
     def run(self):
         return False
