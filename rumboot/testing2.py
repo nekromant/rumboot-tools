@@ -22,6 +22,9 @@ class TestDesc:
         self.name = name
 
 
+# ???
+import time
+
 class RumbootTestBase:
 
     def suitable(environment):
@@ -35,6 +38,8 @@ class RumbootTestBase:
         self.test_params = test_params
 
     def run(self):
+        self.resetSeq.resetToHost()
+        time.sleep(5) # ??? Ethernet PHY negotiation time for EDCL loading
         return True
 
 
@@ -152,6 +157,14 @@ def __testEnvironment():
     # ??? other checks
 
 
+def __testExecutionInProcess(desc):
+    reset = __resets[__opts.reset[0]](__opts) # ??? opts
+    term = terminal(__env["connection"]["port"], __env["connection"]["baud"])
+    term.set_chip(__chip)
+    test = desc.testClass(term, reset, __env, desc.test_params)
+    sys.exit(0 if test.run() else 1)
+
+
 def __testExecution(fullName, desc):
     global __summary_result
 
@@ -160,13 +173,8 @@ def __testExecution(fullName, desc):
         print("The test is not suitable for the environment")
         return
 
-    reset = __resets[__opts.reset[0]](__opts) # ??? opts
-    term = terminal(__env["connection"]["port"], __env["connection"]["baud"])
-    term.set_chip(__chip)
-    test = desc.testClass(term, reset, __env, desc.test_params)
-
     timeoutSec = 60 # ???
-    proc = multiprocessing.Process(target=lambda: sys.exit(0 if test.run() else 1))
+    proc = multiprocessing.Process(target=lambda: __testExecutionInProcess(desc))
     proc.start()
     proc.join(timeout = timeoutSec)
 
@@ -178,6 +186,7 @@ def __testExecution(fullName, desc):
         result = False
     else:
         result = (ext_code == 0)
+    # ??? result = test.run() # ???
 
     print("Passed" if result else "Fault")
     __summary_result = __summary_result and result

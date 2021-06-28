@@ -1,10 +1,25 @@
 # import testing framework classes
 from rumboot.testing2 import *
 
+import os
+
 
 # define test as a class
 class RumbootHelloWorldTest(RumbootTestBase):
-    pass
+    # ??? timeout = 16
+
+    def run(self):
+        super().run()
+
+        self.test_path = os.path.dirname(os.path.realpath(__file__)) # ???
+        self.binfile = "rumboot-mm7705-Production-legacy-hello.bin" # ???
+        self.test_file = os.path.join(self.test_path, self.binfile) # ???
+
+        self.terminal.add_binaries(self.test_file) # ???
+        self.terminal.loop(False, True) # ???
+        self.terminal.wait("Hello, world!") # ???
+
+        return True
 
 
 # register the tests
