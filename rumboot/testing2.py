@@ -17,8 +17,8 @@ DEFAULT_ENV_FILE_NAME = "env.yaml"
 
 class TestDesc:
 
-    def __init__(self, test_сlass, test_params, name):
-        self.test_сlass = test_сlass
+    def __init__(self, test_class, test_params, name):
+        self.test_class = test_class
         self.test_params = test_params
         self.name = name
 
@@ -55,40 +55,48 @@ class RumbootTestBase:
         return True
 
 
-def __add_test(path, storagePath, test_сlass, test_params, name):
+class UBootTestBase(RumbootTestBase):
+
+    def run(self):
+        super.run()
+        # ???
+        return True
+
+
+def __add_test(path, storagePath, test_class, test_params, name):
     if path == []:
         if name in storagePath:
             raise Exception(f"Test {name} already exists")
-        storagePath[name] = TestDesc(test_сlass, test_params, name)
+        storagePath[name] = TestDesc(test_class, test_params, name)
     else:
         if path[0] not in storagePath:
             storagePath[path[0]] = {}
         if not isinstance(storagePath[path[0]], dict):
             raise Exception(f"Test {path[0]} already exists")
-        __add_test(path[1:], storagePath[path[0]], test_сlass, test_params, name)
+        __add_test(path[1:], storagePath[path[0]], test_class, test_params, name)
 
 
-def __register_one_test(testModulePath, test_сlass, test_params, name):
-    if test_сlass == None:
+def __register_one_test(testModulePath, test_class, test_params, name):
+    if test_class == None:
         raise Exception("Test class is not defined")
     relPath = os.path.relpath(os.path.normpath(testModulePath), __test_root_path)
     pathStr = os.path.split(relPath)[0]
     path = pathStr.split(os.sep)
     if path == [""]:
         path = []
-    __add_test(path, __tests, test_сlass, test_params, name)
+    __add_test(path, __tests, test_class, test_params, name)
 
 
-def __register_tests(testModulePath, test_сlass, test_params, name):
+def __register_tests(testModulePath, test_class, test_params, name):
     if name == None:
-        name = test_сlass.__name__
+        name = test_class.__name__
 
     if isinstance(test_params, dict):
-        __register_one_test(testModulePath, test_сlass, test_params, name)
+        __register_one_test(testModulePath, test_class, test_params, name)
     elif isinstance(test_params, list):
         index = 1
         for p in test_params:
-            __register_one_test(testModulePath, test_сlass, p, f"{name}:{index}")
+            __register_one_test(testModulePath, test_class, p, f"{name}:{index}")
             index += 1
     else:
         raise Exception("Test params must be dict or list")
@@ -96,14 +104,14 @@ def __register_tests(testModulePath, test_сlass, test_params, name):
 
 def RTest(test_params = {}, name = None):
     testModulePath = os.path.abspath(inspect.stack()[1][1])
-    def decorator(test_сlass):
-        __register_tests(testModulePath, test_сlass, test_params, name)
+    def decorator(test_class):
+        __register_tests(testModulePath, test_class, test_params, name)
     return decorator
 
 
-def RegisterTest(test_сlass, test_params = {}, name = None):
+def RegisterTest(test_class, test_params = {}, name = None):
     testModulePath = os.path.abspath(inspect.stack()[1][1])
-    __register_tests(testModulePath, test_сlass, test_params, name)
+    __register_tests(testModulePath, test_class, test_params, name)
 
 
 def RumbootTestDirectory(subdirName, filter = "test_*.py"):
@@ -177,7 +185,7 @@ def __test_execution_in_process(desc):
     reset = __resets[__opts.reset[0]](__opts) # ??? opts
     term = terminal(__env["connection"]["port"], __env["connection"]["baud"])
     term.set_chip(__chip)
-    test = desc.test_сlass(term, reset, __env, desc.test_params)
+    test = desc.test_class(term, reset, __env, desc.test_params)
     sys.exit(0 if test.run() else 1)
 
 
@@ -185,11 +193,11 @@ def __test_execution(fullName, desc):
     global __summary_result
 
     print(f"=== Processing {fullName} ===")
-    if not desc.test_сlass.suitable(__env):
+    if not desc.test_class.suitable(__env):
         print("The test is not suitable for the environment")
         return
 
-    timeout_sec = desc.test_сlass.timeout
+    timeout_sec = desc.test_class.timeout
     if "timeout" in desc.test_params:
         timeout_sec = desc.test_params["timeout"]
 
