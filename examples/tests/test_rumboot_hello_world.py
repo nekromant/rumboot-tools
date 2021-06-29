@@ -7,6 +7,11 @@ import os
 # define test as a class
 class RumbootHelloWorldTest(RumbootTestBase):
     timeout = 16
+    requested = {
+        "chip": {
+            "name": "mm7705"
+        }
+    }
 
     def run(self):
         super().run()

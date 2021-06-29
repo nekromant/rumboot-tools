@@ -6,6 +6,7 @@ import argparse
 import yaml
 import multiprocessing
 import sys
+import time
 from rumboot.resetSeq import ResetSeqFactory
 from rumboot.chipDb import ChipDb
 from rumboot.ImageFormatDb import ImageFormatDb # ???
@@ -16,21 +17,31 @@ DEFAULT_ENV_FILE_NAME = "env.yaml"
 
 class TestDesc:
 
-    def __init__(self, testClass, test_params, name):
-        self.testClass = testClass
+    def __init__(self, test_сlass, test_params, name):
+        self.test_сlass = test_сlass
         self.test_params = test_params
         self.name = name
 
 
-# ???
-import time
-
 class RumbootTestBase:
     timeout = 5 * 60
+    requested = {} # { "param1": "value1", "param2": "value2", { ... } } is compared with the environment
 
-    def suitable(environment):
-        # ??? ToDo
+    def __suitable(req, env):
+        for key, value in req.items():
+            if not key in env:
+                return False
+            if isinstance(value, dict):
+                if not isinstance(env[key], dict):
+                    return False
+                return RumbootTestBase.__suitable(value, env[key])
+            if value != env[key]:
+                return False
         return True
+
+    @classmethod
+    def suitable(derived_class, environment):
+        return RumbootTestBase.__suitable(derived_class.requested, environment)
 
     def __init__(self, terminal, resetSeq, environment, test_params):
         self.terminal = terminal
@@ -40,44 +51,44 @@ class RumbootTestBase:
 
     def run(self):
         self.resetSeq.resetToHost()
-        time.sleep(5) # ??? Ethernet PHY negotiation time for EDCL loading
+        time.sleep(5) # Ethernet PHY negotiation time for EDCL loading (ToDo: move to EDCL part)
         return True
 
 
-def __addTest(path, storagePath, testClass, test_params, name):
+def __add_test(path, storagePath, test_сlass, test_params, name):
     if path == []:
         if name in storagePath:
             raise Exception(f"Test {name} already exists")
-        storagePath[name] = TestDesc(testClass, test_params, name)
+        storagePath[name] = TestDesc(test_сlass, test_params, name)
     else:
         if path[0] not in storagePath:
             storagePath[path[0]] = {}
         if not isinstance(storagePath[path[0]], dict):
             raise Exception(f"Test {path[0]} already exists")
-        __addTest(path[1:], storagePath[path[0]], testClass, test_params, name)
+        __add_test(path[1:], storagePath[path[0]], test_сlass, test_params, name)
 
 
-def __registerOneTest(testModulePath, testClass, test_params, name):
-    if testClass == None:
+def __register_one_test(testModulePath, test_сlass, test_params, name):
+    if test_сlass == None:
         raise Exception("Test class is not defined")
-    relPath = os.path.relpath(os.path.normpath(testModulePath), __testRootPath)
+    relPath = os.path.relpath(os.path.normpath(testModulePath), __test_root_path)
     pathStr = os.path.split(relPath)[0]
     path = pathStr.split(os.sep)
     if path == [""]:
         path = []
-    __addTest(path, __tests, testClass, test_params, name)
+    __add_test(path, __tests, test_сlass, test_params, name)
 
 
-def __registerTests(testModulePath, testClass, test_params, name):
+def __register_tests(testModulePath, test_сlass, test_params, name):
     if name == None:
-        name = testClass.__name__
+        name = test_сlass.__name__
 
     if isinstance(test_params, dict):
-        __registerOneTest(testModulePath, testClass, test_params, name)
+        __register_one_test(testModulePath, test_сlass, test_params, name)
     elif isinstance(test_params, list):
         index = 1
         for p in test_params:
-            __registerOneTest(testModulePath, testClass, p, f"{name}:{index}")
+            __register_one_test(testModulePath, test_сlass, p, f"{name}:{index}")
             index += 1
     else:
         raise Exception("Test params must be dict or list")
@@ -85,14 +96,14 @@ def __registerTests(testModulePath, testClass, test_params, name):
 
 def RTest(test_params = {}, name = None):
     testModulePath = os.path.abspath(inspect.stack()[1][1])
-    def decorator(testClass):
-        __registerTests(testModulePath, testClass, test_params, name)
+    def decorator(test_сlass):
+        __register_tests(testModulePath, test_сlass, test_params, name)
     return decorator
 
 
-def RegisterTest(testClass, test_params = {}, name = None):
+def RegisterTest(test_сlass, test_params = {}, name = None):
     testModulePath = os.path.abspath(inspect.stack()[1][1])
-    __registerTests(testModulePath, testClass, test_params, name)
+    __register_tests(testModulePath, test_сlass, test_params, name)
 
 
 def RumbootTestDirectory(subdirName, filter = "test_*.py"):
@@ -102,85 +113,87 @@ def RumbootTestDirectory(subdirName, filter = "test_*.py"):
     for entry in os.scandir(dirPath):
         if entry.is_file and fnmatch.fnmatch(entry.name, filter):
             fullPath = os.path.join(dirPath, os.path.splitext(entry.name)[0])
-            relPath = os.path.relpath(fullPath, __testRootPath)
+            relPath = os.path.relpath(fullPath, __test_root_path)
             moduleName = relPath.replace(os.path.sep, ".")
-            print(moduleName)
             importlib.import_module(moduleName)
 
 
-def __testIterationRecursive(path, tests, func):
+def __test_iteration_recursive(path, tests, func):
     for key, value in tests.items():
         fullName = path + ("." if path else "") + key
         if isinstance(value, TestDesc):
             func(fullName, value)
         else:
-            __testIterationRecursive(fullName, value, func)
+            __test_iteration_recursive(fullName, value, func)
 
 
-def __testIteration(func):
-    __testIterationRecursive("", __tests, func)
+def __test_iteration(func):
+    __test_iteration_recursive("", __tests, func)
 
 
-def __loadEnvironmentFromFile(filePath):
+def __load_environment_from_file(filePath):
     with open(filePath, 'r') as stream:
         env = yaml.safe_load(stream)
     return env
 
 
-def __loadEnvironment(opts):
+def __load_environment(opts):
     if opts.env_path != None:
-        return __loadEnvironmentFromFile(opts.env_path)
+        return __load_environment_from_file(opts.env_path)
     else:
         if os.path.isfile(DEFAULT_ENV_FILE_NAME):
-            return __loadEnvironmentFromFile(DEFAULT_ENV_FILE_NAME)
+            return __load_environment_from_file(DEFAULT_ENV_FILE_NAME)
     return {}
 
 
-# run after test loading
-def __setupEnvironment():
-    __env["connection"] = __env.get("connection", {})
+def __fill_runlist(full_name, test_desc):
+    __env["runlist"][full_name] = test_desc
 
+# run after test loading
+def __setup_environment():
+    __env["chip"] = __env.get("chip", {})
+    __env["chip"]["name"] = __chip.name
+
+    __env["connection"] = __env.get("connection", {})
     __env["connection"]["port"] = __env["connection"].get("port", None)
     if __opts.port:
         __env["connection"]["port"] = __opts.port[0]
-    __env["connection"]["boud"] = __env["connection"].get("boud", None)
+    __env["connection"]["boud"] = __env["connection"].get("boud", __chip.baudrate)
     if __opts.baud:
         __env["connection"]["baud"] = __opts.baud[0]
 
-    # ??? defaults from chip
+    __env["runlist"] = {}
+    __test_iteration(__fill_runlist)
 
 
-def __testEnvironment():
+def __test_environment():
     if not __env["connection"]["port"]:
         raise Exception("Serial port is not defined")
     if not __env["connection"]["baud"]:
         raise Exception("Serial port baudrate is not defined")
-    # ??? other checks
 
 
-def __testExecutionInProcess(desc):
+def __test_execution_in_process(desc):
     reset = __resets[__opts.reset[0]](__opts) # ??? opts
     term = terminal(__env["connection"]["port"], __env["connection"]["baud"])
     term.set_chip(__chip)
-    test = desc.testClass(term, reset, __env, desc.test_params)
+    test = desc.test_сlass(term, reset, __env, desc.test_params)
     sys.exit(0 if test.run() else 1)
 
 
-def __testExecution(fullName, desc):
+def __test_execution(fullName, desc):
     global __summary_result
 
     print(f"=== Processing {fullName} ===")
-    if not desc.testClass.suitable(__env):
+    if not desc.test_сlass.suitable(__env):
         print("The test is not suitable for the environment")
         return
 
-    timeout_sec = desc.testClass.timeout
+    timeout_sec = desc.test_сlass.timeout
     if "timeout" in desc.test_params:
         timeout_sec = desc.test_params["timeout"]
 
-    print(f"timeout = {timeout_sec}") # ???
-
-    proc = multiprocessing.Process(target=lambda: __testExecutionInProcess(desc))
+    proc = multiprocessing.Process(target=lambda: __test_execution_in_process(desc))
     proc.start()
     proc.join(timeout = timeout_sec)
 
@@ -198,24 +211,20 @@ def __testExecution(fullName, desc):
 
 
 def RumbootStartTesting():
-    __setupEnvironment()
-    __testEnvironment()
-    __testIteration(__testExecution)
+    __setup_environment()
+    __test_environment()
+    __test_iteration(__test_execution)
     print("==========")
     print("All the tests have been passed" if __summary_result else "Some tests have been fault")
-
-    print(__env["connection"]["port"]) # ???
-    print(__env["connection"]["baud"]) # ???
-    print(__opts) # ???
 
 
 __summary_result = True
 __tests = {} # { "test_name": TestDesc, "subdir": { ... } }
-__testRootPath = os.path.abspath(os.path.curdir)
+__test_root_path = os.path.abspath(os.path.curdir)
 __opts = None
 __env = None
 __resets = None
-__formats = None # ???
+__formats = None # ??? need
 __chips = None
 __chip = None
 
@@ -227,7 +236,7 @@ __chips   = ChipDb("rumboot.chips")
 
 __parser = argparse.ArgumentParser(prog="<rumboot test system>", description="Processing all tests")
 
-__parser.add_argument("-C", "--directory", dest = "root_path", help = "test root directory", default = __testRootPath)
+__parser.add_argument("-C", "--directory", dest = "root_path", help = "test root directory", default = __test_root_path)
 __parser.add_argument("--env", dest = "env_path", help = "environment yaml file", required = False)
 
 __helper = arghelper() # ???
@@ -240,6 +249,6 @@ __opts = __parser.parse_args()
 __chip = __helper.detect_chip_type(__opts, __chips, __formats)
 if __chip == None:
     raise Exception("Failed to detect chip type")
-print("Detected chip:    %s (%s)" % (__chip.name, __chip.part)) # ???
+print("Detected chip: %s (%s)" % (__chip.name, __chip.part))
 
-__env = __loadEnvironment(__opts)
+__env = __load_environment(__opts)
