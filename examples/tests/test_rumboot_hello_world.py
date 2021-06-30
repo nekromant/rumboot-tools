@@ -1,12 +1,11 @@
 # import testing framework classes
 from rumboot.testing2 import *
-
 import os
 
 
 # define test as a class
 class RumbootHelloWorldTest(RumbootTestBase):
-    timeout = 16
+    timeout = 30
     requested = {
         "chip": {
             "name": "mm7705"
@@ -29,12 +28,12 @@ class RumbootHelloWorldTest(RumbootTestBase):
 
 # register the tests
 RegisterTest(RumbootHelloWorldTest)
-RegisterTest(RumbootHelloWorldTest, name = "TestWithName")
-RegisterTest(RumbootHelloWorldTest, test_params = { "key": "value", "timeout": 180 }, name = "TestWithParameter")
-RegisterTest(RumbootHelloWorldTest, test_params = [ { "key": "value1" }, { "key": "value2" }, { "key": "value3" } ], name = "TestsWithParameter")
+# RegisterTest(RumbootHelloWorldTest, name = "TestWithName")
+# RegisterTest(RumbootHelloWorldTest, test_params = { "key": "value", "timeout": 180 }, name = "TestWithParameter")
+# RegisterTest(RumbootHelloWorldTest, test_params = [ { "key": "value1" }, { "key": "value2" }, { "key": "value3" } ], name = "TestsWithParameter")
 
 
-# # test class directories registration (optional)
+# test class directories registration (optional)
 RumbootTestDirectory("subdir_tests", filter="test_*.py")
 
 

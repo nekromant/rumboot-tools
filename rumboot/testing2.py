@@ -40,13 +40,13 @@ class RumbootTestBase:
         return True
 
     @classmethod
-    def suitable(derived_class, environment):
-        return RumbootTestBase.__suitable(derived_class.requested, environment)
+    def suitable(self, env):
+        return RumbootTestBase.__suitable(self.requested, env)
 
-    def __init__(self, terminal, resetSeq, environment, test_params):
+    def __init__(self, terminal, resetSeq, env, test_params):
         self.terminal = terminal
         self.resetSeq = resetSeq
-        self.environment = environment
+        self.env = env
         self.test_params = test_params
 
     def run(self):
@@ -57,9 +57,31 @@ class RumbootTestBase:
 
 class UBootTestBase(RumbootTestBase):
 
+    @classmethod
+    def suitable(self, env):
+        if not super(UBootTestBase, self).suitable(env):
+            return False
+        if not "uboot" in env:
+            return False
+        if not env["uboot"].get("active", False):
+            return False
+        return True
+
     def run(self):
-        super.run()
-        # ???
+        super().run()
+
+        binaries = []
+        if "spl_path" in self.env["uboot"]:
+            binaries.append(os.path.join(self.env["root_path"], self.env["uboot"]["path_base"], self.env["uboot"]["spl_path"]))
+        if "uboot_path" in self.env["uboot"]:
+            binaries.append(os.path.join(self.env["root_path"], self.env["uboot"]["path_base"], self.env["uboot"]["uboot_path"]))
+        for file in binaries:
+            self.terminal.add_binaries(file)
+
+        self.terminal.loop(False, True)
+        self.terminal.shell_mode("=> ")
+        self.terminal.wait_prompt()
+
         return True
 
 
@@ -172,6 +194,8 @@ def __setup_environment():
 
     __env["runlist"] = {}
     __test_iteration(__fill_runlist)
+
+    __env["root_path"] = __opts.root_path
 
 
 def __test_environment():
