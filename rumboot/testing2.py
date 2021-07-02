@@ -43,6 +43,11 @@ class RumbootTestBase:
     def suitable(self, env):
         return RumbootTestBase.__suitable(self.requested, env)
 
+    # ??? temporary -> terminal
+    def write_command(self, cmd):
+        cmd = cmd.encode() + b"\r"
+        self.terminal.ser.write(cmd)
+
     def __init__(self, terminal, resetSeq, env, test_params):
         self.terminal = terminal
         self.resetSeq = resetSeq
@@ -67,6 +72,26 @@ class UBootTestBase(RumbootTestBase):
             return False
         return True
 
+    def mem_setup(self):
+        mem_setup_cmd = self.env["uboot"].get("mem_setup_cmd")
+        if mem_setup_cmd != None:
+            self.terminal.shell_cmd(mem_setup_cmd)
+
+    def uboot_upload_file(self, addr_as_text, file_path):
+        transport = self.env["connection"]["transport"]
+        if (transport == "edcl"):
+            self.write_command(f"echo UPLOAD to {addr_as_text}. \\\'X\\\' for X-modem, \\\'E\\\' for EDCL")
+            self.terminal.add_binaries(file_path)
+            self.terminal.loop(False, True)
+            self.terminal.wait_prompt()
+            self.terminal.ser.write(b"\b") # ??? -> terminal clear E character
+# ???         elif (transport == "xmodem"):
+# ???             self.hardware.write_command(f"loadx {addr_as_text}")
+# ???             self.hardware.load_binaries([file_path])
+# ???             self.hardware.wait_shell_prompt()
+# ???         else:
+# ???             raise "Unsupported transport"
+
     def run(self):
         super().run()
 
@@ -80,6 +105,45 @@ class UBootTestBase(RumbootTestBase):
 
         self.terminal.loop(False, True)
         self.terminal.shell_mode("=> ")
+        self.terminal.wait_prompt()
+
+        return True
+
+
+class KernelTestBase(UBootTestBase):
+
+    @classmethod
+    def suitable(self, env):
+        if not super(KernelTestBase, self).suitable(env):
+            return False
+        if not "kernel" in env:
+            return False
+        if not env["kernel"].get("active", False):
+            return False
+        return True
+
+    def run(self):
+        super().run()
+        self.mem_setup()
+
+        if "bootargs" in self.env["kernel"]:
+            self.terminal.shell_cmd(f"setenv bootargs {self.env['kernel']['bootargs']}")
+
+        uimage_path = os.path.join(self.env["root_path"], self.env["kernel"]["path_base"], self.env["kernel"]["uimage_path"])
+        self.uboot_upload_file("${loadaddr}", uimage_path)
+
+        dtb_path = os.path.join(self.env["root_path"], self.env["kernel"]["path_base"], self.env["kernel"]["dtb_path"])
+        self.uboot_upload_file("${fdt_addr_r}", dtb_path)
+
+        self.write_command("bootm ${loadaddr} - ${fdt_addr_r}")
+        self.terminal.wait("{} login:")
+        self.write_command(self.env["kernel"]["user"])
+        self.terminal.wait("Password:")
+        self.write_command(self.env["kernel"]["password"])
+        self.terminal.wait("{}#")
+
+        self.write_command('A="=="; PS1="$A> "')
+        self.terminal.shell_mode("==> ")
         self.terminal.wait_prompt()
 
         return True
@@ -192,6 +256,10 @@ def __setup_environment():
     if __opts.baud:
         __env["connection"]["baud"] = __opts.baud[0]
 
+    __env["connection"]["transport"] = __env["connection"].get("transport", "xmodem")
+    if __opts.edcl:
+        __env["connection"]["transport"] = "edcl"
+
     __env["runlist"] = {}
     __test_iteration(__fill_runlist)
 
@@ -209,6 +277,7 @@ def __test_execution_in_process(desc):
     reset = __resets[__opts.reset[0]](__opts) # ??? opts
     term = terminal(__env["connection"]["port"], __env["connection"]["baud"])
     term.set_chip(__chip)
+    term.xfer.selectTransport(__env["connection"]["transport"])
     test = desc.test_class(term, reset, __env, desc.test_params)
     sys.exit(0 if test.run() else 1)
 

@@ -1,7 +1,29 @@
 Регистрация тестов
 ------------------
 
-ToDo: ???
+Класс теста может быть зарегистрирован следующим способами:
+- декоратор:
+```
+@RTest()
+class TestClass(RumbootBaseTest):
+
+@RTest(name = "TestWithName")
+class TestClass(RumbootBaseTest):
+
+@RTest(test_params = { "key": "value1" }, name = "TestWithParameter")
+class TestClass(RumbootBaseTest):
+
+@RTest(test_params = [ { "key": "value1" }, { "key": "value2" }, { "key": "value3" } ], name = "TestWithParameter2")
+class TestClass(RumbootBaseTest):
+```
+- вызов функции регистрации:
+```
+RegisterTest(TestClass)
+RegisterTest(TestClass, name = "TestWithName")
+RegisterTest(TestClass, test_params = { "key": "value", "timeout": 180 }, name = "TestWithParameter")
+RegisterTest(TestClass, test_params = [ { "key": "value1" }, { "key": "value2" }, { "key": "value3" } ], name = "TestsWithParameter")
+```
+Значения test_params может быть словарем или массивом словарей (в этом случае регистрируется несколько тестов, к имени теста прибавляется суффикс :<номер_теста>)
 
 
 Формирование полного имени теста
@@ -21,7 +43,10 @@ ToDo: ???
 Чтение environment
 ------------------
 
-ToDo: ????
+Параметры environment хранятся в yaml файле. Путь к файлу может быть задан через командную строку (параметр --env).
+Если путь не задан, делается попытка прочитать параметры из файла env.yaml в текущем каталоге.
+
+Параметры из файла environment могут быть перекрыты параметрами командной строки. Параметры environment дополняться, например, списком найденных тестов.
 
 
 Основные параметры environment
@@ -46,16 +71,34 @@ uboot:
         path_base: <путь_к_каталогу_uboot> (относительно root_path)
         spl_path: <путь_к_образу_spl> (относительно path_base)
         uboot_path: <путь_к_образу_uboot> (относительно path_base)
+        mem_setup_cmd: <команда_инициализации_памяти> (например, run setmem)
+        mem_ram_addr: <адрес_ОЗУ_для_тестов>
+        mem_ram_size: <размер_ОЗУ_длф_тестов>
+
+kernel:
+        active: <признак_наличия_linux_kernel> (True/False)
+        path_base: <путь_к_каталогу_kernel> (относительно root_path)
+        uimage_path: <путь_к_образу_uimage> (относительно path_base)
+        dtb_path: <путь_к_образу_device_tree> (относительно path_base)
+        bootargs: <опции_запуска>
+        user: <имя_пользователя>
+        password: <пароль>
 
 
 Таймаут на исполнение теста
 ---------------------------
 
-ToDo: ????
+Таймаут на выполнение всего теста задается статической переменной тестового класса timeout:
+```
+class RumbootHelloWorldTest(RumbootTestBase):
+    timeout = 30
+...
+```
 
 
 Проверка на возможности исполнения теста
 ----------------------------------------
 
-ToDo: ????
-
+Перед запуском тест проверяется статическим методом suitable тестового класс. Реализация метода
+по умолчанию сравнивает значение словаря requested (статическая переменная класса) со словарем environment.
+Все значения из словаря requested должны совпадать со значения из словаря environment.

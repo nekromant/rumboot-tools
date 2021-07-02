@@ -46,7 +46,8 @@ class mm7705(chipBase):
     ]
 
     hacks = {
-        "skipsync"   : True, # Doesn't Send U\r\n\r\n at the start.
+        "skipsync"     : True, # Doesn't Send U\r\n\r\n at the start.
+        "serial_delay" : True,
     }
 
     romdump = "mm7705-v1.dmp"    

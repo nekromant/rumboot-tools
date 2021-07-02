@@ -1,11 +1,12 @@
 from rumboot.testing2 import *
 
 @RTest()
-class UBootHelloWorldTest(UBootTestBase):
+class KernelHelloWorldTest(KernelTestBase):
+
     def run(self):
         super().run()
 
-        return len(self.terminal.shell_cmd("version")) >= 1
+        return len(self.terminal.shell_cmd("uname -a")) >= 1
 
 
 # standard epilog
