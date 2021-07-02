@@ -1,6 +1,6 @@
 from rumboot.testing2 import *
 
-@RTest()
+@rtest()
 class UBootHelloWorldTest(UBootTestBase):
     def run(self):
         super().run()
@@ -10,4 +10,4 @@ class UBootHelloWorldTest(UBootTestBase):
 
 # standard epilog
 if __name__ == "__main__":
-    RumbootStartTesting()
+    rumboot_start_testing()

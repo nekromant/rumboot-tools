@@ -1,6 +1,6 @@
 from rumboot.testing2 import *
 
-@RTest()
+@rtest()
 class KernelHelloWorldTest(KernelTestBase):
 
     def run(self):
@@ -11,4 +11,4 @@ class KernelHelloWorldTest(KernelTestBase):
 
 # standard epilog
 if __name__ == "__main__":
-    RumbootStartTesting()
+    rumboot_start_testing()

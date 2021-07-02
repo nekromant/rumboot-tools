@@ -40,7 +40,7 @@ class RumbootTestBase:
         return True
 
     @classmethod
-    def suitable(self, env):
+    def suitable(self, env, test_params):
         return RumbootTestBase.__suitable(self.requested, env)
 
     # ??? temporary -> terminal
@@ -63,8 +63,8 @@ class RumbootTestBase:
 class UBootTestBase(RumbootTestBase):
 
     @classmethod
-    def suitable(self, env):
-        if not super(UBootTestBase, self).suitable(env):
+    def suitable(self, env, test_params):
+        if not super(UBootTestBase, self).suitable(env, test_params):
             return False
         if not "uboot" in env:
             return False
@@ -113,8 +113,8 @@ class UBootTestBase(RumbootTestBase):
 class KernelTestBase(UBootTestBase):
 
     @classmethod
-    def suitable(self, env):
-        if not super(KernelTestBase, self).suitable(env):
+    def suitable(self, env, test_params):
+        if not super(KernelTestBase, self).suitable(env, test_params):
             return False
         if not "kernel" in env:
             return False
@@ -188,19 +188,19 @@ def __register_tests(testModulePath, test_class, test_params, name):
         raise Exception("Test params must be dict or list")
 
 
-def RTest(test_params = {}, name = None):
+def rtest(test_params = {}, name = None):
     testModulePath = os.path.abspath(inspect.stack()[1][1])
     def decorator(test_class):
         __register_tests(testModulePath, test_class, test_params, name)
     return decorator
 
 
-def RegisterTest(test_class, test_params = {}, name = None):
+def register_test(test_class, test_params = {}, name = None):
     testModulePath = os.path.abspath(inspect.stack()[1][1])
     __register_tests(testModulePath, test_class, test_params, name)
 
 
-def RumbootTestDirectory(subdirName, filter = "test_*.py"):
+def rumboot_test_directory(subdirName, filter = "test_*.py"):
     testModulePath = os.path.abspath(inspect.stack()[1][1])
     dirModulePath = os.path.split(testModulePath)[0]
     dirPath = os.path.join(dirModulePath, subdirName)
@@ -286,7 +286,7 @@ def __test_execution(fullName, desc):
     global __summary_result
 
     print(f"=== Processing {fullName} ===")
-    if not desc.test_class.suitable(__env):
+    if not desc.test_class.suitable(__env, desc.test_params):
         print("The test is not suitable for the environment")
         return
 
@@ -311,7 +311,7 @@ def __test_execution(fullName, desc):
     __summary_result = __summary_result and result
 
 
-def RumbootStartTesting():
+def rumboot_start_testing():
     __setup_environment()
     __test_environment()
     __test_iteration(__test_execution)

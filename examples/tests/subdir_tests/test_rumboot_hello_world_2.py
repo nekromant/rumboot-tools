@@ -1,7 +1,7 @@
 from rumboot.testing2 import *
 
 
-# @RTest()
+# @rtest()
 # class RumbootHelloWorldTest2(RumbootTestBase):
 #     timeout = 60
 
@@ -9,7 +9,7 @@ from rumboot.testing2 import *
 #         return False
 
 
-# @RTest(test_params = { "key": "value1" }, name = "2TestWithParameter")
+# @rtest(test_params = { "key": "value1" }, name = "2TestWithParameter")
 # class RumbootHelloWorldTest2(RumbootTestBase):
 #     timeout = 61
 
@@ -17,10 +17,10 @@ from rumboot.testing2 import *
 #         return False
 
 
-# @RTest(test_params = [ { "key": "value1" }, { "key": "value2" }, { "key": "value3" } ], name = "2TestWithParameter2")
+# @rtest(test_params = [ { "key": "value1" }, { "key": "value2" }, { "key": "value3" } ], name = "2TestWithParameter2")
 # class RumbootHelloWorldTest2(RumbootTestBase):
 #     pass
 
 
 if __name__ == "__main__":
-    RumbootStartTesting()
+    rumboot_start_testing()
