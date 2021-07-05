@@ -1,0 +1,19 @@
+--- !Chip
+name: rti4
+part: BCM2711 (Raspberry Pi 4)
+chip_id: 255
+chip_rev: 2
+gdb: gdb
+baudrate: 115200
+warning: ~
+welcome: "U-Boot> "
+memories: {}
+dumps: {}
+hacks:
+  skipsync: True  # Doesn't Send U\r\n\r\n at the start. All legacy stuff
+  edclArpBug: False  # EDCL doesn't have a valid IP, needs a static ARP entry (mb7707)
+  silentRom: False  # Bootrom is totally silent
+  noxmodem: False  # Chip lacks xmodem implementation
+  noedcl: True  # Chip lacks edcl implementation
+edcl: ~
+...

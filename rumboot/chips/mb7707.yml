@@ -1,0 +1,27 @@
+--- !Chip
+name: mb7707
+part: K1879XB1YA
+chip_id: 2
+chip_rev: 1
+welcome: host
+baudrate: 38400
+spl_address: 0x00100000
+warning: >
+  This chip has a legacy ROM bootloader.
+  RumBoot is flashed onto NAND flash and executed from internal memory
+  to provide additional functionality
+  Please be careful not wipe it! Recovery will be only possible via JTAG/EDCL
+gdb: gdb
+memories: {}
+dumps: {}
+hacks:
+  skipsync: True  # Doesn't Send U\r\n\r\n at the start. All legacy stuff
+  edclArpBug: False
+  silentRom: True  # Bootrom is totally silent
+  noxmodem: True  # Chip lacks xmodem implementation
+  noedcl: False
+edcl:
+  - name: GRETH
+    ip: "192.168.1.0"
+    mac: "0:0:5e:0:0:0"
+...

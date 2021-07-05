@@ -1,0 +1,73 @@
+--- !Chip
+name: nm6408
+part: 1888BC058
+chip_id: 6
+chip_rev: 1
+welcome: host
+baudrate: 115200
+spl_address: 0
+gdb: gdb
+warning: >
+  This chip has a legacy ROM bootloader.
+  RumBoot is flashed onto SPI flash and executed from internal memory
+  to provide additional functionality
+  Please be careful not wipe it! Recovery will be only possible via JTAG
+dumps: {}
+memories:
+  spi0-cs0: "rumboot-nm6408-PostProduction-updater-spi0-cs0.bin"
+hacks:
+  skipsync: True  # Doesn't Send U\r\n\r\n at the start. All legacy stuff
+  edclArpBug: False
+  silentRom: True  # Bootrom is totally silent
+  noxmodem: True  # Chip lacks xmodem implementation
+  noedcl: False
+edcl:
+  - name: "GRETH #0"
+    ip: "192.168.1.0"
+    mac: "ec:17:66:64:08:0"
+  - name: "GRETH #1"
+    ip: "192.168.1.1"
+    mac: "ec:17:66:64:08:1"
+  - name: "GRETH #2"
+    ip: "192.168.1.2"
+    mac: "ec:17:66:64:08:2"
+  - name: "GRETH #3"
+    ip: "192.168.1.3"
+    mac: "ec:17:66:64:08:3"
+  - name: "GRETH #4"
+    ip: "192.168.1.4"
+    mac: "ec:17:66:64:08:4"
+  - name: "GRETH #5"
+    ip: "192.168.1.5"
+    mac: "ec:17:66:64:08:5"
+  - name: "GRETH #6"
+    ip: "192.168.1.6"
+    mac: "ec:17:66:64:08:6"
+  - name: "GRETH #7"
+    ip: "192.168.1.7"
+    mac: "ec:17:66:64:08:7"
+  - name: "GRETH #8"
+    ip: "192.168.1.8"
+    mac: "ec:17:66:64:08:8"
+  - name: "GRETH #9"
+    ip: "192.168.1.9"
+    mac: "ec:17:66:64:08:9"
+  - name: "GRETH #10"
+    ip: "192.168.1.10"
+    mac: "ec:17:66:64:08:10"
+  - name: "GRETH #11"
+    ip: "192.168.1.11"
+    mac: "ec:17:66:64:08:11"
+  - name: "GRETH #12"
+    ip: "192.168.1.12"
+    mac: "ec:17:66:64:08:12"
+  - name: "GRETH #13"
+    ip: "192.168.1.13"
+    mac: "ec:17:66:64:08:13"
+  - name: "GRETH #14"
+    ip: "192.168.1.14"
+    mac: "ec:17:66:64:08:14"
+  - name: "GRETH #15"
+    ip: "192.168.1.15"
+    mac: "ec:17:66:64:08:15"
+...
