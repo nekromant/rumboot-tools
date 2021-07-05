@@ -23,6 +23,34 @@ class TestDesc:
         self.name = name
 
 
+class UserIntercation:
+
+    def request_message(self, text):
+        input(f"{text} - Press <ENTER>")
+
+    def request_yes_no(self, text):
+        answer = input(f"{text} - (Y/N)?")
+        if answer in ["Y", "y"]:
+            return True
+        if answer in ["N", "n"]:
+            return False
+        print("Unknown answer, interrpreted as NO")
+        return False
+
+    def request_option(self, text, options):
+        print(text)
+        index = 1
+        for opt in options:
+            print(f"{index} - {opt}")
+            index += 1
+        answer = input()
+        index = int(answer)
+        if index < 1 or index > len(options):
+            print("Unknown answer, interrpreted as 1")
+            return 0
+        return index - 1
+
+
 class RumbootTestBase:
     timeout = 5 * 60
     requested = {} # { "param1": "value1", "param2": "value2", { ... } } is compared with the environment
@@ -48,11 +76,12 @@ class RumbootTestBase:
         cmd = cmd.encode() + b"\r"
         self.terminal.ser.write(cmd)
 
-    def __init__(self, terminal, resetSeq, env, test_params):
+    def __init__(self, terminal, resetSeq, env, test_params, user_interaction):
         self.terminal = terminal
         self.resetSeq = resetSeq
         self.env = env
         self.test_params = test_params
+        self.user_interaction = user_interaction
 
     def run(self):
         self.resetSeq.resetToHost()
@@ -274,11 +303,12 @@ def __test_environment():
 
 
 def __test_execution_in_process(desc):
+    sys.stdin = open(0) # overwise stdin is devnull for the new process
     reset = __resets[__opts.reset[0]](__opts) # ??? opts
     term = terminal(__env["connection"]["port"], __env["connection"]["baud"])
     term.set_chip(__chip)
     term.xfer.selectTransport(__env["connection"]["transport"])
-    test = desc.test_class(term, reset, __env, desc.test_params)
+    test = desc.test_class(term, reset, __env, desc.test_params, __user_interaction)
     sys.exit(0 if test.run() else 1)
 
 
@@ -328,6 +358,7 @@ __resets = None
 __formats = None # ??? need
 __chips = None
 __chip = None
+__user_interaction = None
 
 
 # starts before test loading
@@ -352,4 +383,5 @@ if __chip == None:
     raise Exception("Failed to detect chip type")
 print("Detected chip: %s (%s)" % (__chip.name, __chip.part))
 
+__user_interaction = UserIntercation()
 __env = __load_environment(__opts)
