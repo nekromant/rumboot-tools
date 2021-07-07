@@ -6,12 +6,13 @@ import sys
 # from queue import Queue
 from PyQt5 import QtWidgets
 from rumboot.testing_gui_main_window import Ui_MainWindow
+from rumboot.testing_gui_testing_dialog import Ui_TestingDialog
 
 # ???
 import rumboot.testing2
 
 # from PyQt5.QtCore import QObject, QFileInfo, QSettings, QThread, pyqtSignal, Qt, pyqtSlot, QEventLoop
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QTimer
 # from PyQt5.QtGui import QTextCursor
 # from PyQt5.QtWidgets import QAction, QFileDialog, QInputDialog
 
@@ -28,6 +29,36 @@ TEST_STATUS_FAULT = 2
 #         test_desc - TestDesc
 #         test_status - TEST_STATUS* const
 
+# ??? refactor
+class TestCollection:
+
+    def __init__(self, test_items): # ??? test_items
+        self.test_items = test_items
+
+    def start(self): # ???
+        for item in self.test_items:
+            if item.checkState(0) == Qt.Checked:
+                rumboot.testing2._test_execution("Prived", item.test_desc) # ???
+
+    def stop(self): # ???
+        pass
+
+
+class TestingDialog(QtWidgets.QDialog, Ui_TestingDialog):
+
+    def _start(self):
+        self.test_collection.start() # ???
+        self.accept()
+
+    def __init__(self, parent, test_collection):
+        super().__init__(parent)
+        self.setupUi(self)
+        self.test_collection = test_collection # ???
+        QTimer.singleShot(0, self._start)
+
+    def done(self, code):
+        self.test_collection.stop() # ???
+        super().done(code)
 
 
 # class TestStruct():
@@ -175,16 +206,26 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.chip_name_line_edit.setText(f"{_chip.name} ({_chip.part})") # ???
         pass
 
+    # ??? mark
     def _test_tree_update_item(self, item, column):
         if not item.is_test:
             for i in range(item.childCount()):
                 child = item.child(i)
                 child.setCheckState(0, item.checkState(0))
 
+    # ??? mark
+    def _test_selected_button_clicked(self):
+        test_collection = TestCollection(self._test_items) # ???
+        testing_dialog = TestingDialog(self, test_collection)
+        # ???
+        testing_dialog.exec_()
+
     def __init__(self):
         super().__init__()
         self.setupUi(self)
         self._setup_test_tree()
+        self.test_selected_button.clicked.connect(self._test_selected_button_clicked)
+#         self.button_run_failed_tests.clicked.connect(self.run_failed_tests)
         self._reload_test_tree()
         self._update_chip()
 #         self.tosaveload = [self.boardnum]
@@ -511,11 +552,11 @@ _tests = None
 
 # ??? input
 def start_testing_gui():
-    global __env, _chip, _tests
+    global _env, _chip, _tests
     # ???
-    _env = rumboot.testing2.__env
-    _chip = rumboot.testing2.__chip
-    _tests = rumboot.testing2.__tests
+    _env = rumboot.testing2._env
+    _chip = rumboot.testing2._chip
+    _tests = rumboot.testing2._tests
     # ???
     app = QtWidgets.QApplication(sys.argv)
     window = MainWindow()

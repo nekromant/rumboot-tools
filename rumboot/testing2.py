@@ -56,21 +56,21 @@ class RumbootTestBase:
     timeout = 5 * 60
     requested = {} # { "param1": "value1", "param2": "value2", { ... } } is compared with the environment
 
-    def __suitable(req, env):
+    def _suitable(req, env):
         for key, value in req.items():
             if not key in env:
                 return False
             if isinstance(value, dict):
                 if not isinstance(env[key], dict):
                     return False
-                return RumbootTestBase.__suitable(value, env[key])
+                return RumbootTestBase._suitable(value, env[key])
             if value != env[key]:
                 return False
         return True
 
     @classmethod
     def suitable(self, env, test_params):
-        return RumbootTestBase.__suitable(self.requested, env)
+        return RumbootTestBase._suitable(self.requested, env)
 
     # ??? temporary -> terminal
     def write_command(self, cmd):
@@ -179,7 +179,7 @@ class KernelTestBase(UBootTestBase):
         return True
 
 
-def __add_test(path, storagePath, test_class, test_params, name):
+def _add_test(path, storagePath, test_class, test_params, name):
     if path == []:
         if name in storagePath:
             raise Exception(f"Test {name} already exists")
@@ -189,30 +189,30 @@ def __add_test(path, storagePath, test_class, test_params, name):
             storagePath[path[0]] = {}
         if not isinstance(storagePath[path[0]], dict):
             raise Exception(f"Test {path[0]} already exists")
-        __add_test(path[1:], storagePath[path[0]], test_class, test_params, name)
+        _add_test(path[1:], storagePath[path[0]], test_class, test_params, name)
 
 
-def __register_one_test(testModulePath, test_class, test_params, name):
+def _register_one_test(testModulePath, test_class, test_params, name):
     if test_class == None:
         raise Exception("Test class is not defined")
-    relPath = os.path.relpath(os.path.normpath(testModulePath), __test_root_path)
+    relPath = os.path.relpath(os.path.normpath(testModulePath), _test_root_path)
     pathStr = os.path.split(relPath)[0]
     path = pathStr.split(os.sep)
     if path == [""]:
         path = []
-    __add_test(path, __tests, test_class, test_params, name)
+    _add_test(path, _tests, test_class, test_params, name)
 
 
-def __register_tests(testModulePath, test_class, test_params, name):
+def _register_tests(testModulePath, test_class, test_params, name):
     if name == None:
         name = test_class.__name__
 
     if isinstance(test_params, dict):
-        __register_one_test(testModulePath, test_class, test_params, name)
+        _register_one_test(testModulePath, test_class, test_params, name)
     elif isinstance(test_params, list):
         index = 1
         for p in test_params:
-            __register_one_test(testModulePath, test_class, p, f"{name}:{index}")
+            _register_one_test(testModulePath, test_class, p, f"{name}:{index}")
             index += 1
     else:
         raise Exception("Test params must be dict or list")
@@ -221,13 +221,13 @@ def __register_tests(testModulePath, test_class, test_params, name):
 def rtest(test_params = {}, name = None):
     testModulePath = os.path.abspath(inspect.stack()[1][1])
     def decorator(test_class):
-        __register_tests(testModulePath, test_class, test_params, name)
+        _register_tests(testModulePath, test_class, test_params, name)
     return decorator
 
 
 def register_test(test_class, test_params = {}, name = None):
     testModulePath = os.path.abspath(inspect.stack()[1][1])
-    __register_tests(testModulePath, test_class, test_params, name)
+    _register_tests(testModulePath, test_class, test_params, name)
 
 
 def rumboot_test_directory(subdirName, filter = "test_*.py"):
@@ -237,88 +237,88 @@ def rumboot_test_directory(subdirName, filter = "test_*.py"):
     for entry in os.scandir(dirPath):
         if entry.is_file and fnmatch.fnmatch(entry.name, filter):
             fullPath = os.path.join(dirPath, os.path.splitext(entry.name)[0])
-            relPath = os.path.relpath(fullPath, __test_root_path)
+            relPath = os.path.relpath(fullPath, _test_root_path)
             moduleName = relPath.replace(os.path.sep, ".")
             importlib.import_module(moduleName)
 
 
-def __test_iteration_recursive(path, tests, func):
+def _test_iteration_recursive(path, tests, func):
     for key, value in tests.items():
         fullName = path + ("." if path else "") + key
         if isinstance(value, TestDesc):
             func(fullName, value)
         else:
-            __test_iteration_recursive(fullName, value, func)
+            _test_iteration_recursive(fullName, value, func)
 
 
-def __test_iteration(func):
-    __test_iteration_recursive("", __tests, func)
+def _test_iteration(func):
+    _test_iteration_recursive("", _tests, func)
 
 
-def __load_environment_from_file(filePath):
+def _load_environment_from_file(filePath):
     with open(filePath, 'r') as stream:
         env = yaml.safe_load(stream)
     return env
 
 
-def __load_environment(opts):
+def _load_environment(opts):
     if opts.env_path != None:
-        return __load_environment_from_file(opts.env_path)
+        return _load_environment_from_file(opts.env_path)
     else:
         if os.path.isfile(DEFAULT_ENV_FILE_NAME):
-            return __load_environment_from_file(DEFAULT_ENV_FILE_NAME)
+            return _load_environment_from_file(DEFAULT_ENV_FILE_NAME)
     return {}
 
 
-def __fill_runlist(full_name, test_desc):
-    __env["runlist"][full_name] = test_desc
+def _fill_runlist(full_name, test_desc):
+    _env["runlist"][full_name] = test_desc
 
 # run after test loading
-def __setup_environment():
-    __env["chip"] = __env.get("chip", {})
-    __env["chip"]["name"] = __chip.name
+def _setup_environment():
+    _env["chip"] = _env.get("chip", {})
+    _env["chip"]["name"] = _chip.name
 
-    __env["connection"] = __env.get("connection", {})
-    __env["connection"]["port"] = __env["connection"].get("port", None)
-    if __opts.port:
-        __env["connection"]["port"] = __opts.port[0]
-    __env["connection"]["boud"] = __env["connection"].get("boud", __chip.baudrate)
-    if __opts.baud:
-        __env["connection"]["baud"] = __opts.baud[0]
+    _env["connection"] = _env.get("connection", {})
+    _env["connection"]["port"] = _env["connection"].get("port", None)
+    if _opts.port:
+        _env["connection"]["port"] = _opts.port[0]
+    _env["connection"]["boud"] = _env["connection"].get("boud", _chip.baudrate)
+    if _opts.baud:
+        _env["connection"]["baud"] = _opts.baud[0]
 
-    __env["connection"]["transport"] = __env["connection"].get("transport", "xmodem")
-    if __opts.edcl:
-        __env["connection"]["transport"] = "edcl"
+    _env["connection"]["transport"] = _env["connection"].get("transport", "xmodem")
+    if _opts.edcl:
+        _env["connection"]["transport"] = "edcl"
 
-    __env["runlist"] = {}
-    __test_iteration(__fill_runlist)
+    _env["runlist"] = {}
+    _test_iteration(_fill_runlist)
 
-    __env["root_path"] = __opts.root_path
-    __env["gui"] = __opts.gui
+    _env["root_path"] = _opts.root_path
+    _env["gui"] = _opts.gui
 
 
-def __test_environment():
-    if not __env["connection"]["port"]:
+def _test_environment():
+    if not _env["connection"]["port"]:
         raise Exception("Serial port is not defined")
-    if not __env["connection"]["baud"]:
+    if not _env["connection"]["baud"]:
         raise Exception("Serial port baudrate is not defined")
 
 
-def __test_execution_in_process(desc):
+def _test_execution_in_process(desc):
     sys.stdin = open(0) # overwise stdin is devnull for the new process
-    reset = __resets[__opts.reset[0]](__opts) # ??? opts
-    term = terminal(__env["connection"]["port"], __env["connection"]["baud"])
-    term.set_chip(__chip)
-    term.xfer.selectTransport(__env["connection"]["transport"])
-    test = desc.test_class(term, reset, __env, desc.test_params, __user_interaction)
+    reset = _resets[_opts.reset[0]](_opts) # ??? opts
+    term = terminal(_env["connection"]["port"], _env["connection"]["baud"])
+    term.set_chip(_chip)
+    term.xfer.selectTransport(_env["connection"]["transport"])
+    test = desc.test_class(term, reset, _env, desc.test_params, _user_interaction)
     sys.exit(0 if test.run() else 1)
 
 
-def __test_execution(fullName, desc):
-    global __summary_result
+def _test_execution(fullName, desc):
+    global _summary_result
 
     print(f"=== Processing {fullName} ===")
-    if not desc.test_class.suitable(__env, desc.test_params):
+    if not desc.test_class.suitable(_env, desc.test_params):
         print("The test is not suitable for the environment")
         return
 
@@ -326,7 +326,7 @@ def __test_execution(fullName, desc):
     if "timeout" in desc.test_params:
         timeout_sec = desc.test_params["timeout"]
 
-    proc = multiprocessing.Process(target=lambda: __test_execution_in_process(desc))
+    proc = multiprocessing.Process(target=lambda: _test_execution_in_process(desc))
     proc.start()
     proc.join(timeout = timeout_sec)
 
@@ -340,56 +340,56 @@ def __test_execution(fullName, desc):
         result = (ext_code == 0)
 
     print("Passed" if result else "Fault")
-    __summary_result = __summary_result and result
+    _summary_result = _summary_result and result
 
 
 def rumboot_start_testing():
-    __setup_environment()
-    __test_environment()
+    _setup_environment()
+    _test_environment()
 
     # ???
-    if __env["gui"]:
+    if _env["gui"]:
         start_testing_gui()
     else:
-        __test_iteration(__test_execution)
+        _test_iteration(_test_execution)
         print("==========")
-        print("All the tests have been passed" if __summary_result else "Some tests have been fault")
+        print("All the tests have been passed" if _summary_result else "Some tests have been fault")
 
 
-__summary_result = True
-__tests = {} # { "test_name": TestDesc, "subdir": { ... } }
-__test_root_path = os.path.abspath(os.path.curdir)
-__opts = None
-__env = None
-__resets = None
-__formats = None # ??? need
-__chips = None
-__chip = None
-__user_interaction = None
+_summary_result = True
+_tests = {} # { "test_name": TestDesc, "subdir": { ... } }
+_test_root_path = os.path.abspath(os.path.curdir)
+_opts = None
+_env = None
+_resets = None
+_formats = None # ??? need
+_chips = None
+_chip = None
+_user_interaction = None
 
 
 # starts before test loading
-__resets  = ResetSeqFactory("rumboot.resetseq")
-__formats = ImageFormatDb("rumboot.images") # ???
-__chips   = ChipDb("rumboot.chips")
+_resets  = ResetSeqFactory("rumboot.resetseq")
+_formats = ImageFormatDb("rumboot.images") # ???
+_chips   = ChipDb("rumboot.chips")
 
-__parser = argparse.ArgumentParser(prog="<rumboot test system>", description="Processing all tests")
+_parser = argparse.ArgumentParser(prog="<rumboot test system>", description="Processing all tests")
 
-__parser.add_argument("-C", "--directory", dest = "root_path", help = "test root directory", default = __test_root_path)
-__parser.add_argument("--env", dest = "env_path", help = "environment yaml file", required = False)
-__parser.add_argument("--gui", dest = "gui", help = "start GUI mode", action="store_true", default = False)
+_parser.add_argument("-C", "--directory", dest = "root_path", help = "test root directory", default = _test_root_path)
+_parser.add_argument("--env", dest = "env_path", help = "environment yaml file", required = False)
+_parser.add_argument("--gui", dest = "gui", help = "start GUI mode", action="store_true", default = False)
 
-__helper = arghelper() # ???
-__helper.add_terminal_opts(__parser) # ???
-__helper.add_resetseq_options(__parser, __resets) # ???
-__helper.add_file_handling_opts(__parser) # ??? file
+_helper = arghelper() # ???
+_helper.add_terminal_opts(_parser) # ???
+_helper.add_resetseq_options(_parser, _resets) # ???
+_helper.add_file_handling_opts(_parser) # ??? file
 
-__opts = __parser.parse_args()
+_opts = _parser.parse_args()
 
-__chip = __helper.detect_chip_type(__opts, __chips, __formats)
-if __chip == None:
+_chip = _helper.detect_chip_type(_opts, _chips, _formats)
+if _chip == None:
     raise Exception("Failed to detect chip type")
-print("Detected chip: %s (%s)" % (__chip.name, __chip.part))
+print("Detected chip: %s (%s)" % (_chip.name, _chip.part))
 
-__user_interaction = UserIntercation()
-__env = __load_environment(__opts)
+_user_interaction = UserIntercation()
+_env = _load_environment(_opts)
