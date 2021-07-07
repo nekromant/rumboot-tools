@@ -12,6 +12,7 @@ from rumboot.chipDb import ChipDb
 from rumboot.ImageFormatDb import ImageFormatDb # ???
 from rumboot.cmdline import arghelper # ???
 from rumboot.terminal import terminal
+from rumboot.testing_gui import start_testing_gui
 
 DEFAULT_ENV_FILE_NAME = "env.yaml"
 
@@ -293,6 +294,7 @@ def __setup_environment():
     __test_iteration(__fill_runlist)
 
     __env["root_path"] = __opts.root_path
+    __env["gui"] = __opts.gui
 
 
 def __test_environment():
@@ -344,9 +346,14 @@ def __test_execution(fullName, desc):
 def rumboot_start_testing():
     __setup_environment()
     __test_environment()
-    __test_iteration(__test_execution)
-    print("==========")
-    print("All the tests have been passed" if __summary_result else "Some tests have been fault")
+
+    # ???
+    if __env["gui"]:
+        start_testing_gui()
+    else:
+        __test_iteration(__test_execution)
+        print("==========")
+        print("All the tests have been passed" if __summary_result else "Some tests have been fault")
 
 
 __summary_result = True
@@ -370,6 +377,7 @@ __parser = argparse.ArgumentParser(prog="<rumboot test system>", description="Pr
 
 __parser.add_argument("-C", "--directory", dest = "root_path", help = "test root directory", default = __test_root_path)
 __parser.add_argument("--env", dest = "env_path", help = "environment yaml file", required = False)
+__parser.add_argument("--gui", dest = "gui", help = "start GUI mode", action="store_true", default = False)
 
 __helper = arghelper() # ???
 __helper.add_terminal_opts(__parser) # ???
