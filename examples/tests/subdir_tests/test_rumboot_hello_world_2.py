@@ -1,4 +1,6 @@
-from rumboot.testing2 import *
+from rumboot.testing.main import rumboot_start_testing
+from rumboot.testing.registry import *
+from rumboot.testing.base_classes import *
 
 
 @rtest()
@@ -9,7 +11,7 @@ class RumbootHelloWorldTest2(RumbootTestBase):
         return False
 
 
-@rtest(test_params = { "key": "value1" }, name = "2TestWithParameter")
+@rtest(params = { "key": "value1" }, name = "2TestWithParameter")
 class RumbootHelloWorldTest2(RumbootTestBase):
     timeout = 61
 
@@ -17,7 +19,7 @@ class RumbootHelloWorldTest2(RumbootTestBase):
         return False
 
 
-@rtest(test_params = [ { "key": "value1" }, { "key": "value2" }, { "key": "value3" } ], name = "2TestWithParameter2")
+@rtest(params = [ { "key": "value1" }, { "key": "value2" }, { "key": "value3" } ], name = "2TestWithParameter2")
 class RumbootHelloWorldTest2(RumbootTestBase):
     pass
 

@@ -10,20 +10,20 @@ class TestClass(RumbootBaseTest):
 @rtest(name = "TestWithName")
 class TestClass(RumbootBaseTest):
 
-@rtest(test_params = { "key": "value1" }, name = "TestWithParameter")
+@rtest(params = { "key": "value1" }, name = "TestWithParameter")
 class TestClass(RumbootBaseTest):
 
-@rtest(test_params = [ { "key": "value1" }, { "key": "value2" }, { "key": "value3" } ], name = "TestWithParameter2")
+@rtest(params = [ { "key": "value1" }, { "key": "value2" }, { "key": "value3" } ], name = "TestWithParameter2")
 class TestClass(RumbootBaseTest):
 ```
 - вызов функции регистрации:
 ```
 register_test(TestClass)
 register_test(TestClass, name = "TestWithName")
-register_test(TestClass, test_params = { "key": "value", "timeout": 180 }, name = "TestWithParameter")
-register_test(TestClass, test_params = [ { "key": "value1" }, { "key": "value2" }, { "key": "value3" } ], name = "TestsWithParameter")
+register_test(TestClass, params = { "key": "value", "timeout": 180 }, name = "TestWithParameter")
+register_test(TestClass, params = [ { "key": "value1" }, { "key": "value2" }, { "key": "value3" } ], name = "TestsWithParameter")
 ```
-Значения test_params может быть словарем или массивом словарей (в этом случае регистрируется несколько тестов, к имени теста прибавляется суффикс :<номер_теста>)
+Значения params может быть словарем или массивом словарей (в этом случае регистрируется несколько тестов, к имени теста прибавляется суффикс :<номер_теста>)
 
 
 Формирование полного имени теста

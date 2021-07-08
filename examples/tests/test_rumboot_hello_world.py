@@ -1,6 +1,8 @@
-# import testing framework classes
-from rumboot.testing2 import *
 import os
+# import testing framework classes
+from rumboot.testing.main import rumboot_start_testing
+from rumboot.testing.registry import *
+from rumboot.testing.base_classes import *
 
 
 # define test as a class
@@ -28,9 +30,9 @@ class RumbootHelloWorldTest(RumbootTestBase):
 
 # register the tests
 register_test(RumbootHelloWorldTest)
-# register_test(RumbootHelloWorldTest, name = "TestWithName")
-# register_test(RumbootHelloWorldTest, test_params = { "key": "value", "timeout": 180 }, name = "TestWithParameter")
-# register_test(RumbootHelloWorldTest, test_params = [ { "key": "value1" }, { "key": "value2" }, { "key": "value3" } ], name = "TestsWithParameter")
+# ??? register_test(RumbootHelloWorldTest, name = "TestWithName")
+# ??? register_test(RumbootHelloWorldTest, params = { "key": "value", "timeout": 180 }, name = "TestWithParameter")
+# ??? register_test(RumbootHelloWorldTest, params = [ { "key": "value1" }, { "key": "value2" }, { "key": "value3" } ], name = "TestsWithParameter")
 
 
 # test class directories registration (optional)

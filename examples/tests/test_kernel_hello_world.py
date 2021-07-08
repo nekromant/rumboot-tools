@@ -1,4 +1,6 @@
-from rumboot.testing2 import *
+from rumboot.testing.main import rumboot_start_testing
+from rumboot.testing.registry import *
+from rumboot.testing.base_classes import *
 
 @rtest()
 class KernelHelloWorldTest(KernelTestBase):
