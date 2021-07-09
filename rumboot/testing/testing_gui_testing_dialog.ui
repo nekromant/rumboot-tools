@@ -15,9 +15,9 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QProgressBar" name="test_progres_bar">
-     <property name="value">
-      <number>24</number>
+    <widget class="QProgressBar" name="test_progress_bar">
+     <property name="format">
+      <string>%v/%m</string>
      </property>
     </widget>
    </item>
@@ -42,7 +42,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QDialogButtonBox" name="buttonBox">
+    <widget class="QDialogButtonBox" name="dialog_button_box">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
@@ -62,7 +62,7 @@
  <resources/>
  <connections>
   <connection>
-   <sender>buttonBox</sender>
+   <sender>dialog_button_box</sender>
    <signal>accepted()</signal>
    <receiver>TestingDialog</receiver>
    <slot>accept()</slot>
@@ -78,7 +78,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>buttonBox</sender>
+   <sender>dialog_button_box</sender>
    <signal>rejected()</signal>
    <receiver>TestingDialog</receiver>
    <slot>reject()</slot>

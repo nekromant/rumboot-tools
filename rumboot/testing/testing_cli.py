@@ -8,9 +8,9 @@ from rumboot.testing.executor import TestExecutor
 class _TestingCLI(UserInteraction):
 
     def __init__(self, test_registry, test_context):
-        self.test_registry = test_registry
-        self.test_context = test_context
-        self.executor = TestExecutor(test_context, self)
+        self._test_registry = test_registry
+        self._test_context = test_context
+        self._executor = TestExecutor(test_context, self)
 
     # UserInteraction
     def request_message(self, text):
@@ -41,30 +41,30 @@ class _TestingCLI(UserInteraction):
         return index - 1
 
     def execute(self):
-        update_suitable(self.test_registry, self.test_context)
-        self.stat_all_tests = 0
-        self.stat_skipped = 0
-        self.stat_fault = 0
-        self.stat_passed = 0
-        self.test_registry.test_iteration(self._execute_one_test)
+        update_suitable(self._test_registry, self._test_context)
+        self._stat_all_tests = 0
+        self._stat_skipped = 0
+        self._stat_fault = 0
+        self._stat_passed = 0
+        self._test_registry.test_iteration(self._execute_one_test)
         print(f"==========")
-        print(f"All tests : {self.stat_all_tests}")
-        print(f"Skipped   : {self.stat_skipped}")
-        print(f"Passed    : {self.stat_passed}")
-        print(f"Fault     : {self.stat_fault}")
+        print(f"All tests : {self._stat_all_tests}")
+        print(f"Skipped   : {self._stat_skipped}")
+        print(f"Passed    : {self._stat_passed}")
+        print(f"Fault     : {self._stat_fault}")
 
     def _execute_one_test(self, test_desc):
         print(f"=== Processing {test_desc.full_name} ===")
-        self.stat_all_tests += 1
+        self._stat_all_tests += 1
         if not test_desc.suitable:
-            self.stat_skipped += 1
+            self._stat_skipped += 1
             print("The test is not suitable for the environment")
             return
-        self.executor.exec_test(test_desc)
+        self._executor.exec_test(test_desc)
         if test_desc.status == TEST_STATUS_PASSED:
-            self.stat_passed += 1
+            self._stat_passed += 1
         elif test_desc.status == TEST_STATUS_FAULT:
-            self.stat_fault += 1
+            self._stat_fault += 1
         else:
             raise Exception("Unknown test status")
 
