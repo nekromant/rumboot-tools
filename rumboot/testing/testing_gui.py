@@ -7,10 +7,10 @@ import sys
 # from queue import Queue
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt, QTimer, QObject, QThread, pyqtSlot, pyqtSignal
+from PyQt5.QtGui import QTextCursor
 
 
 # from PyQt5.QtCore import QObject, QFileInfo, QSettings, QThread, pyqtSignal, Qt, pyqtSlot, QEventLoop
-# from PyQt5.QtGui import QTextCursor
 # from PyQt5.QtWidgets import QAction, QFileDialog, QInputDialog
 
 # from htmlViewer import htmlViewer
@@ -26,11 +26,12 @@ class TestExecutorWrapper(QObject, UserInteraction):
 
     finished = pyqtSignal()
     progress = pyqtSignal(int)
+    log_str = pyqtSignal(str)
 
     def __init__(self, test_desc_list, test_context):
         super().__init__()
         self._test_desc_list = test_desc_list
-        self._executor = TestExecutor(test_context, self)
+        self._executor = TestExecutor(test_context, self, self._log_func)
         self._stop_request = False
         self._thread = QThread()
         self.moveToThread(self._thread)
@@ -53,7 +54,9 @@ class TestExecutorWrapper(QObject, UserInteraction):
         self._thread.start()
 
     def terminate_testing_nonblocking(self):
-        self._stop_request = True
+        if not self._stop_request:
+            self._log_func("\n*** Stop request has been send. Wait for the end of the current test...\n")
+            self._stop_request = True
 
     @pyqtSlot()
     def _thread_proc(self):
@@ -61,11 +64,15 @@ class TestExecutorWrapper(QObject, UserInteraction):
         for test_desc in self._test_desc_list:
             if self._stop_request:
                 break
+            self._log_func(f"=== Processing {test_desc.full_name} ===\n") # ???
             self.progress.emit(test_index)
             test_index += 1
             self._executor.exec_test(test_desc)
         self._thread.quit() # quit from default message loop
         self.finished.emit()
+
+    def _log_func(self, text):
+        self.log_str.emit(text)
 
 
 class TestingDialog(QtWidgets.QDialog, Ui_TestingDialog, UserInteraction): # ??? no UserInteraction
@@ -76,6 +83,7 @@ class TestingDialog(QtWidgets.QDialog, Ui_TestingDialog, UserInteraction): # ???
         self._executor_wrapper = TestExecutorWrapper(test_desc_list, test_context)
         self._executor_wrapper.finished.connect(self.accept)
         self._executor_wrapper.progress.connect(self._executor_wrapper_progress)
+        self._executor_wrapper.log_str.connect(self._executor_wrapper_log_str)
 
         self.setupUi(self)
         self.test_progress_bar.setRange(0, len(self._test_desc_list))
@@ -109,6 +117,11 @@ class TestingDialog(QtWidgets.QDialog, Ui_TestingDialog, UserInteraction): # ???
     def _executor_wrapper_progress(self, test_index):
         self.test_progress_bar.setValue(test_index + 1)
         self.test_name_line_edit.setText(self._test_desc_list[test_index].full_name)
+
+    @pyqtSlot(str)
+    def _executor_wrapper_log_str(self, text):
+        self.log_plain_text_edit.moveCursor(QTextCursor.End)
+        self.log_plain_text_edit.insertPlainText(text)
 
 
 # class TestStruct():
@@ -225,6 +238,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self._update_chip()
         self._reload_test_tree()
+        self._update_current_test_info()
+        self.current_test_tab_widget.setCurrentIndex(0)
 #         self.tosaveload = [self.boardnum]
 #         for tmpl in self.platfom_templates_group.actions():
 #             self.tosaveload.append(tmpl)
@@ -251,6 +266,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.test_tree.setHeaderLabels(["Тест", "Статус"])
         self.test_tree.header().setSectionResizeMode(0, QtWidgets.QHeaderView.Stretch)
         self.test_tree.itemChanged.connect(self._test_tree_update_item)
+        self.test_tree.itemSelectionChanged.connect(self._update_current_test_info) # ???
 
     def _update_chip(self):
         self.chip_name_line_edit.setText(f"{self._test_context.chip.name} ({self._test_context.chip.part})")
@@ -259,7 +275,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.test_tree.clear()
         self._test_items = []
         self._reload_test_tree_recursive(self._test_registry.all_tests, None)
-        self._update_test_status()
+        self._update_tests_status()
         self.test_tree.expandAll()
 
     def _reload_test_tree_recursive(self, tests, parent):
@@ -276,7 +292,22 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
             item.setCheckState(0, Qt.Unchecked)
 
-    def _update_test_status(self):
+    def _update_current_test_info(self):
+        self.current_test_log_plain_text_edit.setPlainText(None)
+        self.current_test_log_plain_text_edit.hide()
+
+        test_desc = None
+        if self.test_tree.selectedItems():
+            item = self.test_tree.selectedItems()[0]
+            test_desc = item.test_desc
+
+        if test_desc:
+            if test_desc.log_text:
+                self.current_test_log_plain_text_edit.setPlainText(test_desc.log_text)
+                self.current_test_log_plain_text_edit.show()
+
+    # ??? mark or not #???
+    def _update_tests_status(self):
         for item in self._test_items:
             if item.test_desc.status == TEST_STATUS_NOT_EXECUTED:
                 item.setText(1, "Не запускался")
@@ -299,13 +330,19 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         test_desc_list = []
         for item in self._test_items:
             if item.checkState(0) == Qt.Checked:
-                test_desc_list.append(item.test_desc)
+                test_desc = item.test_desc
+                test_desc.status = TEST_STATUS_NOT_EXECUTED
+                test_desc.log_text = None
+                test_desc_list.append(test_desc)
         if not test_desc_list:
             QtWidgets.QMessageBox.critical(self, "Ошибка", "Нет выбранных тестов")
             return
+        self._update_tests_status()
+        self._update_current_test_info()
         testing_dialog = TestingDialog(self, test_desc_list, self._test_context)
         testing_dialog.exec_()
-        self._update_test_status()
+        self._update_tests_status()
+        self._update_current_test_info()
 
 #     def getPlatformName(self):
 #         ret = False

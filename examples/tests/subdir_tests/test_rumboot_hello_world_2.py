@@ -1,3 +1,4 @@
+import time
 from rumboot.testing.main import rumboot_start_testing
 from rumboot.testing.registry import *
 from rumboot.testing.base_classes import *
@@ -5,9 +6,11 @@ from rumboot.testing.base_classes import *
 
 @rtest()
 class RumbootHelloWorldTest2(RumbootTestBase):
-    timeout = 60
+    timeout = 10
 
     def run(self):
+        while (True):
+            time.sleep(1)
         return False
 
 

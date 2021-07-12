@@ -27,6 +27,7 @@ class Ui_TestingDialog(object):
         self.test_name_line_edit.setObjectName("test_name_line_edit")
         self.verticalLayout.addWidget(self.test_name_line_edit)
         self.log_plain_text_edit = QtWidgets.QPlainTextEdit(TestingDialog)
+        self.log_plain_text_edit.setUndoRedoEnabled(False)
         self.log_plain_text_edit.setReadOnly(True)
         self.log_plain_text_edit.setObjectName("log_plain_text_edit")
         self.verticalLayout.addWidget(self.log_plain_text_edit)

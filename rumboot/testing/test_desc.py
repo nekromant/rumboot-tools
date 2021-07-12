@@ -12,3 +12,5 @@ class TestDesc:
         self.full_name = full_name
         self.suitable = False
         self.status = TEST_STATUS_NOT_EXECUTED
+        self.log_text = None
+

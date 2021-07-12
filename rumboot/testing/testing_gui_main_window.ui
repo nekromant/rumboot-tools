@@ -105,7 +105,10 @@
          </layout>
         </item>
         <item>
-         <widget class="QTabWidget" name="tabWidget">
+         <widget class="QTabWidget" name="current_test_tab_widget">
+          <property name="currentIndex">
+           <number>1</number>
+          </property>
           <widget class="QWidget" name="tab">
            <attribute name="title">
             <string>Описание теста</string>
@@ -115,6 +118,18 @@
            <attribute name="title">
             <string>Лог выполнения</string>
            </attribute>
+           <layout class="QVBoxLayout" name="verticalLayout_3">
+            <item>
+             <widget class="QPlainTextEdit" name="current_test_log_plain_text_edit">
+              <property name="undoRedoEnabled">
+               <bool>false</bool>
+              </property>
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </widget>
          </widget>
         </item>

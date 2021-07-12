@@ -36,6 +36,9 @@
    </item>
    <item>
     <widget class="QPlainTextEdit" name="log_plain_text_edit">
+     <property name="undoRedoEnabled">
+      <bool>false</bool>
+     </property>
      <property name="readOnly">
       <bool>true</bool>
      </property>
