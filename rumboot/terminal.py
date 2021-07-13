@@ -103,6 +103,10 @@ class terminal:
             else:
                 self.runlist.append(path)
 
+        def load_binaries(self, path, use_stdin=False, break_after_uploads=True, timeout=-1):
+            self.add_binaries(path)
+            return terminal.loop(use_stdin, break_after_uploads, timeout)
+
         def add_dumps(self, dumps):
             self.dumps.update(dumps)
 
