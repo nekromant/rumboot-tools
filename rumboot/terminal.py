@@ -46,7 +46,12 @@ class terminal:
         def serial(self):
             return self.ser
 
-        def reopen(self):
+        def reopen(self, port=None, speed=None):
+            if port != None:
+                self.port = port
+            if speed != None:
+                self.speed = speed
+
             if self.ser != None:
                 self.ser.close()
                 self.ser = None
@@ -59,6 +64,11 @@ class terminal:
             else:
                 self.ser = serial.serial_for_url(self.port, timeout=5)
             self.opf = OpFactory("rumboot.ops", self) 
+
+        def close(self):
+            self.ser.close()
+            self.ser = None
+            self.progress.close()
 
         def hack_enable_serial_delay(self, delay):
             if hasattr(self.ser,"__write_orig"):
