@@ -81,27 +81,16 @@ class TestExecutor:
                 test_desc.status = TEST_STATUS_PASSED
         except Exception:
             pass
-        # ???
+        # ??? for term deleting (must be fixed in the terminal class)
         term.xfer.xfers = None
         term.xfer.how = None
         term.xfer.xfer = None
-        term.xfer = None # ???
-        term.opf.objects = None # ???
+        term.xfer = None
+        term.opf.objects = None
         term.opf = None
-        term.ser.write = None # ???
-        term.ser = None # ???
-        # test = None # ???
-        # gc.collect()
-        # print(f"### {sys.getrefcount(term)}") # ???
-        # for a in gc.get_referrers(term):
-        #     print(a)
-        # print("###")
-        # for a in gc.get_referrers(gc.get_referrers(term)[0]):
-        #     print(a)
-        # print("###")
-        # for a in gc.get_referrers(gc.get_referrers(gc.get_referrers(term)[0])[0]):
-        #     print(a)
-        # print("###")
+        term.ser.write = None
+        term.ser = None
+        # ???
 
 
 def _async_raise(tid, exctype):

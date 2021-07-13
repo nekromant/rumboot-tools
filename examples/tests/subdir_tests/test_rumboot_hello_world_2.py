@@ -14,7 +14,7 @@ class RumbootHelloWorldTest2(RumbootTestBase):
         return False
 
 
-@rtest(params = { "key": "value1" }, name = "2TestWithParameter")
+@rtest(params = { "key": "value1", "description": "Описание теста для тестирования GUI, где много строчек" }, name = "2TestWithParameter")
 class RumbootHelloWorldTest2(RumbootTestBase):
     timeout = 61
 

@@ -72,6 +72,13 @@ class Ui_MainWindow(object):
         self.current_test_tab_widget.setObjectName("current_test_tab_widget")
         self.tab = QtWidgets.QWidget()
         self.tab.setObjectName("tab")
+        self.verticalLayout_4 = QtWidgets.QVBoxLayout(self.tab)
+        self.verticalLayout_4.setObjectName("verticalLayout_4")
+        self.current_test_description_label = QtWidgets.QLabel(self.tab)
+        self.current_test_description_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.current_test_description_label.setWordWrap(True)
+        self.current_test_description_label.setObjectName("current_test_description_label")
+        self.verticalLayout_4.addWidget(self.current_test_description_label)
         self.current_test_tab_widget.addTab(self.tab, "")
         self.tab_2 = QtWidgets.QWidget()
         self.tab_2.setObjectName("tab_2")
@@ -133,7 +140,7 @@ class Ui_MainWindow(object):
         self.menubar.addAction(self.menu_info.menuAction())
 
         self.retranslateUi(MainWindow)
-        self.current_test_tab_widget.setCurrentIndex(1)
+        self.current_test_tab_widget.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):

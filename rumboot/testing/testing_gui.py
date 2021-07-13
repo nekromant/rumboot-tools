@@ -235,7 +235,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.setupUi(self)
         self._setup_test_tree()
         self.test_selected_button.clicked.connect(self._test_selected_button_clicked)
-#         self.button_run_failed_tests.clicked.connect(self.run_failed_tests)
+        self.test_failed_button.clicked.connect(self._test_failed_button_clicked)
 
         self._update_chip()
         self._reload_test_tree()
@@ -303,6 +303,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def _update_current_test_info(self):
         self.current_test_log_plain_text_edit.setPlainText(None)
         self.current_test_log_plain_text_edit.hide()
+        self.current_test_description_label.setText(None)
+        self.current_test_description_label.hide()
 
         test_desc = None
         if self.test_tree.selectedItems():
@@ -313,6 +315,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
             if test_desc.log_text:
                 self.current_test_log_plain_text_edit.setPlainText(test_desc.log_text)
                 self.current_test_log_plain_text_edit.show()
+            if "description" in test_desc.params:
+                self.current_test_description_label.setText(test_desc.params["description"])
+            else:
+                self.current_test_description_label.setText("<Нет описания теста>")
+            self.current_test_description_label.show()
 
     # ??? mark or not #???
     def _update_tests_status(self):
@@ -347,6 +354,17 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 test_desc.status = TEST_STATUS_NOT_EXECUTED
                 test_desc.log_text = None
                 test_desc_list.append(test_desc)
+        self._test_list(test_desc_list)
+
+    def _test_failed_button_clicked(self):
+        test_desc_list = []
+        for item in self._test_items:
+            test_desc = item.test_desc
+            if test_desc.status == TEST_STATUS_FAULT:
+                test_desc_list.append(test_desc)
+        self._test_list(test_desc_list)
+
+    def _test_list(self, test_desc_list):
         if not test_desc_list:
             QtWidgets.QMessageBox.critical(self, "Ошибка", "Нет выбранных тестов")
             return
