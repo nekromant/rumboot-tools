@@ -6,7 +6,7 @@ import sys
 # from collections import OrderedDict
 # from queue import Queue
 from PyQt5 import QtWidgets
-from PyQt5.QtCore import Qt, QTimer, QObject, QThread, pyqtSlot, pyqtSignal
+from PyQt5.QtCore import QPoint, QSize, QSettings, Qt, QTimer, QObject, QThread, pyqtSlot, pyqtSignal
 from PyQt5.QtGui import QTextCursor
 
 
@@ -236,6 +236,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self._setup_test_tree()
         self.test_selected_button.clicked.connect(self._test_selected_button_clicked)
         self.test_failed_button.clicked.connect(self._test_failed_button_clicked)
+        self.exit_action.triggered.connect(self.close)
+        self.reset_status_log_action.triggered.connect(self._reset_status_log_action_triggered)
+        self.about_qt_action.triggered.connect(lambda : QtWidgets.QMessageBox.aboutQt(self))
+
+        self._settings = QSettings("gui.ini", QSettings.IniFormat)
+        self._settings_resore()
 
         self._update_chip()
         self._reload_test_tree()
@@ -262,12 +268,37 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 #         for qact in self.platfom_templates_group.actions():
 #             qact.changed.connect(self.setupPlatform)
 
+    def closeEvent(self, event):
+        self._settings_save()
+
     def _setup_test_tree(self):
         self.test_tree.setColumnCount(2)
         self.test_tree.setHeaderLabels(["Тест", "Статус"])
         self.test_tree.header().setSectionResizeMode(0, QtWidgets.QHeaderView.Stretch)
         self.test_tree.itemChanged.connect(self._test_tree_update_item)
         self.test_tree.itemSelectionChanged.connect(self._update_current_test_info) # ???
+
+    def _settings_resore(self):
+        self._settings.beginGroup("Main")
+        self.board_number_auto_inc_action.setChecked(self._settings.value("board_number_auto_inc", 0, int) != 0)
+        self.board_number_spin_box.setValue(self._settings.value("board_number", 0, int))
+        self._settings.endGroup()
+
+        self._settings.beginGroup("MainWindow")
+        self.resize(self._settings.value("size", self.size(), QSize))
+        self.move(self._settings.value("pos", self.pos(), QPoint))
+        self._settings.endGroup()
+
+    def _settings_save(self):
+        self._settings.beginGroup("Main")
+        self._settings.setValue("board_number_auto_inc", 1 if self.board_number_auto_inc_action.isChecked() else 0)
+        self._settings.setValue("board_number", self.board_number_spin_box.value())
+        self._settings.endGroup()
+
+        self._settings.beginGroup("MainWindow")
+        self._settings.setValue("size", self.size())
+        self._settings.setValue("pos", self.pos())
+        self._settings.endGroup()
 
     def _update_chip(self):
         self.chip_name_line_edit.setText(f"{self._test_context.chip.name} ({self._test_context.chip.part})")
@@ -356,6 +387,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 test_desc_list.append(test_desc)
         self._test_list(test_desc_list)
 
+    # mark ???
     def _test_failed_button_clicked(self):
         test_desc_list = []
         for item in self._test_items:
@@ -372,6 +404,15 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self._update_current_test_info()
         testing_dialog = TestingDialog(self, test_desc_list, self._test_context)
         testing_dialog.exec_()
+        self._update_tests_status()
+        self._update_current_test_info()
+
+    # mark ???
+    def _reset_status_log_action_triggered(self):
+        for item in self._test_items:
+            test_desc = item.test_desc
+            test_desc.status = TEST_STATUS_NOT_EXECUTED
+            test_desc.log_text = None
         self._update_tests_status()
         self._update_current_test_info()
 
@@ -636,60 +677,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
 #         if hasattr(self, 'viewer') and self.viewer:
 #             self.viewer.close()
 
-
-# class WriteStream(object):
-#     """
-#     Class-wrapper for stdout with queue
-#     """
-#     def __init__(self, queue):
-#         self.queue = queue
-
-#     def write(self, text):
-#         self.queue.put(text)
-#         with open("log.txt", "a") as f:
-#             f.write(text)
-
-#     def flush(self):
-#         pass
-
-
-# class TextReceiver(QObject):
-#     """
-#     Class for receiving text from queue and send write_signal to the main thread of GUI
-#     """
-#     write_signal = pyqtSignal(str)
-
-#     def __init__(self, queue, *args, **kwargs):
-#         QObject.__init__(self, *args, **kwargs)
-#         self.queue = queue
-
-#     @pyqtSlot()
-#     def run(self):
-#         while True:
-#             text = self.queue.get()
-#             self.write_signal.emit(text)
-# ???
-
-# ???
-_env = None
-_chip = None
-_tests = None
-# ???
-
-# ???
-# # Create Queue and redirect sys.stdout to this queue
-# queue = Queue()
-# sys.stdout = WriteStream(queue)
-
-# ???
-# # Create thread that will listen on the other end of the queue, and send the text to the textedit in application
-# text_receiver_thread = QThread(parent=window)
-# text_receiver = TextReceiver(queue)
-# text_receiver.write_signal.connect(window.append_text)
-# text_receiver.moveToThread(text_receiver_thread)
-# text_receiver_thread.started.connect(text_receiver.run)
-# text_receiver_thread.start()
-# ???
 
 def start_testing_gui(test_registry, test_context):
     app = QtWidgets.QApplication(sys.argv)

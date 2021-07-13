@@ -70,12 +70,18 @@
            </widget>
           </item>
           <item row="1" column="1">
-           <widget class="QSpinBox" name="boardnum">
+           <widget class="QSpinBox" name="board_number_spin_box">
             <property name="maximumSize">
              <size>
               <width>100</width>
               <height>16777215</height>
              </size>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignCenter</set>
+            </property>
+            <property name="maximum">
+             <number>1000000</number>
             </property>
            </widget>
           </item>
@@ -164,48 +170,38 @@
     <property name="title">
      <string>Файл</string>
     </property>
-    <addaction name="action_save_log"/>
-    <addaction name="action_clear_log"/>
+    <addaction name="reset_status_log_action"/>
     <addaction name="separator"/>
-    <addaction name="exit"/>
+    <addaction name="exit_action"/>
    </widget>
    <widget class="QMenu" name="settings">
     <property name="title">
      <string>Настройки</string>
     </property>
-    <widget class="QMenu" name="platforms">
-     <property name="title">
-      <string>Выбор платформы</string>
-     </property>
-     <addaction name="template_2"/>
-    </widget>
-    <addaction name="auto_increment"/>
-    <addaction name="platforms"/>
+    <addaction name="board_number_auto_inc_action"/>
    </widget>
    <widget class="QMenu" name="menu_info">
     <property name="title">
      <string>Справка</string>
     </property>
+    <addaction name="about_qt_action"/>
    </widget>
    <addaction name="menu"/>
    <addaction name="settings"/>
    <addaction name="menu_info"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
-  <action name="exit">
+  <action name="exit_action">
    <property name="text">
     <string>Выход</string>
    </property>
   </action>
-  <action name="auto_increment">
+  <action name="board_number_auto_inc_action">
    <property name="checkable">
     <bool>true</bool>
    </property>
-   <property name="checked">
-    <bool>true</bool>
-   </property>
    <property name="text">
-    <string>Автоматически увеличивать зав. номер</string>
+    <string>Автоматически увеличивать зав. № платы</string>
    </property>
   </action>
   <action name="actionDebian">
@@ -239,9 +235,14 @@
     <string>Сохранить лог</string>
    </property>
   </action>
-  <action name="action_clear_log">
+  <action name="reset_status_log_action">
    <property name="text">
-    <string>Очистить лог</string>
+    <string>Сбросить статусы и логи</string>
+   </property>
+  </action>
+  <action name="about_qt_action">
+   <property name="text">
+    <string>Информация о Qt...</string>
    </property>
   </action>
  </widget>
