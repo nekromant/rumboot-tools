@@ -4,7 +4,12 @@ from rumboot.testing.base_classes import *
 
 
 class RumbootHelloWorldTest3(RumbootTestBase):
-    pass
+
+    requested = {
+        "chip": {
+            "name": "never"
+        }
+    }
 
 
 register_test(RumbootHelloWorldTest3)

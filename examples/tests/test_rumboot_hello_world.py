@@ -30,7 +30,7 @@ class RumbootHelloWorldTest(RumbootTestBase):
 
 # register the tests
 register_test(RumbootHelloWorldTest)
-# ??? register_test(RumbootHelloWorldTest, name = "TestWithName")
+register_test(RumbootHelloWorldTest, name = "TestWithName")
 # ??? register_test(RumbootHelloWorldTest, params = { "key": "value", "timeout": 180 }, name = "TestWithParameter")
 # ??? register_test(RumbootHelloWorldTest, params = [ { "key": "value1" }, { "key": "value2" }, { "key": "value3" } ], name = "TestsWithParameter")
 

@@ -17,6 +17,7 @@ from PyQt5.QtGui import QTextCursor
 # from testing import intialize_testing, RumbootTestFacility, find_tests
 
 from rumboot.testing.test_desc import *
+from rumboot.testing.core import *
 from rumboot.testing.executor import TestExecutor
 from rumboot.testing.testing_gui_main_window import Ui_MainWindow
 from rumboot.testing.testing_gui_testing_dialog import Ui_TestingDialog
@@ -272,6 +273,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.chip_name_line_edit.setText(f"{self._test_context.chip.name} ({self._test_context.chip.part})")
 
     def _reload_test_tree(self):
+        update_suitable(self._test_registry, self._test_context)
         self.test_tree.clear()
         self._test_items = []
         self._reload_test_tree_recursive(self._test_registry.all_tests, None)
@@ -285,12 +287,18 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 item.test_desc = value
                 self._test_items.append(item)
                 item.setText(0, value.name)
+                item.setCheckState(0, Qt.Unchecked)
+                if value.suitable:
+                    item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
+                else:
+                    item.setFlags(item.flags() & ~Qt.ItemIsUserCheckable)
+                    item.setForeground(0, Qt.gray)
             else:
                 item.test_desc = None
                 item.setText(0, key)
+                item.setCheckState(0, Qt.Unchecked)
+                item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
                 self._reload_test_tree_recursive(value, item)
-            item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
-            item.setCheckState(0, Qt.Unchecked)
 
     def _update_current_test_info(self):
         self.current_test_log_plain_text_edit.setPlainText(None)
@@ -309,12 +317,16 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
     # ??? mark or not #???
     def _update_tests_status(self):
         for item in self._test_items:
+            item.setForeground(1, Qt.black if item.test_desc.suitable else Qt.gray)
             if item.test_desc.status == TEST_STATUS_NOT_EXECUTED:
                 item.setText(1, "Не запускался")
+                item.setBackground(1, Qt.gray if item.test_desc.suitable else Qt.white)
             elif item.test_desc.status == TEST_STATUS_PASSED:
                 item.setText(1, "Пройден")
+                item.setBackground(1, Qt.green)
             elif item.test_desc.status == TEST_STATUS_FAULT:
                 item.setText(1, "Ошибка")
+                item.setBackground(1, Qt.red)
             else:
                 raise Exception("Unknown test status")
 
@@ -323,7 +335,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         if not item.test_desc:
             for i in range(item.childCount()):
                 child = item.child(i)
-                child.setCheckState(0, item.checkState(0))
+                if not child.test_desc or child.test_desc.suitable:
+                    child.setCheckState(0, item.checkState(0))
 
     # ??? mark
     def _test_selected_button_clicked(self):

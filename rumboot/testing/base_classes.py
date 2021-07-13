@@ -22,11 +22,6 @@ class RumbootTestBase:
     def suitable(self, env, params):
         return RumbootTestBase._suitable(self.requested, env)
 
-    # ??? temporary -> terminal
-    def write_command(self, cmd):
-        cmd = cmd.encode() + b"\r"
-        self.terminal.ser.write(cmd)
-
     def __init__(self, terminal, resetSeq, env, params, user_interaction):
         self.terminal = terminal
         self.resetSeq = resetSeq
@@ -38,6 +33,11 @@ class RumbootTestBase:
         self.resetSeq.resetToHost()
         time.sleep(5) # Ethernet PHY negotiation time for EDCL loading (ToDo: move to EDCL part)
         return True
+
+    # ??? temporary -> terminal
+    def write_command(self, cmd):
+        cmd = cmd.encode() + b"\r"
+        self.terminal.ser.write(cmd)
 
 
 class UBootTestBase(RumbootTestBase):

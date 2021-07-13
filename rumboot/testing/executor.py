@@ -7,6 +7,9 @@ import time
 from rumboot.terminal import terminal
 from rumboot.testing.test_desc import *
 
+# ???
+import gc
+
 
 class TestExecutor:
 
@@ -23,8 +26,8 @@ class TestExecutor:
 
         test_desc.log_text = None
         self._log_stream = io.StringIO()
-        save_stdout = sys.stdout
-        save_stderr = sys.stderr
+        self._save_stdout = sys.stdout
+        self._save_stderr = sys.stderr
         sys.stdout = self
         sys.stderr = self
         try:
@@ -47,15 +50,20 @@ class TestExecutor:
             else:
                 raise Exception("Unknown test status")
         finally:
-            sys.stdout = save_stdout
-            sys.stderr = save_stderr
+            sys.stdout = self._save_stdout
+            sys.stderr = self._save_stderr
+            self._save_stdout = None
+            self._save_stderr = None
         test_desc.log_text = self._log_stream.getvalue()
+        self._log_stream = None
 
     # IOBase
     def write(self, text):
         self._log_stream.write(text)
         if self._log_func:
             self._log_func(text)
+        else:
+            print(text, file=self._save_stdout, end="")
 
     # IOBase
     def flush(self):
@@ -73,6 +81,27 @@ class TestExecutor:
                 test_desc.status = TEST_STATUS_PASSED
         except Exception:
             pass
+        # ???
+        term.xfer.xfers = None
+        term.xfer.how = None
+        term.xfer.xfer = None
+        term.xfer = None # ???
+        term.opf.objects = None # ???
+        term.opf = None
+        term.ser.write = None # ???
+        term.ser = None # ???
+        # test = None # ???
+        # gc.collect()
+        # print(f"### {sys.getrefcount(term)}") # ???
+        # for a in gc.get_referrers(term):
+        #     print(a)
+        # print("###")
+        # for a in gc.get_referrers(gc.get_referrers(term)[0]):
+        #     print(a)
+        # print("###")
+        # for a in gc.get_referrers(gc.get_referrers(gc.get_referrers(term)[0])[0]):
+        #     print(a)
+        # print("###")
 
 
 def _async_raise(tid, exctype):
