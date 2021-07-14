@@ -1,4 +1,4 @@
-
+import sys
 from rumboot.testing.user_interaction import *
 from rumboot.testing.core import *
 from rumboot.testing.test_desc import *
@@ -13,12 +13,12 @@ class _TestingCLI(UserInteraction):
         self._executor = TestExecutor(test_context, self)
 
     # UserInteraction
-    def request_message(self, text):
-        input(f"{text} - Press <ENTER>")
+    def request_message(self, test, text):
+        input(f"{test.full_name} - {text} - Press <ENTER>")
 
     # UserInteraction
-    def request_yes_no(self, text):
-        answer = input(f"{text} - (Y/N)?")
+    def request_yes_no(self, test, text):
+        answer = input(f"{test.full_name} - {text} - (Y/N)?")
         if answer in ["Y", "y"]:
             return True
         if answer in ["N", "n"]:
@@ -27,16 +27,19 @@ class _TestingCLI(UserInteraction):
         return False
 
     # UserInteraction
-    def request_option(self, text, options):
-        print(text)
+    def request_option(self, test, text, options):
+        print(f"{test.full_name} - {text}:")
         index = 1
         for opt in options:
             print(f"{index} - {opt}")
             index += 1
         answer = input()
-        index = int(answer)
+        try:
+            index = int(answer)
+        except:
+            index = 0
         if index < 1 or index > len(options):
-            print("Unknown answer, interrpreted as 1")
+            print(f"Unknown answer, interrpreted as {options[0]}")
             return 0
         return index - 1
 

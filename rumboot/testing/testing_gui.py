@@ -11,11 +11,26 @@ from rumboot.testing.testing_gui_main_window import Ui_MainWindow
 from rumboot.testing.testing_gui_testing_dialog import Ui_TestingDialog
 
 
+USER_INTERACTION_TYPE_MESSAGE = 0
+USER_INTERACTION_TYPE_YES_NO = 1
+USER_INTERACTION_TYPE_OPTION = 2
+
+class UserInteractionRequest:
+
+    def __init__(self, test, type, text, options=None):
+        self.test = test
+        self.type = type
+        self.text = text
+        self.options = options
+        self.result = None
+
+
 class TestExecutorWrapper(QObject, UserInteraction):
 
     finished = pyqtSignal()
     progress = pyqtSignal(int)
     log_str = pyqtSignal(str)
+    user_interaction = pyqtSignal(object)
 
     def __init__(self, test_desc_list, test_context, board_number):
         super().__init__()
@@ -34,16 +49,23 @@ class TestExecutorWrapper(QObject, UserInteraction):
 
 
     # UserInteraction
-    def request_message(self, text):
-        raise Exception("Method UserInteraction.request_message is not implemented")
+    def request_message(self, test, text):
+        request = UserInteractionRequest(test, USER_INTERACTION_TYPE_MESSAGE, text)
+        self.user_interaction.emit(request)
 
     # UserInteraction
-    def request_yes_no(self, text):
-        raise Exception("Method UserInteraction.request_yes_no is not implemented")
+    def request_yes_no(self, test, text):
+        request = UserInteractionRequest(test, USER_INTERACTION_TYPE_YES_NO, text)
+        request.result = False
+        self.user_interaction.emit(request)
+        return request.result
 
     # UserInteraction
-    def request_option(self, text, options):
-        raise Exception("Method UserInteraction.request_option is not implemented")
+    def request_option(self, test, text, options):
+        request = UserInteractionRequest(test, USER_INTERACTION_TYPE_OPTION, text, options)
+        request.result = 0
+        self.user_interaction.emit(request)
+        return request.result
 
     def start_testing_nonblocking(self):
         self._stop_request = False
@@ -84,15 +106,40 @@ class TestExecutorWrapper(QObject, UserInteraction):
             raise Exception(f"{path} is not a directory")
 
 
-class TestingDialog(QtWidgets.QDialog, Ui_TestingDialog, UserInteraction): # ??? no UserInteraction
+class UserOptionDialog(QtWidgets.QDialog):
+
+    def __init__(self, parent, request):
+        super().__init__(parent)
+        self._request = request
+        self.setWindowTitle("Запрос к пользователю")
+
+        self.layout = QtWidgets.QVBoxLayout()
+        self.layout.addWidget(QtWidgets.QLabel(f"Тест: {self._request.test.full_name}\n\n{self._request.text}:\n"))
+        index = 0
+        for option in self._request.options:
+            button = QtWidgets.QPushButton(option)
+            self.layout.addWidget(button)
+            button.clicked.connect(self._make_func_accept_option(index))
+            index += 1
+        self.setLayout(self.layout)
+
+    def _make_func_accept_option(self, index):
+        def func_template():
+            self._request.result = index
+            self.accept()
+        return func_template
+
+
+class TestingDialog(QtWidgets.QDialog, Ui_TestingDialog):
 
     def __init__(self, parent, test_desc_list, test_context, board_number):
         super().__init__(parent)
         self._test_desc_list = test_desc_list
         self._executor_wrapper = TestExecutorWrapper(test_desc_list, test_context, board_number)
-        self._executor_wrapper.finished.connect(self.accept)
-        self._executor_wrapper.progress.connect(self._executor_wrapper_progress)
-        self._executor_wrapper.log_str.connect(self._executor_wrapper_log_str)
+        self._executor_wrapper.finished.connect(self.accept, type=Qt.BlockingQueuedConnection)
+        self._executor_wrapper.progress.connect(self._executor_wrapper_progress, type=Qt.BlockingQueuedConnection)
+        self._executor_wrapper.log_str.connect(self._executor_wrapper_log_str, type=Qt.BlockingQueuedConnection)
+        self._executor_wrapper.user_interaction.connect(self._executor_wrapper_user_interaction, type=Qt.BlockingQueuedConnection)
 
         self.setupUi(self)
         self.test_progress_bar.setRange(0, len(self._test_desc_list))
@@ -105,18 +152,6 @@ class TestingDialog(QtWidgets.QDialog, Ui_TestingDialog, UserInteraction): # ???
         else:
             self._executor_wrapper.terminate_testing_nonblocking()
             self.dialog_button_box.setEnabled(False)
-
-    # UserInteraction
-    def request_message(self, text):
-        raise Exception("Method UserInteraction.request_message is not implemented")
-
-    # UserInteraction
-    def request_yes_no(self, text):
-        raise Exception("Method UserInteraction.request_yes_no is not implemented")
-
-    # UserInteraction
-    def request_option(self, text, options):
-        raise Exception("Method UserInteraction.request_option is not implemented")
 
     @pyqtSlot()
     def _start_testing(self):
@@ -131,6 +166,19 @@ class TestingDialog(QtWidgets.QDialog, Ui_TestingDialog, UserInteraction): # ???
     def _executor_wrapper_log_str(self, text):
         self.log_plain_text_edit.moveCursor(QTextCursor.End)
         self.log_plain_text_edit.insertPlainText(text)
+
+    @pyqtSlot(object)
+    def _executor_wrapper_user_interaction(self, request):
+        if request.type == USER_INTERACTION_TYPE_MESSAGE:
+            QtWidgets.QMessageBox.information(self, "Запрос к пользователю", f"Тест: {request.test.full_name}\n\n{request.text}")
+        elif request.type == USER_INTERACTION_TYPE_YES_NO:
+            answer = QtWidgets.QMessageBox.question(self, "Запрос к пользователю", f"Тест: {request.test.full_name}\n\n{request.text}", QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
+            request.result = answer == QtWidgets.QMessageBox.Yes
+        elif  request.type == USER_INTERACTION_TYPE_OPTION:
+            dialog = UserOptionDialog(self, request)
+            dialog.exec_()
+        else:
+            raise Exception("Unknown user interaction request type")
 
 
 class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):

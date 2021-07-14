@@ -4,18 +4,16 @@ import threading
 import inspect
 import ctypes
 import time
+import traceback
 from rumboot.terminal import terminal
 from rumboot.testing.test_desc import *
-
-# ???
-import gc
 
 
 class TestExecutor:
 
-    def __init__(self, test_context, user_iteraction, log_func=None):
+    def __init__(self, test_context, user_interaction, log_func=None):
         self._test_context = test_context
-        self._user_iteraction = user_iteraction
+        self._user_interaction = user_interaction
         self._log_func = log_func
         self._log_stream = None
 
@@ -76,11 +74,11 @@ class TestExecutor:
         term.xfer.selectTransport(self._test_context.env["connection"]["transport"])
         test_desc.status = TEST_STATUS_FAULT
         try:
-            test = test_desc.test_class(term, reset, self._test_context.env, test_desc.params, self._user_iteraction)
+            test = test_desc.test_class(test_desc.name, test_desc.full_name, term, reset, self._test_context.env, test_desc.params, self._user_interaction)
             if test.run():
                 test_desc.status = TEST_STATUS_PASSED
         except Exception:
-            pass
+            print(traceback.format_exc())
         # ??? for term deleting (must be fixed in the terminal class)
         term.xfer.xfers = None
         term.xfer.how = None

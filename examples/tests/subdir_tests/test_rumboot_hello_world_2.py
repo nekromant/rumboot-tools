@@ -14,9 +14,20 @@ class RumbootHelloWorldTest2(RumbootTestBase):
         return False
 
 
+@rtest()
+class RumbootTestUserInteraction(RumbootTestBase):
+    timeout = 3600
+
+    def run(self):
+        # self.request_message("Вставьте плату А в плату Б")
+        # print(self.request_yes_no("Оно вообще работает"))
+        # print(self.request_option("Как оно там", ["Все сломалось", "Ничего не работает", "Все пропало"]))
+        return True
+
+
 @rtest(params = { "key": "value1", "description": "Описание теста для тестирования GUI, где много строчек" }, name = "2TestWithParameter")
 class RumbootHelloWorldTest2(RumbootTestBase):
-    timeout = 61
+    timeout = 60
 
     def run(self):
         return False

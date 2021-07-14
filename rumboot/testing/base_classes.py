@@ -1,5 +1,6 @@
 import time
 import os
+import sys
 
 
 class RumbootTestBase:
@@ -22,7 +23,9 @@ class RumbootTestBase:
     def suitable(self, env, params):
         return RumbootTestBase._suitable(self.requested, env)
 
-    def __init__(self, terminal, resetSeq, env, params, user_interaction):
+    def __init__(self, name, full_name, terminal, resetSeq, env, params, user_interaction):
+        self.name = name
+        self.full_name = full_name
         self.terminal = terminal
         self.resetSeq = resetSeq
         self.env = env
@@ -33,6 +36,40 @@ class RumbootTestBase:
         self.resetSeq.resetToHost()
         time.sleep(5) # Ethernet PHY negotiation time for EDCL loading (ToDo: move to EDCL part)
         return True
+
+    # UserInteraction
+    def request_message(self, text):
+        save_stdout = sys.stdout
+        sys.stdout = sys.__stdout__
+        try:
+            self.user_interaction.request_message(self, text)
+        finally:
+            sys.stdout = save_stdout
+        print(f"User interaction: {text}")
+
+    # UserInteraction
+    def request_yes_no(self, text):
+        save_stdout = sys.stdout
+        sys.stdout = sys.__stdout__
+        try:
+            result = self.user_interaction.request_yes_no(self, text)
+        finally:
+            sys.stdout = save_stdout
+        answer = "YES" if result else "NO"
+        print(f"User interaction: {text} - {answer}")
+        return result
+
+    # UserInteraction
+    def request_option(self, text, options):
+        save_stdout = sys.stdout
+        sys.stdout = sys.__stdout__
+        try:
+            result = self.user_interaction.request_option(self, text, options)
+        finally:
+            sys.stdout = save_stdout
+        answer = options[result]
+        print(f"User interaction: {text} - {answer}")
+        return result
 
     # ??? temporary -> terminal
     def write_command(self, cmd):
