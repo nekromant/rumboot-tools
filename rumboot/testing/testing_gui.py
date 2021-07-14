@@ -295,6 +295,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         testing_dialog.exec_()
         self._update_tests_status()
         self._update_current_test_info()
+        if self.board_number_auto_inc_action.isChecked():
+            if all([x.test_desc.status == TEST_STATUS_PASSED for x in self._test_items if x.test_desc.suitable]):
+                self.board_number_spin_box.setValue(self.board_number_spin_box.value() + 1)
+                self._settings_save()
+                QtWidgets.QMessageBox.information(self, "Информация", "Все тесты пройдены, номер платы увеличен на 1")
 
     @pyqtSlot()
     def _reset_status_log_action_triggered(self):
