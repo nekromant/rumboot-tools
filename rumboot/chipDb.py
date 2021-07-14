@@ -50,6 +50,10 @@ class ChipDb:
                             self.chips[chip.chip_id] = chip
 
     def __getitem__(self, key):
+        try:
+            key = int(key)
+        except:
+            pass
         if key in self.chips:
             return self.chips[key]
         for chip in self.chips:
