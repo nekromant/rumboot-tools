@@ -56,7 +56,7 @@ class ChipDb:
             pass
         if key in self.chips:
             return self.chips[key]
-        for chip in self.chips:
+        for chip in self.chips.values():
             if chip.name == key:
                 return chip
         return None
