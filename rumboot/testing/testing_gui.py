@@ -213,7 +213,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.test_tree.setHeaderLabels(["Тест", "Статус"])
         self.test_tree.header().setSectionResizeMode(0, QtWidgets.QHeaderView.Stretch)
         self.test_tree.itemChanged.connect(self._test_tree_update_item)
-        self.test_tree.itemSelectionChanged.connect(self._update_current_test_info) # ???
+        self.test_tree.itemSelectionChanged.connect(self._update_current_test_info)
 
     def _settings_resore(self):
         self._settings.beginGroup("Main")
