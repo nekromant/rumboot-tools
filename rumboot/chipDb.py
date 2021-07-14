@@ -52,6 +52,9 @@ class ChipDb:
     def __getitem__(self, key):
         if key in self.chips:
             return self.chips[key]
+        for chip in self.chips:
+            if chip.name == key:
+                return chip
         return None
 
 
