@@ -61,9 +61,6 @@ connection:
         reset: <метод_ресета> ("none"/"pl2303"/...)
         transport: <транспорт> ("xmodem"/"edcl")
 
-runlist:
-        - каталог всех тестов <полное_имя_теста>: <описание_теста> (объект TestDesc)
-
 gui: <признак_запуска_gui> (True/False)
 
 root_path: <путь_к_артефактам>

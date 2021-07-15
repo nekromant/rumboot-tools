@@ -20,9 +20,9 @@ class TestContext:
 
     def process_cmdline(self):
         parser = argparse.ArgumentParser(prog="<rumboot test system>", description="Processing all tests")
-        parser.add_argument("-C", "--directory", dest = "root_path", help = "test root directory", default = os.path.abspath(os.path.curdir))
-        parser.add_argument("--env", dest = "env_path", help = "environment yaml file", required = False)
-        parser.add_argument("--gui", dest = "gui", help = "start GUI mode", action="store_true", default = False)
+        parser.add_argument("-C", "--directory", dest = "root_path", help = "test root directory", required=False)
+        parser.add_argument("--env", dest = "env_path", help = "environment yaml file", required=False)
+        parser.add_argument("--gui", dest = "gui", help = "start GUI mode", action="store_true", default=False)
 
         helper = arghelper()
         helper.add_terminal_opts(parser) # ???
@@ -40,11 +40,14 @@ class TestContext:
                 self.env = load_yaml_from_file(DEFAULT_ENV_FILE_NAME)
 
     def setup_environment(self):
-        self.chip = self.chips[self.opts.chip_id[0]]
+        self.env["chip"] = self.env.get("chip", {})
+        chip_id_or_name = self.env["chip"].get("name", None)
+        if self.opts.chip_id:
+            chip_id_or_name = self.opts.chip_id[0]
+        self.chip = self.chips[chip_id_or_name]
         if self.chip == None:
             raise Exception("Failed to detect chip type")
 
-        self.env["chip"] = self.env.get("chip", {})
         self.env["chip"]["name"] = self.chip.name
 
         self.env["connection"] = self.env.get("connection", {})
@@ -64,5 +67,11 @@ class TestContext:
         if self.opts.edcl:
             self.env["connection"]["transport"] = "edcl"
 
-        self.env["root_path"] = self.opts.root_path
+        root_path = self.env.get("root_path")
+        if not self.opts.root_path:
+            root_path = self.opts.root_path
+        if not root_path:
+            root_path = os.path.curdir
+        self.env["root_path"] = os.path.abspath(root_path)
+
         self.env["gui"] = self.opts.gui
