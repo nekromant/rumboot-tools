@@ -3,7 +3,6 @@ import argparse
 from rumboot.cmdline import arghelper
 from rumboot.resetSeq import ResetSeqFactory
 from rumboot.chipDb import ChipDb
-from rumboot.ImageFormatDb import ImageFormatDb # ???
 from rumboot.testing.yaml import *
 
 
@@ -16,7 +15,6 @@ class TestContext:
         self.opts = None
         self.env = {}
         self.resets = ResetSeqFactory("rumboot.resetseq")
-        self.formats = ImageFormatDb("rumboot.images") # ??? need
         self.chips = ChipDb("rumboot.chips")
         self.chip = None
 
@@ -26,7 +24,7 @@ class TestContext:
         parser.add_argument("--env", dest = "env_path", help = "environment yaml file", required = False)
         parser.add_argument("--gui", dest = "gui", help = "start GUI mode", action="store_true", default = False)
 
-        helper = arghelper() # ???
+        helper = arghelper()
         helper.add_terminal_opts(parser) # ???
         helper.add_resetseq_options(parser, self.resets) # ???
         helper.add_file_handling_opts(parser) # ??? file
@@ -42,8 +40,7 @@ class TestContext:
                 self.env = load_yaml_from_file(DEFAULT_ENV_FILE_NAME)
 
     def setup_environment(self):
-        helper = arghelper() # ???
-        self.chip = helper.detect_chip_type(self.opts, self.chips, self.formats) # ???
+        self.chip = self.chips[self.opts.chip_id[0]]
         if self.chip == None:
             raise Exception("Failed to detect chip type")
 
@@ -57,7 +54,7 @@ class TestContext:
         if not self.env["connection"]["port"]:
             raise Exception("Serial port is not defined")
 
-        self.env["connection"]["boud"] = self.env["connection"].get("boud", self.chip.baudrate)
+        self.env["connection"]["baud"] = self.env["connection"].get("baud", self.chip.baudrate)
         if self.opts.baud:
             self.env["connection"]["baud"] = self.opts.baud[0]
         if not self.env["connection"]["baud"]:
