@@ -68,7 +68,7 @@ class TestContext:
             self.env["connection"]["transport"] = "edcl"
 
         root_path = self.env.get("root_path")
-        if not self.opts.root_path:
+        if self.opts.root_path:
             root_path = self.opts.root_path
         if not root_path:
             root_path = os.path.curdir

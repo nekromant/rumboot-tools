@@ -34,7 +34,8 @@ class RumbootTestBase:
 
     def run(self):
         self.resetSeq.resetToHost()
-        time.sleep(5) # Ethernet PHY negotiation time for EDCL loading (ToDo: move to EDCL part)
+        if self.env["connection"]["transport"] == "edcl":
+            time.sleep(5) # Ethernet PHY negotiation time for EDCL loading (ToDo: move to EDCL part)
         return True
 
     # UserInteraction
@@ -89,10 +90,29 @@ class UBootTestBase(RumbootTestBase):
             return False
         return True
 
+    def uboot_cmd_answer(self, cmd, last_line_answer):
+        answer = self.terminal.shell_cmd(cmd)
+        lines = answer.splitlines(keepends=False)
+        last_line = "" if len(lines) == 0 else lines[-1]
+        if last_line != last_line_answer:
+            print(f"Expected answer: {last_line_answer}")
+            print(f"Current answer: {last_line}")
+            raise Exception("Unexpected answer")
+        return True
+
     def mem_setup(self):
         mem_setup_cmd = self.env["uboot"].get("mem_setup_cmd")
         if mem_setup_cmd != None:
             self.terminal.shell_cmd(mem_setup_cmd)
+
+    def mem_fill(self, addr, size, value):
+        self.terminal.shell_cmd(f"mw.b {addr:X} {value:02X} {size:X}")
+
+    def mem_random(self, addr, size):
+        self.uboot_cmd_answer(f"rand {addr:X} {size:X}", f"{size} bytes filled with random data")
+
+    def mem_cmp(self, addr1, addr2, size):
+        self.uboot_cmd_answer(f"cmp.b {addr1:X} {addr2:X} {size:X}", f"Total of {size} byte(s) were the same")
 
     def uboot_upload_file(self, addr_as_text, file_path):
         transport = self.env["connection"]["transport"]
@@ -102,12 +122,11 @@ class UBootTestBase(RumbootTestBase):
             self.terminal.loop(False, True)
             self.terminal.wait_prompt()
             self.terminal.ser.write(b"\b") # ??? -> terminal clear E character
-# ???         elif (transport == "xmodem"):
-# ???             self.hardware.write_command(f"loadx {addr_as_text}")
-# ???             self.hardware.load_binaries([file_path])
-# ???             self.hardware.wait_shell_prompt()
-# ???         else:
-# ???             raise "Unsupported transport"
+        elif (transport == "xmodem"):
+            self.write_command(f"loadx {addr_as_text}")
+            self.terminal.load_binaries(file_path)
+        else:
+            raise "Unsupported transport"
 
     def run(self):
         super().run()
