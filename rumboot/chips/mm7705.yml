@@ -7,8 +7,6 @@ gdb: gdb
 baudrate: 1000000
 skipsync: True
 spl_address: 0x48000
-gdb: gdb
-baudrate: 115200
 warning: >
   This chip has a RumBoot V1 bootloader.
   RumBootV2 may be flashed onto SPI flash and executed from internal memory
