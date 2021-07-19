@@ -3,6 +3,7 @@ from rumboot.testing.user_interaction import *
 from rumboot.testing.core import *
 from rumboot.testing.test_desc import *
 from rumboot.testing.executor import TestExecutor
+from rumboot.testing.reports import JUintReport
 
 
 class _TestingCLI(UserInteraction):
@@ -10,6 +11,9 @@ class _TestingCLI(UserInteraction):
     def __init__(self, test_registry, test_context):
         self._test_registry = test_registry
         self._test_context = test_context
+        self._reports = None
+        if self._test_context.env["report_file_path"]:
+            self._reports = JUintReport(self._test_context.env["report_file_path"])
         self._executor = TestExecutor(test_context, self)
 
     # UserInteraction
@@ -55,21 +59,26 @@ class _TestingCLI(UserInteraction):
         print(f"Skipped   : {self._stat_skipped}")
         print(f"Passed    : {self._stat_passed}")
         print(f"Fault     : {self._stat_fault}")
+        if self._reports:
+            print("Saving reports...")
+            self._reports.flush()
 
     def _execute_one_test(self, test_desc):
         print(f"=== Processing {test_desc.full_name} ===")
         self._stat_all_tests += 1
-        if not test_desc.suitable:
+        if test_desc.suitable:
+            self._executor.exec_test(test_desc)
+            if test_desc.status == TEST_STATUS_PASSED:
+                self._stat_passed += 1
+            elif test_desc.status == TEST_STATUS_FAULT:
+                self._stat_fault += 1
+            else:
+                raise Exception("Unknown test status")
+        else:
             self._stat_skipped += 1
             print("The test is not suitable for the environment")
-            return
-        self._executor.exec_test(test_desc)
-        if test_desc.status == TEST_STATUS_PASSED:
-            self._stat_passed += 1
-        elif test_desc.status == TEST_STATUS_FAULT:
-            self._stat_fault += 1
-        else:
-            raise Exception("Unknown test status")
+        if self._reports:
+            self._reports.add_test_result(test_desc)
 
 
 def start_testing_cli(test_registry, test_context):

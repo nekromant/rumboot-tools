@@ -20,8 +20,9 @@ class TestContext:
 
     def process_cmdline(self):
         parser = argparse.ArgumentParser(prog="<rumboot test system>", description="Processing all tests")
-        parser.add_argument("-C", "--directory", dest = "root_path", help = "test root directory", required=False)
-        parser.add_argument("--env", dest = "env_path", help = "environment yaml file", required=False)
+        parser.add_argument("-C", "--directory", dest = "root_path", help="test root directory", required=False)
+        parser.add_argument("--env", dest = "env_path", help="environment yaml file", required=False)
+        parser.add_argument("--report", dest = "report_file_path", help="JUnit report file", required=False)
         parser.add_argument("--gui", dest = "gui", help = "start GUI mode", action="store_true", default=False)
 
         helper = arghelper()
@@ -74,4 +75,13 @@ class TestContext:
             root_path = os.path.curdir
         self.env["root_path"] = os.path.abspath(root_path)
 
+        self.env["report_file_path"] = self.env.get("report_file_path", None)
+        if self.opts.report_file_path:
+            self.env["report_file_path"] = self.opts.report_file_path
+        if self.env["report_file_path"]:
+            self.env["report_file_path"] = os.path.abspath(self.env["report_file_path"])
+
         self.env["gui"] = self.opts.gui
+
+    def make_reports(self):
+        pass

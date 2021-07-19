@@ -65,6 +65,8 @@ gui: <признак_запуска_gui> (True/False)
 
 root_path: <путь_к_артефактам>
 
+report_file_path: <путь_к_отчету_в_формате_JUnit>
+
 uboot:
         active: <признак_наличия_uboot> (True/False)
         path_base: <путь_к_каталогу_uboot> (относительно root_path)

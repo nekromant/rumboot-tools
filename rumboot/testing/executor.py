@@ -11,9 +11,10 @@ from rumboot.testing.test_desc import *
 
 class TestExecutor:
 
-    def __init__(self, test_context, user_interaction, log_func=None):
+    def __init__(self, test_context, user_interaction, reports=None, log_func=None):
         self._test_context = test_context
         self._user_interaction = user_interaction
+        self._reports = reports
         self._log_func = log_func
         self._log_stream = None
 

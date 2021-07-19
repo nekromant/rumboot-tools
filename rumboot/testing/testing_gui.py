@@ -36,7 +36,7 @@ class TestExecutorWrapper(QObject, UserInteraction):
         super().__init__()
         self._test_desc_list = test_desc_list
         self._board_number = board_number
-        self._executor = TestExecutor(test_context, self, self._log_func)
+        self._executor = TestExecutor(test_context, self, log_func=self._log_func)
         self._stop_request = False
         self._thread = QThread()
         self.moveToThread(self._thread)
