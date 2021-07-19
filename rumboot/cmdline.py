@@ -86,6 +86,7 @@ class arghelper():
                         help="Override chip id (by name or chip_id)",
                         nargs=1, metavar=('chip_id'),
                         required=False)            
+
     def add_terminal_opts(self, parser):
         group = parser.add_argument_group('Connection Settings')
         group.add_argument("-l", "--log",
@@ -111,6 +112,21 @@ class arghelper():
                         action="store_true",
                         default=False,
                         required=False)
+        group.add_argument('--edcl-ip',
+                        help="Use specific EDCL IP address (default - from chip id)",
+                        default=None,
+                        required=False
+                        )
+        group.add_argument('--edcl-mac',
+                        help="Use specific EDCL MAC address (default - from chip id)",
+                        default=None,
+                        required=False
+                        )
+        group.add_argument('--edcl-timeout', type=float,
+                        help="Use specific EDCL MAC address (default - from chip id)",
+                        default=7.0,
+                        required=False
+                        )
 
 
     def add_resetseq_options(self, parser, rfactory):

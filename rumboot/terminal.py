@@ -37,20 +37,26 @@ class terminal:
         prog_widget = None
         shell_prompt = None
 
-        def __init__(self, port, speed):
+        def __init__(self, port, speed, xferparams = None):
             self.port = port
             self.speed = speed
-            self.xfer = xferManager(self)
-            self.reopen()
+            self.reopen(port, speed, xferparams)
 
         def serial(self):
             return self.ser
 
-        def reopen(self, port=None, speed=None):
+        def reopen(self, port=None, speed=None, xferparams = None):
             if port != None:
                 self.port = port
             if speed != None:
                 self.speed = speed
+            if xferparams != None:
+                self.xferparams = xferparams
+
+            if self.xfer != None:
+                self.xfer.close()
+
+            self.xfer = xferManager(self, self.xferparams)
 
             if self.ser != None:
                 self.ser.close()

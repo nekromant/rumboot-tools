@@ -1,8 +1,6 @@
 import struct
 import socket
-from getmac import get_mac_address
 import time
-# sudo arp -s 192.168.144.9 0:0:5e:0:0:0
 
 class edcl_packet:
     offset  = 0
@@ -244,7 +242,14 @@ class edcl():
             fl.close()
 #        print(self.stats)
 
-    def reconnect(self):
+    def reconnect(self, params = None):
+        if params != None:
+            if "remote_ip" in params:
+                self.remote_ip = params[remote_ip]
+            if "remote_port" in params:
+                self.remote_port = params[remote_port]
+
+            self.remote_ip = params
         return self.connect(remote_ip=self.remote_ip, remote_port=self.remote_port)
 
     def connect(self, remote_ip="192.168.144.9", remote_port=0x9099):

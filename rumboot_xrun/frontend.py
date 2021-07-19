@@ -78,11 +78,24 @@ def cli():
     if opts.baud == None:
         opts.baud = [ c.baudrate ]
 
+    params_for_xfers = {
+        "force_static_arp" : opts.force_static_arp,
+        "default" : "xmodem"
+    }
+
+    if opts.edcl:
+        params_for_xfers["default"] = "edcl"
+    if opts.edcl_ip:
+        params_for_xfers["edcl_ip"] = opts.edcl_ip
+    if opts.edcl_mac:
+        params_for_xfers["edcl_mac"] = opts.edcl_mac
+    if opts.edcl_timeout:
+        params_for_xfers["edcl_timeout"] = opts.edcl_timeout
+
     reset = resets[opts.reset[0]](opts)
-    term = terminal(opts.port[0], opts.baud[0])
+    term = terminal(opts.port[0], opts.baud[0], xferparams = params_for_xfers)
     term.set_chip(c)
     term.plusargs = plusargs
-    term.xfer.xfers["edcl"].force_static_arp = opts.force_static_arp
 
     try:
         romdump = open(dump_path + c.romdump, "r")
@@ -96,11 +109,11 @@ def cli():
     print("Reset method:               %s" % (reset.name))
     print("Baudrate:                   %d bps" % int(opts.baud[0]))
     print("Port:                       %s" % opts.port[0])
+    print("Preferred data transport:   %s" % params_for_xfers["default"])
+
     reset.resetToHost()
     term.add_binaries(opts.file)
     term.add_dumps(dumps)
     term.replay_till_the_end = opts.replay_no_exit
-    if opts.edcl and c.edcl != None:
-        term.xfer.selectTransport("edcl")
-    print("Preferred data transport:   %s" % term.xfer.how)
+
     return term.loop(opts.stdin)

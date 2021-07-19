@@ -59,7 +59,7 @@ class edclmanager(object):
         except:
             return None
         if ret:
-            print("Connected: %s (%s)" % (chip.__name__, params["name"]))
+            print("Connected: %s (%s)" % (chip.name, params["name"]))
             return chip
 
     def probe(self, chip):
@@ -158,9 +158,35 @@ class edclmanager(object):
         self.edcl.send_from_file(address + 4, image, callback, 4)
         self.edcl.send_from_file(address    , image, None, 0, 4)
 
-    def connect(self, chip):
+    def connect_once(self, chip, params = None):
+        if "edcl_ip" in params and "edcl_mac" in params:
+            params = {
+                "ip"   : params["edcl_ip"],
+                "mac"  : params["edcl_mac"],
+                "name" : "Manually specified EDCL Settings"
+            }
+            if None != self.try_connect(chip, params):
+                return params
+            else:
+                return None
+
+        #Else, just probe it!
         for i in range(3):
             ret = self.scan(chip)
+            print(ret)
             if ret != []:
                 return ret
+
+    def connect(self, chip, params = None):
+        if params and "edcl_timeout" in params:
+            timeout = params["edcl_timeout"]
+        else:
+            timeout = 7.0 #A sane default
+
+        time_start = time.time()
+        while time.time() - time_start < timeout:
+            ret = self.connect_once(chip, params)
+            if ret != None:
+                break
+        return ret
     

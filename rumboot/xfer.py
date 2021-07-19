@@ -4,8 +4,9 @@ from xmodem import XMODEM
 class xferBase():
     connected = False
     chip = None
-    def __init__(self, terminal):
+    def __init__(self, terminal, params = {}):
         self.term = terminal
+        self.params = params
         pass
 
     def reconnect(self):
@@ -51,12 +52,15 @@ class xferBase():
         else:
             raise Exception("Failed to enable transport")
 
+    def close(self):
+        pass
+
 class xferXmodem(xferBase):
     increment = 128
     mode = "xmodem"
 
-    def __init__(self, terminal):
-        super().__init__(terminal)
+    def __init__(self, terminal, params = {}):
+        super().__init__(terminal, params)
 
     def connect(self, chip):
         ser = self.term.ser
@@ -102,15 +106,14 @@ class xferXmodem1k(xferXmodem):
 
 class xferEdcl(xferBase):
     edcl = None
-    force_static_arp = False
-    def __init__(self, terminal):
-        super().__init__(terminal)
+    def __init__(self, terminal, params):
+        super().__init__(terminal, params)
 
     def connect(self, chip):
         if not self.edcl:
             self.edcl = edclmanager()
-            self.edcl.force_static_arp = self.force_static_arp
-            if not self.edcl.connect(chip):
+            self.edcl.force_static_arp = self.params["force_static_arp"]
+            if not self.edcl.connect(chip, self.params):
                 print("ERROR: Failed to establish edcl connection")
                 return False
         return super().connect(chip)
@@ -141,18 +144,30 @@ class xferEdcl(xferBase):
         return True
 
 
+# Params is a dict:
+#   default: "xmodem"
+#   edcl_ip: "192.168.0.1"
+#   edcl_mac: "0:0:5e:0:0:0"
+#   edcl_timeout: 7.0
+#   force_static_arp: True/False
+#
 class xferManager(xferBase):
     xfers = {}
     xfer = None
     how = "xmodem"
 
-    def __init__(self, terminal, how="xmodem"):
+    def __init__(self, terminal, params = {}):
+        if not "default" in params:
+            params["default"] = "xmodem"
+        if not "force_static_arp" in params:
+            params["force_static_arp"] = False
+
         super().__init__(terminal)
-        self.xfers["xmodem"] = xferXmodem1k(terminal)
-        self.xfers["xmodem-128"] = xferXmodem(terminal)
-        self.xfers["edcl"] = xferEdcl(terminal)
-        self.how = how
-        self.xfer = self.xfers[how]
+        self.xfers["xmodem"] = xferXmodem1k(terminal, params)
+        self.xfers["xmodem-128"] = xferXmodem(terminal, params)
+        self.xfers["edcl"] = xferEdcl(terminal, params)
+        self.how = params["default"]
+        self.xfer = self.xfers[self.how]
 
     def setChip(self, chip):
         self.chip = chip
@@ -187,6 +202,6 @@ class xferManager(xferBase):
 
     def reconnect(self):
         self.xfer.reconnect()
-        
-#    def _recv(self, stream, desc='Receiving stream'):
-#        return super()._recv(stream, desc=desc)
+
+    def close(self):
+        self.xfer.close()
