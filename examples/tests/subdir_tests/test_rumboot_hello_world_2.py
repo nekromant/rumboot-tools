@@ -16,7 +16,7 @@ class RumbootHelloWorldTest2(RumbootTestBase):
 
 @rtest()
 class RumbootTestUserInteraction(RumbootTestBase):
-    timeout = 3600
+    timeout = 20
 
     def run(self):
         # self.request_message("Вставьте плату А в плату Б")

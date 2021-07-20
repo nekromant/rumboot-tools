@@ -31,8 +31,15 @@ class TestExecutor:
         sys.stderr = self
         try:
             thread = threading.Thread(target=self._test_execution_in_thread, args=[test_desc])
+            thread.wait_user = False
             thread.start()
-            thread.join(timeout=timeout_sec)
+            time_left = timeout_sec
+            while time_left > 0:
+                thread.join(timeout=1)
+                if not thread.isAlive():
+                    break
+                if not thread.wait_user:
+                    time_left -= 1
 
             if thread.isAlive():
                 while thread.isAlive():

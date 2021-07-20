@@ -1,3 +1,4 @@
+import threading
 import time
 import os
 import sys
@@ -34,28 +35,30 @@ class RumbootTestBase:
 
     def run(self):
         self.resetSeq.resetToHost()
-        if self.env["connection"]["transport"] == "edcl":
-            time.sleep(5) # Ethernet PHY negotiation time for EDCL loading (ToDo: move to EDCL part)
         return True
 
     # UserInteraction
     def request_message(self, text):
         save_stdout = sys.stdout
         sys.stdout = sys.__stdout__
+        threading.current_thread().wait_user = True
         try:
             self.user_interaction.request_message(self, text)
         finally:
             sys.stdout = save_stdout
+            threading.current_thread.wait_user = False
         print(f"User interaction: {text}")
 
     # UserInteraction
     def request_yes_no(self, text):
         save_stdout = sys.stdout
         sys.stdout = sys.__stdout__
+        threading.current_thread.wait_user = True
         try:
             result = self.user_interaction.request_yes_no(self, text)
         finally:
             sys.stdout = save_stdout
+            threading.current_thread.wait_user = False
         answer = "YES" if result else "NO"
         print(f"User interaction: {text} - {answer}")
         return result
@@ -64,10 +67,12 @@ class RumbootTestBase:
     def request_option(self, text, options):
         save_stdout = sys.stdout
         sys.stdout = sys.__stdout__
+        threading.current_thread.wait_user = True
         try:
             result = self.user_interaction.request_option(self, text, options)
         finally:
             sys.stdout = save_stdout
+            threading.current_thread.wait_user = False
         answer = options[result]
         print(f"User interaction: {text} - {answer}")
         return result
