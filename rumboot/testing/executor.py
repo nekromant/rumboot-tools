@@ -70,13 +70,13 @@ class TestExecutor:
         time_left = timeout_sec
         while time_left > 0:
             thread.join(timeout=1)
-            if not thread.isAlive():
+            if not thread.is_alive():
                 break
             if not thread.wait_user:
                 time_left -= 1
 
-        if thread.isAlive():
-            while thread.isAlive():
+        if thread.is_alive():
+            while thread.is_alive():
                 _async_raise(thread.ident, SystemExit)
                 time.sleep(0.1)
             thread.join()
