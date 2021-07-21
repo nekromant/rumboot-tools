@@ -85,6 +85,13 @@ kernel:
         user: <имя_пользователя>
         password: <пароль>
 
+openocd:
+        active: <признак_наличия_openocd> (True/False)
+        path_base: <путь_к_файлам_конфигураций_openocd> (относительно root_path)
+        config_path: <путь_к_файлу_конфигурации_openocd> (относительно path_base)
+        targets: [<список_целей_targets>]
+        jtag_init: [<список_jtag_соединений>]
+
 
 Таймаут на исполнение теста
 ---------------------------
