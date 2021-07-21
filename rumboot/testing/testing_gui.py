@@ -72,9 +72,9 @@ class TestExecutorWrapper(QObject, UserInteraction):
         self._thread.start()
 
     def terminate_testing_nonblocking(self):
-        if not self._stop_request:
-            self._log_func("\n*** Stop request has been send. Wait for the end of the current test...\n")
-            self._stop_request = True
+        prev_stop_request = self._stop_request
+        self._stop_request = True
+        return prev_stop_request
 
     @pyqtSlot()
     def _thread_proc(self):
@@ -149,8 +149,9 @@ class TestingDialog(QtWidgets.QDialog, Ui_TestingDialog):
         if code == QtWidgets.QDialog.Accepted:
             super().done(code)
         else:
-            self._executor_wrapper.terminate_testing_nonblocking()
-            self.dialog_button_box.setEnabled(False)
+            if not self._executor_wrapper.terminate_testing_nonblocking():
+                self._executor_wrapper_log_str("\n*** Stop request has been send. Wait for the end of the current test...\n")
+                self.dialog_button_box.setEnabled(False)
 
     @pyqtSlot()
     def _start_testing(self):
