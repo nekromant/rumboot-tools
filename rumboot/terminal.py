@@ -33,6 +33,7 @@ class terminal:
         ser = None
         cmdline = None
         xfer = None
+        xferparams = None
         desc_widget = None
         prog_widget = None
         shell_prompt = None
