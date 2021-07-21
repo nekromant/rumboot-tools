@@ -155,8 +155,11 @@ class xferManager(xferBase):
     xfers = {}
     xfer = None
     how = "xmodem"
+    params = None
 
     def __init__(self, terminal, params = {}):
+        if params == None:
+            params = {}
         if not "default" in params:
             params["default"] = "xmodem"
         if not "force_static_arp" in params:
