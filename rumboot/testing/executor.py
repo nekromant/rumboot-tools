@@ -19,37 +19,21 @@ class TestExecutor:
         self._log_stream = None
 
     def exec_test(self, test_desc):
-        timeout_sec = test_desc.test_class.timeout
-        if "timeout" in test_desc.params:
-            timeout_sec = test_desc.params["timeout"]
-
+        test_desc.status == TEST_STATUS_NOT_EXECUTED
         test_desc.log_text = None
+
         self._log_stream = io.StringIO()
         self._save_stdout = sys.stdout
         self._save_stderr = sys.stderr
         sys.stdout = self
         sys.stderr = self
         try:
-            thread = threading.Thread(target=self._test_execution_in_thread, args=[test_desc])
-            thread.wait_user = False
-            thread.start()
-            time_left = timeout_sec
-            while time_left > 0:
-                thread.join(timeout=1)
-                if not thread.isAlive():
-                    break
-                if not thread.wait_user:
-                    time_left -= 1
-
-            if thread.isAlive():
-                while thread.isAlive():
-                    _async_raise(thread.ident, SystemExit)
-                    time.sleep(0.1)
-                thread.join()
-                test_desc.status = TEST_STATUS_FAULT
-                print(f"The test has been terminated by timeout {timeout_sec} seconds")
-
-            if test_desc.status == TEST_STATUS_PASSED:
+            print(f"=== Processing {test_desc.full_name} ===")
+            if test_desc.suitable:
+                self._test_execution_with_log(test_desc)
+            if test_desc.status == TEST_STATUS_NOT_EXECUTED:
+                print("The test is not suitable for the environment")
+            elif test_desc.status == TEST_STATUS_PASSED:
                 print("Passed")
             elif test_desc.status == TEST_STATUS_FAULT:
                 print("Fault")
@@ -74,6 +58,30 @@ class TestExecutor:
     # IOBase
     def flush(self):
         pass
+
+    def _test_execution_with_log(self, test_desc):
+        timeout_sec = test_desc.test_class.timeout
+        if "timeout" in test_desc.params:
+            timeout_sec = test_desc.params["timeout"]
+
+        thread = threading.Thread(target=self._test_execution_in_thread, args=[test_desc])
+        thread.wait_user = False
+        thread.start()
+        time_left = timeout_sec
+        while time_left > 0:
+            thread.join(timeout=1)
+            if not thread.isAlive():
+                break
+            if not thread.wait_user:
+                time_left -= 1
+
+        if thread.isAlive():
+            while thread.isAlive():
+                _async_raise(thread.ident, SystemExit)
+                time.sleep(0.1)
+            thread.join()
+            test_desc.status = TEST_STATUS_FAULT
+            print(f"The test has been terminated by timeout {timeout_sec} seconds")
 
     def _test_execution_in_thread(self, test_desc):
         reset = self._test_context.resets[self._test_context.opts.reset[0]](self._test_context.opts) # ??? opts

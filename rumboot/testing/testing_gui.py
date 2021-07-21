@@ -82,7 +82,6 @@ class TestExecutorWrapper(QObject, UserInteraction):
         for test_desc in self._test_desc_list:
             if self._stop_request:
                 break
-            self._log_func(f"=== Processing {test_desc.full_name} ===\n") # ???
             self.progress.emit(test_index)
             test_index += 1
             self._executor.exec_test(test_desc)

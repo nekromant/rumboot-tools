@@ -64,19 +64,16 @@ class _TestingCLI(UserInteraction):
             self._reports.flush()
 
     def _execute_one_test(self, test_desc):
-        print(f"=== Processing {test_desc.full_name} ===")
         self._stat_all_tests += 1
-        if test_desc.suitable:
-            self._executor.exec_test(test_desc)
-            if test_desc.status == TEST_STATUS_PASSED:
-                self._stat_passed += 1
-            elif test_desc.status == TEST_STATUS_FAULT:
-                self._stat_fault += 1
-            else:
-                raise Exception("Unknown test status")
-        else:
+        self._executor.exec_test(test_desc)
+        if test_desc.status == TEST_STATUS_NOT_EXECUTED:
             self._stat_skipped += 1
-            print("The test is not suitable for the environment")
+        elif test_desc.status == TEST_STATUS_PASSED:
+            self._stat_passed += 1
+        elif test_desc.status == TEST_STATUS_FAULT:
+            self._stat_fault += 1
+        else:
+            raise Exception("Unknown test status")
         if self._reports:
             self._reports.add_test_result(test_desc)
 
