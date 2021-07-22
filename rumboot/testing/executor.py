@@ -60,6 +60,7 @@ class TestExecutor:
         pass
 
     def _test_execution_with_log(self, test_desc):
+        test_desc.status = TEST_STATUS_FAULT
         timeout_sec = test_desc.test_class.timeout
         if "timeout" in test_desc.params:
             timeout_sec = test_desc.params["timeout"]
@@ -88,7 +89,6 @@ class TestExecutor:
         term = terminal(self._test_context.env["connection"]["port"], self._test_context.env["connection"]["baud"])
         term.set_chip(self._test_context.chip)
         term.xfer.selectTransport(self._test_context.env["connection"]["transport"])
-        test_desc.status = TEST_STATUS_FAULT
         try:
             test = test_desc.test_class(test_desc.name, test_desc.full_name, term, reset, self._test_context.env, test_desc.params, self._user_interaction)
             if test.run():
