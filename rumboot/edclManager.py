@@ -2,6 +2,7 @@ import subprocess
 import os
 import platform
 import time
+import sys
 
 import netifaces as ni
 from netaddr import IPNetwork, IPAddress
@@ -9,7 +10,6 @@ from parse import parse
 
 from rumboot.edcl import edcl
 from rumboot.chipDb import ChipDb
-
 
 class edclmanager(object):
     edcl = None
@@ -98,7 +98,7 @@ class edclmanager(object):
         if platform.system() == 'Linux':
             cmd = "sudo arp -d %s" % params["ip"]
         elif platform.system() == 'Windows': 
-            cmd = "runas /user:Administrator arp /d %s" % params["ip"]
+            cmd = f'runas /user:{os.getenv("USERNAME")} "arp /d {params["ip"]}'
         else:
             raise("FATAL: Don't know how to add static ARP on %s", platform.system())
         os.system(cmd)
@@ -108,7 +108,9 @@ class edclmanager(object):
         if platform.system() == 'Linux':
             cmd = "sudo arp -s %s %s" % (params["ip"], params["mac"])
         elif platform.system() == 'Windows': 
-            cmd = "runas /user:Administrator arp /s %s %s" % (params["ip"], params["mac"].upper().replace(":","-"))
+            ip = params["ip"]
+            mac = params["mac"].upper().replace(":","-")
+            cmd = f'runas /user:{os.getenv("USERNAME")} "arp /s {ip} {mac}"'
         else:
             raise("FATAL: Don't know how to add static ARP on %s", platform.system())
         os.system(cmd)
@@ -133,7 +135,7 @@ class edclmanager(object):
                     continue
                 ret[result[0]]=result[1]
         elif  platform.system() == 'Windows': 
-            for l in stdout.decode().split("\n"):
+            for l in stdout.decode(sys.__stdout__.encoding).split("\n"):
                 result = parse("{:<} {:>} {:>}", l)
                 if result == None:
                     continue
@@ -173,7 +175,6 @@ class edclmanager(object):
         #Else, just probe it!
         for i in range(3):
             ret = self.scan(chip)
-            print(ret)
             if ret != []:
                 return ret
 
