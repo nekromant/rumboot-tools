@@ -60,6 +60,10 @@ connection:
         baud: <скорость> (115200/1000000/...)
         reset: <метод_ресета> ("none"/"pl2303"/...)
         transport: <транспорт> ("xmodem"/"edcl")
+        force_static_arp: <установка_маршрутизации_edcl_вручную> (True/False)
+        edcl_ip: <IP_адрес_для_edcl> (None/"192.168.1.2"/...)
+        edcl_mac: <MAC_адрес_для_edcl> (None/"ec:17:66:00:00:02"/...)
+        edcl_timeout: <таймаут_для_edcl> (None/7.0/...)
 
 gui: <признак_запуска_gui> (True/False)
 

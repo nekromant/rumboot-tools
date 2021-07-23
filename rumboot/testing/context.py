@@ -67,6 +67,18 @@ class TestContext:
         self.env["connection"]["transport"] = self.env["connection"].get("transport", "xmodem")
         if self.opts.edcl:
             self.env["connection"]["transport"] = "edcl"
+        self.env["connection"]["force_static_arp"] = self.env["connection"].get("force_static_arp", False)
+        if self.opts.force_static_arp:
+            self.env["connection"]["force_static_arp"] = True
+        self.env["connection"]["edcl_ip"] = self.env["connection"].get("edcl_ip", None)
+        if self.opts.edcl_ip:
+            self.env["connection"]["edcl_ip"] = self.opts.edcl_ip
+        self.env["connection"]["edcl_mac"] = self.env["connection"].get("edcl_mac", None)
+        if self.opts.edcl_mac:
+            self.env["connection"]["edcl_mac"] = self.opts.edcl_mac
+        self.env["connection"]["edcl_timeout"] = self.env["connection"].get("edcl_timeout", None)
+        if self.opts.edcl_timeout:
+            self.env["connection"]["edcl_timeout"] = self.opts.edcl_timeout
 
         root_path = self.env.get("root_path")
         if self.opts.root_path:

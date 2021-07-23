@@ -86,9 +86,20 @@ class TestExecutor:
 
     def _test_execution_in_thread(self, test_desc):
         reset = self._test_context.resets[self._test_context.opts.reset[0]](self._test_context.opts) # ??? opts
-        term = terminal(self._test_context.env["connection"]["port"], self._test_context.env["connection"]["baud"])
+
+        params_for_xfers = {
+            "default": self._test_context.env["connection"]["transport"],
+            "force_static_arp": self._test_context.env["connection"]["force_static_arp"],
+            "edcl_timeout": self._test_context.env["connection"]["edcl_timeout"]
+        }
+        if self._test_context.env["connection"]["edcl_ip"]:
+            params_for_xfers["edcl_ip"] = self._test_context.env["connection"]["edcl_ip"]
+        if self._test_context.env["connection"]["edcl_mac"]:
+            params_for_xfers["edcl_mac"] = self._test_context.env["connection"]["edcl_mac"]
+        term = terminal(self._test_context.env["connection"]["port"], self._test_context.env["connection"]["baud"], xferparams=params_for_xfers)
         term.set_chip(self._test_context.chip)
         term.xfer.selectTransport(self._test_context.env["connection"]["transport"])
+
         try:
             test = test_desc.test_class(test_desc.name, test_desc.full_name, term, reset, self._test_context.env, test_desc.params, self._user_interaction)
             if test.run():
