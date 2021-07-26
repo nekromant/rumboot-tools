@@ -79,6 +79,13 @@ uboot:
         mem_setup_cmd: <команда_инициализации_памяти> (например, run setmem)
         mem_ram_addr: <адрес_ОЗУ_для_тестов>
         mem_ram_size: <размер_ОЗУ_длф_тестов>
+        sd_card_active: <признак_наличия_sd_card> (True/False)
+        sd_card_count: <количество_sd_card>
+        sf_probe_active: <признак_наличия_spi_flash> (True/False)
+        sf_probe_list:
+                - addr: <адрес_на_шине> (0:0/...)
+                  detect_name: <строка_определения> ("SF: Detected m25p32 with page size 256 Bytes, erase size 64 KiB, total 4 MiB")
+
 
 kernel:
         active: <признак_наличия_linux_kernel> (True/False)
