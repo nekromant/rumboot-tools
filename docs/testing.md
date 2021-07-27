@@ -85,7 +85,8 @@ uboot:
         sf_probe_list:
                 - addr: <адрес_на_шине> (0:0/...)
                   detect_name: <строка_определения> ("SF: Detected m25p32 with page size 256 Bytes, erase size 64 KiB, total 4 MiB")
-
+        sram_active: <признак_наличия_SRAM> (True/False)
+        nor_active: <признак_наличия_NOR> (True/False)
 
 kernel:
         active: <признак_наличия_linux_kernel> (True/False)
