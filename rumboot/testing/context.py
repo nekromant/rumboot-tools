@@ -20,10 +20,12 @@ class TestContext:
 
     def process_cmdline(self):
         parser = argparse.ArgumentParser(prog="<rumboot test system>", description="Processing all tests")
-        parser.add_argument("-C", "--directory", dest = "root_path", help="test root directory", required=False)
-        parser.add_argument("--env", dest = "env_path", help="environment yaml file", required=False)
-        parser.add_argument("--report", dest = "report_file_path", help="JUnit report file", required=False)
-        parser.add_argument("--gui", dest = "gui", help = "start GUI mode", action="store_true", default=False)
+        parser.add_argument("-C", "--directory", dest="root_path", help="test root directory", required=False)
+        parser.add_argument("--env", dest="env_path", help="environment yaml file", required=False)
+        parser.add_argument("--report", dest="report_file_path", help="JUnit report file", required=False)
+        parser.add_argument("--gui", dest="gui", help="start GUI mode", action="store_true", default=False)
+        parser.add_argument("--tests-enabled", dest="tests_enabled", help="enabled test templates", required=False, nargs="*")
+        parser.add_argument("--tests-disabled", dest="tests_disabled", help="disabled test templates", required=False, nargs="*")
 
         helper = arghelper()
         helper.add_terminal_opts(parser) # ???
@@ -94,6 +96,14 @@ class TestContext:
             self.env["report_file_path"] = os.path.abspath(self.env["report_file_path"])
 
         self.env["gui"] = self.opts.gui
+
+        self.env["tests"] = self.env.get("tests", {})
+        self.env["tests"]["enabled"] = self.env["tests"].get("enabled", [])
+        if self.opts.tests_enabled:
+            self.env["tests"]["enabled"] = self.opts.tests_enabled
+        self.env["tests"]["disabled"] = self.env["tests"].get("disabled", [])
+        if self.opts.tests_disabled:
+            self.env["tests"]["disabled"] = self.opts.tests_disabled
 
     def make_reports(self):
         pass
