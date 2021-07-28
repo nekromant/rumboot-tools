@@ -25,8 +25,9 @@ setup(
         "netifaces", 
         "netaddr",
         "getmac",
-        "pyusb>=1.0.0",
-        "heatshrink2==0.10.0"
+        "pyusb",
+        "heatshrink2",
+        "pyqt5"
         ],
 
     extras_require = {
