@@ -98,7 +98,8 @@ class edclmanager(object):
         if platform.system() == 'Linux':
             cmd = "sudo arp -d %s" % params["ip"]
         elif platform.system() == 'Windows': 
-            cmd = f'runas /user:{os.getenv("USERNAME")} "arp /d {params["ip"]}'
+            #cmd = f'runas /user:{os.getenv("USERNAME")} "arp /d {params["ip"]}'
+            cmd = f'set __COMPAT_LAYER=RunAsAdmin && arp /d {params["ip"]}'
         else:
             raise("FATAL: Don't know how to add static ARP on %s", platform.system())
         os.system(cmd)
@@ -110,7 +111,8 @@ class edclmanager(object):
         elif platform.system() == 'Windows': 
             ip = params["ip"]
             mac = params["mac"].upper().replace(":","-")
-            cmd = f'runas /user:{os.getenv("USERNAME")} "arp /s {ip} {mac}"'
+#            cmd = f'runas /user:{os.getenv("USERNAME")} "arp /s {ip} {mac}"'
+            cmd = f'set __COMPAT_LAYER=RunAsAdmin && arp /s {ip} {mac}'
         else:
             raise("FATAL: Don't know how to add static ARP on %s", platform.system())
         os.system(cmd)
@@ -135,7 +137,7 @@ class edclmanager(object):
                     continue
                 ret[result[0]]=result[1]
         elif  platform.system() == 'Windows': 
-            for l in stdout.decode(sys.__stdout__.encoding).split("\n"):
+            for l in stdout.decode("cp65001").split("\n"):
                 result = parse("{:<} {:>} {:>}", l)
                 if result == None:
                     continue

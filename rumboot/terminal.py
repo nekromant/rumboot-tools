@@ -16,6 +16,9 @@ import select
 if sys.platform != "win32":
 	import tty
 	import termios
+else:
+    import codecs
+    import ctypes
 
 class terminal:
         verbose=True
@@ -38,7 +41,40 @@ class terminal:
         prog_widget = None
         shell_prompt = None
 
+        def __fixCodePage(self):
+            if sys.__stdout__.encoding != 'cp65001':
+                os.system("echo off")
+                os.system("chcp 65001") # Change active page code
+                sys.__stdout__.write("\x1b[A") # Removes the output of chcp command
+                sys.__stdout__.flush()
+            LF_FACESIZE = 32
+            STD_OUTPUT_HANDLE = -11
+    
+            class COORD(ctypes.Structure):
+                _fields_ = [("X", ctypes.c_short), ("Y", ctypes.c_short)]
+    
+            class CONSOLE_FONT_INFOEX(ctypes.Structure):
+                _fields_ = [("cbSize", ctypes.c_ulong),
+                ("nFont", ctypes.c_ulong),
+                ("dwFontSize", COORD),
+                ("FontFamily", ctypes.c_uint),
+                ("FontWeight", ctypes.c_uint),
+                ("FaceName", ctypes.c_wchar * LF_FACESIZE)]
+    
+            font = CONSOLE_FONT_INFOEX()
+            font.cbSize = ctypes.sizeof(CONSOLE_FONT_INFOEX)
+            font.nFont = 12
+            font.dwFontSize.X = 7
+            font.dwFontSize.Y = 12
+            font.FontFamily = 54
+            font.FontWeight = 400
+            font.FaceName = "Lucida Console"
+            handle = ctypes.windll.kernel32.GetStdHandle(STD_OUTPUT_HANDLE)
+            ctypes.windll.kernel32.SetCurrentConsoleFontEx(handle, ctypes.c_long(False), ctypes.pointer(font))
+
         def __init__(self, port, speed, xferparams = None):
+            if sys.platform == 'win32':
+                self.__fixCodePage()
             self.port = port
             self.speed = speed
             self.reopen(port, speed, xferparams)
