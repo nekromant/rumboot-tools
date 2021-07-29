@@ -26,7 +26,7 @@ setup(
         "netaddr",
         "getmac",
         "heatshrink2",
-        "pyqt5"
+        "pyqt5",
         "pygpiotools"
         ],
 
