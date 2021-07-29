@@ -25,9 +25,9 @@ setup(
         "netifaces", 
         "netaddr",
         "getmac",
-        "pyusb",
         "heatshrink2",
         "pyqt5"
+        "pygpiotools"
         ],
 
     extras_require = {
