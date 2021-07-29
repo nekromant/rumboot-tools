@@ -95,12 +95,12 @@ class arghelper():
                         required=False)
         group.add_argument("-p", "--port",
                         help="Serial port to use",
-                        nargs=1, metavar=('port'),
+                        metavar=('port'),
                         required=False),
         group.add_argument("-b", "--baud",
                         help="Serial line speed",
                         type=int,
-                        nargs=1, metavar=('speed'),
+                        metavar=('speed'),
                         required=False)
         group.add_argument("-e", '--edcl',
                         help="Use edcl for data uploads (when possible)",
@@ -143,14 +143,14 @@ class arghelper():
         for name, sequence in rfactory.classes.items():
             if hasattr(sequence, "add_argparse_options"):
                 g = parser.add_argument_group(name + " reset sequence options")
-                sequence.add_argparse_options(g)
+                sequence.add_argparse_options(sequence, g)
         
     def detect_terminal_options(self, opts, chip):
         # Now, let's update default options, if needed
         if opts.port == None:
-            opts.port = [ self.get_default_port(chip) ]
+            opts.port = self.get_default_port(chip)
         if opts.baud == None:
-            opts.baud = [ self.get_default_baud(chip) ]
+            opts.baud = self.get_default_baud(chip)
 
     def detect_chip_type(self, opts, chips, formats):
         c = None

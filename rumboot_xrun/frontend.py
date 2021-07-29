@@ -76,7 +76,7 @@ def cli():
         print("ERROR: Failed to auto-detect chip type")
         return 1
     if opts.baud == None:
-        opts.baud = [ c.baudrate ]
+        opts.baud = c.baudrate
 
     params_for_xfers = {
         "force_static_arp" : opts.force_static_arp,
@@ -92,8 +92,8 @@ def cli():
     if opts.edcl_timeout:
         params_for_xfers["edcl_timeout"] = opts.edcl_timeout
 
-    reset = resets[opts.reset[0]](opts)
-    term = terminal(opts.port[0], opts.baud[0], xferparams = params_for_xfers)
+    term = terminal(opts.port, opts.baud, xferparams = params_for_xfers)
+    reset = resets[opts.reset[0]](term, vars(opts))
     term.set_chip(c)
     term.plusargs = plusargs
 
@@ -107,11 +107,17 @@ def cli():
         term.logstream = opts.log
 
     print("Reset method:               %s" % (reset.name))
-    print("Baudrate:                   %d bps" % int(opts.baud[0]))
-    print("Port:                       %s" % opts.port[0])
+    print("Baudrate:                   %d bps" % int(opts.baud))
+    print("Port:                       %s" % opts.port)
     print("Preferred data transport:   %s" % params_for_xfers["default"])
 
-    reset.resetToHost()
+    try:
+        reset.resetToHost()
+    except:
+        print("WARN: Reset method doesn't support HOST mode switching")
+        print("WARN: If things don't work - check jumpers!")
+        reset.reset()
+
     term.add_binaries(opts.file)
     term.add_dumps(dumps)
     term.replay_till_the_end = opts.replay_no_exit
