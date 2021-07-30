@@ -56,7 +56,7 @@ class TestContext:
         self.env["connection"] = self.env.get("connection", {})
         self.env["connection"]["port"] = self.env["connection"].get("port", None)
         if self.opts.port:
-            self.env["connection"]["port"] = self.opts.port[0]
+            self.env["connection"]["port"] = self.opts.port
         if not self.env["connection"]["port"]:
             raise Exception("Serial port is not defined")
 

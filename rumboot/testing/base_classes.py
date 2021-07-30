@@ -24,17 +24,22 @@ class RumbootTestBase:
     def suitable(self, env, params):
         return RumbootTestBase._suitable(self.requested, env)
 
-    def __init__(self, name, full_name, terminal, resetSeq, env, params, user_interaction):
+    def __init__(self, name, full_name, terminal, reset_seq, env, params, user_interaction):
         self.name = name
         self.full_name = full_name
         self.terminal = terminal
-        self.resetSeq = resetSeq
+        self.reset_seq = reset_seq
         self.env = env
         self.params = params
         self.user_interaction = user_interaction
 
     def run(self):
-        self.resetSeq.resetToHost()
+        try:
+            self.reset_seq.resetToHost()
+        except:
+            print("WARN: Reset method doesn't support HOST mode switching")
+            print("WARN: If things don't work - check jumpers!")
+            self.reset_seq.reset()
         return True
 
     # UserInteraction
