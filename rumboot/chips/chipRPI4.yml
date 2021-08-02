@@ -9,6 +9,7 @@ warning: ~
 welcome: "U-Boot> "
 memories: {}
 dumps: {}
+spl_address: 0x0
 hacks:
   skipsync: True  # Doesn't Send U\r\n\r\n at the start. All legacy stuff
   edclArpBug: False  # EDCL doesn't have a valid IP, needs a static ARP entry (mb7707)

@@ -11,14 +11,15 @@ required:
   - dumps
   - hacks
   - edcl
+  - spl_address
 
 optional:
   - welcome
   - stub
   - skipsync
-  - spl_address
   - romdump
   - flashrom
+  - mt12505
 
 hacks:
   - skipsync

@@ -11,9 +11,9 @@ class base:
     silent = False
     resetdelay = 1
     supported = ["POWER", "RESET"]
+    chip = None
 
     def __init__(self, terminal, opts):
-        print(opts)
         if opts["port"].find("socket") != -1:
             self.silent = True
         self._states = {}
@@ -31,11 +31,23 @@ class base:
         if self.name == "None" and not self.silent:
             print("Please, power-cycle board")
 
+    def set_chip(self, chip):
+        self.chip = chip
+
+    def get_options(self):
+        return {}
+
+    def add_argparse_options(this, parser):
+        for key,opts in this.get_options(this).items():
+            parser.add_argument("--" + key,
+                    **opts)
 
 # Legacy API wrappers
     def power(self, on):
         self["POWER"] = on
 
+#Reset is assumed active-HIGH (like on chips)
+#Power is assumed active-HIGH (like on most DC-DC)
     def reset(self):
         self["RESET"] = 1
         self["POWER"] = 1
@@ -50,18 +62,3 @@ class base:
     def resetToNormal(self, flags = []):
         self["HOST"] = 0
         self.reset()
-
-    def get_options(self):
-        return {}
-
-    def add_argparse_options(this, parser):
-        for key,opts in this.get_options(this).items():
-            print(key, opts)
-            parser.add_argument("--" + key,
-                    **opts)
-
-#print("Hello")
-#b = base(None, {"port" : "/dev/ttyUSB0"})
-#b.power(1)
-#print(b["POWER"])
-#print(b._states)

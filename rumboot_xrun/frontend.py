@@ -95,6 +95,7 @@ def cli():
     term = terminal(opts.port, opts.baud, xferparams = params_for_xfers)
     reset = resets[opts.reset[0]](term, vars(opts))
     term.set_chip(c)
+    reset.set_chip(c)
     term.plusargs = plusargs
 
     try:

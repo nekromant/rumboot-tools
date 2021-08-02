@@ -7,6 +7,7 @@ welcome: host
 baudrate: 115200
 gdb: gdb
 warning: ~
+spl_address: 0x40000
 memories:
   i2c0-0x50: "rumboot-basis-PostProduction-updater-i2c0-0x50.bin"
   i2c0-0x51: "rumboot-basis-PostProduction-updater-i2c0-0x51.bin"
@@ -28,4 +29,14 @@ hacks:
   noxmodem: False  # Chip lacks xmodem implementation
   noedcl: True  # Chip lacks edcl implementation
 edcl: ~
+mt12505:
+  default: [0, 0, 0, 0, 0, 0, 0, 0]
+  mapping:
+    NKEY: 0
+    TMODE: 1  
+    RESET: 2
+    SELFTEST: 3
+    HOST: 4
+    UART_SPEED: 5
+    POWER: 7
 ...
