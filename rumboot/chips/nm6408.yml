@@ -6,7 +6,6 @@ chip_rev: 1
 welcome: host
 baudrate: 115200
 spl_address: 0
-gdb: gdb
 warning: >
   This chip has a legacy ROM bootloader.
   RumBoot is flashed onto SPI flash and executed from internal memory

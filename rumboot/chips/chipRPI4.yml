@@ -1,9 +1,8 @@
 --- !Chip
-name: rti4
+name: rpi4
 part: BCM2711 (Raspberry Pi 4)
 chip_id: 255
 chip_rev: 2
-gdb: gdb
 baudrate: 115200
 warning: ~
 welcome: "U-Boot> "

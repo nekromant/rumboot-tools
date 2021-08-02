@@ -3,7 +3,6 @@ name: zed
 part: Xilinx Zynq series (Zed Board, Tang Hex, ...)
 chip_id: 255
 chip_rev: 1
-gdb: gdb
 welcome: "Zynq> "
 baudrate: 115200
 warning: ~

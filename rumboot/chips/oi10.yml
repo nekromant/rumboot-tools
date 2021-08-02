@@ -5,9 +5,7 @@ chip_id: 4
 chip_rev: 1
 welcome: host
 baudrate: 115200
-stub: "rumboot-oi10-PostProduction-gdb-stub.bin"
 romdump: "oi10-v1.dmp"
-gdb: "powerpc-rcm-elf-gdb"
 spl_address: 0xC0000000
 warning: ~
 memories: {}

@@ -20,7 +20,6 @@ setup(
         "xmodem", 
         "tqdm", 
         "pyyaml", 
-        "gdbgui", 
         "hexdump",
         "netifaces", 
         "netaddr",
