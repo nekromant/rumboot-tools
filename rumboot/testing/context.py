@@ -28,8 +28,8 @@ class TestContext:
         parser.add_argument("--tests-disabled", dest="tests_disabled", help="disabled test templates", required=False, nargs="*")
 
         helper = arghelper()
-        helper.add_terminal_opts(parser) # ???
-        helper.add_resetseq_options(parser, self.resets) # ???
+        helper.add_terminal_opts(parser)
+        helper.add_resetseq_options(parser, self.resets)
         helper.add_file_handling_opts(parser) # ??? file
 
         self.opts = parser.parse_args()
@@ -82,6 +82,20 @@ class TestContext:
         if self.opts.edcl_timeout:
             self.env["connection"]["edcl_timeout"] = self.opts.edcl_timeout
 
+        self.env["reset"] = self.env.get("reset", {})
+        self.env["reset"]["name"] = self.env["reset"].get("name", "none")
+        if self.opts.reset != "none":
+            self.env["reset"]["name"] = self.opts.reset[0]
+        opts_vars = vars(self.opts)
+        for sequence in self.resets.classes.values():
+            if hasattr(sequence, "get_options"):
+                options = sequence.get_options(sequence)
+                for key in options.keys():
+                    right_key = key.replace("-", "_")
+                    if opts_vars[right_key] or not right_key in self.env["reset"]:
+                        self.env["reset"][right_key] = opts_vars[right_key]
+        self.env["reset"]["port"] = self.env["connection"]["port"]
+
         root_path = self.env.get("root_path")
         if self.opts.root_path:
             root_path = self.opts.root_path
@@ -104,6 +118,3 @@ class TestContext:
         self.env["tests"]["disabled"] = self.env["tests"].get("disabled", [])
         if self.opts.tests_disabled:
             self.env["tests"]["disabled"] = self.opts.tests_disabled
-
-    def make_reports(self):
-        pass

@@ -98,7 +98,7 @@ class TestExecutor:
         term.set_chip(self._test_context.chip)
         term.xfer.selectTransport(self._test_context.env["connection"]["transport"])
 
-        reset = self._test_context.resets[self._test_context.opts.reset[0]](term, vars(self._test_context.opts)) # ??? opts
+        reset = self._test_context.resets[self._test_context.env["reset"]["name"]](term, self._test_context.env["reset"])
 
         try:
             test = test_desc.test_class(test_desc.name, test_desc.full_name, term, reset, self._test_context.env, test_desc.params, self._user_interaction)
