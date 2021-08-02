@@ -56,15 +56,3 @@ class pl2303(base):
                     "action"  : 'store_true'
                 }
             }
-
-
-#    def add_argparse_options(parser):
-#        parser.add_argument("-P", "--pl2303-port",
-#                            help="PL2303 physical port",
-#                            nargs=1, metavar=('value'),
-#                            required=False)
-#        parser.add_argument("--pl2303-invert",
-#                            help="Invert all pl2303 gpio signals",
-#                            action='store_true',
-#                            default = False,
-#                            required=False)
