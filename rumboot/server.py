@@ -142,8 +142,12 @@ class server:
             # Reset if using a nested damon
             self.term.reopen()
             self.serial = self.term.serial()
-            # Reset if using a local resetter
-            self.rst.resetToHost()
+
+            try:
+                self.rst.resetToHost()
+            except:
+                self.rst.reset()
+
             if self.binaries:
                 text = b"U\nrumboot-daemon: Preloading your board board...\n\n\n"
                 client["connection"].sendall(text)
@@ -166,7 +170,10 @@ class server:
             print("Now serving client: ", client["dns"])
         except(IndexError):
             self.worker = None
-            self.rst.power(0) # Power off board
+            try:
+                self.rst.power(0) # Power off board
+            except:
+                pass #No power control, no problem. It's optional
 
     def queue_client(self, connection, client_address):
         try:
@@ -203,7 +210,10 @@ class server:
         self.sock.close()
 
     def loop(self):
-        self.rst.power(0) # Power off board
+        try:
+            self.rst.power(0) # Power off board, if can
+        except:
+            pass
         try:
             self.sock.listen()
             self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)

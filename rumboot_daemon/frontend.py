@@ -28,29 +28,13 @@ def cli():
                         required=False)
     opts = parser.parse_args()
 
-    c = helper.detect_chip_type(opts, chips, formats)
-    if c == None:
-        c = chips["basis"]
-        return 1
-        
-    print("Detected chip:    %s (%s)" % (c.name, c.part))
-    if c == None:
-        print("ERROR: Failed to auto-detect chip type")
-        return 1
-    if opts.baud == None:
-        opts.baud = [ c.baudrate ]
+    chip, term, reset = helper.create_core_stuff_from_options(opts)
 
-    reset = resets[opts.reset[0]](opts)
+    c = helper.detect_chip_type(opts, chips, formats)
 
     if opts.log:
         term.logstream = opts.log
 
-    print("Reset method:     %s" % (reset.name))
-    print("Baudrate:         %d bps" % int(opts.baud[0]))
-    print("Serial Port:      %s" % opts.port[0])
-    print("Listen address:   %s" % opts.listen)
-
-    term = terminal(opts.port[0], opts.baud[0])
     srv = server(term, opts.listen[0])
     srv.set_reset_seq(reset)
 
