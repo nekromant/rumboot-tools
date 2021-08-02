@@ -8,7 +8,6 @@ This repository contains several tools
 
 * _rumboot-packimage_ - Adds/prints/updates checksums in image files
 * _rumboot-xrun_ - Directly executes images via serial line or network
-* _rumboot-gdb_ - Debug your binaries, even without JTAG
 * _rumboot-xflash_ - Write on-board memories via serial line or network (Simple interface)
 * _rumboot-flashrom_ - Wrapper around flashrom tool for advanced SPI flash programming
 * _rumboot-daemon_ - Provides network shared access to different boards
@@ -613,51 +612,6 @@ The -R options convenience option invokes automatically _cmake --build example.a
 ##### Automatic stack trace decoding
 
 rumboot-xrun provides a mechanism to decode runtime stack traces. To use this functionality, you have to place a .dmp file with disassembly in the same directory and with the same name as the .bin file
-
-
-### rumboot-gdb
-#### Description
-
-This tool uploads gdb stub to the target board and starts _gdb_ or _gdbgui_ for debugging. The board is reset if necessary. The stub provides easy access to debugging even without using JTAG. Unlike most tools, this tool accepts ELF binaries, not .bin files. For debugging you app should be compiled with _-gdwarf-2_ option.
-
-Limitations:
-
-- GDB stub occupies some of the internal memory and MUST own some of the exception vectors. If your apps uses IRQs, see notes below
-- At the moment only _powerpc_ is supported (mm7705, oi10)
-- No SMP debugging possible
-- Printf's in your app should either be disabled, or redirected via a gdbmon syscall
-- Since getting Chip Id from supplied elf is difficult, user should always specify target chip id manually
-- GDB 'run' command doesn't work correctly and may crash gdb. Use 'load' and 'continue' to start the application
-
-#### Options 
-
-```
-~# rumboot-gdb --help
-
-```
-```
-  rumboot-gdb -c oi10 -f rumboot-oi10-PostProduction-simple-iram-hello
-```
-
-##### Rebuild the application file, then launch commandline gdb 
-```
-  rumboot-gdb -c oi10 -Rf rumboot-oi10-PostProduction-simple-iram-hello
-```
-
-##### Rebuild the application file, launch commandline gdb, load the file into memory
-```
-  rumboot-gdb -c oi10 -Rf rumboot-oi10-PostProduction-simple-iram-hello -L
-```
-
-##### Same as the above, but start with a graphical user interface (gdbgui)
-```
-  rumboot-gdb -c oi10 -Rf rumboot-oi10-PostProduction-simple-iram-hello -LG
-```
-
-##### Rebuild the application file, launch commandline gdb, load the file into memory and start it
-```
-  rumboot-gdb -c oi10 -Rf rumboot-oi10-PostProduction-simple-iram-hello -E
-```
 
 ### rumboot-xflash
 #### Description
