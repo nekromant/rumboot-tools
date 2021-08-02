@@ -1,8 +1,5 @@
-from rumboot.chipDb import ChipDb
-from rumboot.ImageFormatDb import ImageFormatDb
-from rumboot.resetSeq import ResetSeqFactory
 from rumboot.cmdline import arghelper
-from rumboot.terminal import terminal
+from rumboot.resetSeq import ResetSeqFactory
 import os
 import sys
 import argparse
@@ -11,15 +8,11 @@ import rumboot
 from parse import *
 
 def cli():
-    resets  = ResetSeqFactory("rumboot.resetseq")
-    formats = ImageFormatDb("rumboot.images")
-    chips   = ChipDb("rumboot.chips")
-
     parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter,
                                      description="rumboot-xrun {} - RumBoot X-Modem execution tool\n".format(rumboot.__version__) +
                                     rumboot.__copyright__)
     helper = arghelper()
-
+    resets  = ResetSeqFactory("rumboot.resetseq")
     helper.add_file_handling_opts(parser, True)
     helper.add_terminal_opts(parser)
     helper.add_resetseq_options(parser, resets)
@@ -67,50 +60,17 @@ def cli():
             if ret:
                 plusargs[ret[0]] = True
 
-    c = helper.detect_chip_type(opts, chips, formats)
-    if c == None:
-        return 1
+    chip, term, reset = helper.create_core_stuff_from_options(opts)
 
-    print("Detected chip:    %s (%s)" % (c.name, c.part))
-    if c == None:
-        print("ERROR: Failed to auto-detect chip type")
-        return 1
-    if opts.baud == None:
-        opts.baud = c.baudrate
-
-    params_for_xfers = {
-        "force_static_arp" : opts.force_static_arp,
-        "default" : "xmodem"
-    }
-
-    if opts.edcl:
-        params_for_xfers["default"] = "edcl"
-    if opts.edcl_ip:
-        params_for_xfers["edcl_ip"] = opts.edcl_ip
-    if opts.edcl_mac:
-        params_for_xfers["edcl_mac"] = opts.edcl_mac
-    if opts.edcl_timeout:
-        params_for_xfers["edcl_timeout"] = opts.edcl_timeout
-
-    term = terminal(opts.port, opts.baud, xferparams = params_for_xfers)
-    reset = resets[opts.reset[0]](term, vars(opts))
-    term.set_chip(c)
-    reset.set_chip(c)
     term.plusargs = plusargs
-
     try:
-        romdump = open(dump_path + c.romdump, "r")
+        romdump = open(dump_path + chip.romdump, "r")
         term.add_dumps({'rom' : romdump})
     except:
         pass
 
     if opts.log:
         term.logstream = opts.log
-
-    print("Reset method:               %s" % (reset.name))
-    print("Baudrate:                   %d bps" % int(opts.baud))
-    print("Port:                       %s" % opts.port)
-    print("Preferred data transport:   %s" % params_for_xfers["default"])
 
     try:
         reset.resetToHost()

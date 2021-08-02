@@ -2,6 +2,11 @@ import argparse
 import os
 import sys
 
+from rumboot.chipDb import ChipDb
+from rumboot.ImageFormatDb import ImageFormatDb
+from rumboot.resetSeq import ResetSeqFactory
+from rumboot.terminal import terminal
+
 try:
     import yaml
 except:
@@ -169,3 +174,42 @@ class arghelper():
 
         self.detect_terminal_options(opts, c)
         return c
+
+    def create_core_stuff_from_options(self, opts):
+            resets  = ResetSeqFactory("rumboot.resetseq")
+            formats = ImageFormatDb("rumboot.images")
+            chips   = ChipDb("rumboot.chips")
+            c = self.detect_chip_type(opts, chips, formats)
+
+            print("Detected chip:    %s (%s)" % (c.name, c.part))
+
+            if c == None:
+                raise Exception("ERROR: Failed to auto-detect chip type")
+            if opts.baud == None:
+                opts.baud = c.baudrate
+
+            params_for_xfers = {
+                "force_static_arp" : opts.force_static_arp,
+                "default" : "xmodem"
+            }
+
+            if opts.edcl:
+                params_for_xfers["default"] = "edcl"
+            if opts.edcl_ip:
+                params_for_xfers["edcl_ip"] = opts.edcl_ip
+            if opts.edcl_mac:
+                params_for_xfers["edcl_mac"] = opts.edcl_mac
+            if opts.edcl_timeout:
+                params_for_xfers["edcl_timeout"] = opts.edcl_timeout
+
+            term = terminal(opts.port, opts.baud, xferparams = params_for_xfers)
+            reset = resets[opts.reset[0]](term, vars(opts))
+            term.set_chip(c)
+            reset.set_chip(c)
+
+            print("Reset method:               %s" % (reset.name))
+            print("Baudrate:                   %d bps" % int(opts.baud))
+            print("Port:                       %s" % opts.port)
+            print("Preferred data transport:   %s" % params_for_xfers["default"])
+
+            return c, term, reset
