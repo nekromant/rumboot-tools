@@ -14,6 +14,7 @@ setup(
     version = rumboot.__version__,
     packages=find_packages(),
     install_requires = [
+        "pyusb", #HACK: Needed for pygpiotools installation for some weird pip reason
         "pyserial", 
         "pyft232", 
         "parse", 

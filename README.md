@@ -1,5 +1,7 @@
 # RumBoot Loader Tools
 
+[![Build status](https://ci.appveyor.com/api/projects/status/3qvj0prnqc2ebnje/branch/master?svg=true)](https://ci.appveyor.com/project/nekromant/pygpiotools/branch/master)
+
 ## Summary
 This repository is home to a set of tools to create, update and run rumboot v1, v2 and other images
 This repository contains several tools
