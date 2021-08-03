@@ -8,9 +8,9 @@ environment:
 install:
   - "%PYTHON%\\python.exe -m pip install parse"
   - "%PYTHON%\\python.exe -m pip install wheel . -v"
-
-build: 
   - "%PYTHON%\\python.exe scripts\\winpackage.py"
+
+build: off
 
 #test_script:
 #  - "%PYTHON%\\python.exe test.py"
