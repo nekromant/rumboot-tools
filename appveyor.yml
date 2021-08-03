@@ -10,15 +10,15 @@ environment:
     - PY: "-3.9-x64"
 
 install:
-  - "py %PYTHON% -m pip install parse"
+  - "py %PY% -m pip install parse"
 
 build: off
 
 test_script:
-  - "py %PYTHON% -m pip install ."
+  - "py %PY% -m pip install ."
 
 after_test:
-  - py %PYTHON% scripts\\winpackage.py"
+  - py %PY% scripts\\winpackage.py"
 
 artifacts:
   - path: "*.zip"
