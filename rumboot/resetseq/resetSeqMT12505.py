@@ -2,7 +2,6 @@ import sys
 import time
 from rumboot.resetseq.resetSeqBase import base
 import pygpiotools
-import ft232
 import os
 
 #   MT125.05. Shift register on CBUS pins
@@ -60,6 +59,9 @@ class mt12505(base):
         return super().set_chip(chip)
 
     def __init__(self, terminal, opts):
+        # Lazy-init FT232. 
+        # On windows systems, if D2XX drivers are not installed
+        import ft232
         # HACK: On some linux systems (debian buster) we can't free libftdi context
         # HACK: or things will segfault
         # HACK: This hack causes intentional memory leak, but prevents segfault
