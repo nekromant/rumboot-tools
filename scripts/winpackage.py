@@ -20,12 +20,19 @@ os.mkdir(f"{packagedir}\wheelhouse")
 print("Building windows packages...")
 os.system("pip wheel .")
 
-script = open(f"{packagedir}/install.cmd", "w+")
-for f in glob.glob("*.whl"):
+script = open(f"{packagedir}/install_system.cmd", "w+")
+wheels = glob.glob("*.whl")
+for f in wheels:
     os.rename(f, f"{packagedir}\wheelhouse\\{f}")
     script.write(f"pip install --no-index --no-deps wheelhouse\\{f}\n\r")
 script.close()
 
+script = open(f"{packagedir}/install_venv.cmd", "w+")
+script.write("python -m venv venv")
+script.write("venv\\Scripts\\activate.bat")
+for f in wheels:
+    script.write(f"pip install --no-index --no-deps wheelhouse\\{f}\n\r")
+script.close()
 
 def zipdir(path, ziph):
     # ziph is zipfile handle
