@@ -11,16 +11,14 @@ environment:
 
 install:
   - "%PYTHON%\\python.exe -m pip install parse"
-  - "%PYTHON%\\python.exe -m pip install ."
-  - "%PYTHON%\\python.exe scripts\\winpackage.py"
 
 build: off
 
-#test_script:
-#  - "%PYTHON%\\python.exe test.py"
+test_script:
+  - "%PYTHON%\\python.exe -m pip install ."
 
-#after_test:
-#  - "%PYTHON%\\python.exe setup.py bdist_wheel"
+after_test:
+  - "%PYTHON%\\python.exe scripts\\winpackage.py"
 
 artifacts:
   - path: "*.zip"
