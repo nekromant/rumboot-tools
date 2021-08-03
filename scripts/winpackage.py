@@ -9,7 +9,12 @@ major = sys.version_info.major
 minor = sys.version_info.minor
 micro = sys.version_info.micro
 
-packagedir=f"rumboot-tools-{__version__}-python{major}.{minor}.{micro}"
+if sys.maxsize > 2**32:
+    arch="win64"
+else:
+    arch="win86"
+
+packagedir=f"rumboot-tools-{__version__}-python{major}.{minor}.{micro}-{arch}"
 
 if os.path.exists(packagedir):
     print("Cleaning up...")
