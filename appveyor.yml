@@ -1,24 +1,47 @@
 image: Visual Studio 2019
 version: '{branch}-{build}'
 environment:
+  global:
+    # SDK v7.0 MSVC Express 2008's SetEnv.cmd script will fail if the
+    # /E:ON and /V:ON options are not enabled in the batch script intepreter
+    # See: http://stackoverflow.com/a/13751649/163740
+    CMD_IN_ENV: "cmd /E:ON /V:ON /C .\\appveyor\\run_with_env.cmd"
+
   matrix:
-    - PY: "-3.7"
-    - PY: "-3.7-x64"
-    - PY: "-3.8"
-    - PY: "-3.8-x64"
-    - PY: "-3.9"
-    - PY: "-3.9-x64"
+    - PYTHON: "C:\\Python37"
+      PYTHON_VERSION: "3.7.x"
+      PYTHON_ARCH: "32"
+
+    - PYTHON: "C:\\Python37-x64"
+      PYTHON_VERSION: "3.7.x"
+      PYTHON_ARCH: "64"
+
+    - PYTHON: "C:\\Python38"
+      PYTHON_VERSION: "3.8.x"
+      PYTHON_ARCH: "32"
+
+    - PYTHON: "C:\\Python38-x64"
+      PYTHON_VERSION: "3.8.x"
+      PYTHON_ARCH: "64"
+
+    - PYTHON: "C:\\Python39"
+      PYTHON_VERSION: "3.8.x"
+      PYTHON_ARCH: "32"
+
+    - PYTHON: "C:\\Python39-x64"
+      PYTHON_VERSION: "3.8.x"
+      PYTHON_ARCH: "64"
 
 install:
-  - "py %PY% -m pip install parse"
+  - "%CMD_IN_ENV% pip install parse"
 
 build: off
 
 test_script:
-  - "py %PY% -m pip install ."
+  - "%CMD_IN_ENV% pip install ."
 
 after_test:
-  - py %PY% scripts\\winpackage.py"
+  - "%CMD_IN_ENV% python scripts\\winpackage.py"
 
 artifacts:
   - path: "*.zip"
