@@ -36,7 +36,7 @@ class mt12505(base):
         for v in reversed(values):
             self.__reg_write_bit(v)
         self.sp.cbus_write(0)
-        self.sp.cbus_write(1<<2)        
+        self.sp.cbus_write(1<<2)
         self.sp.cbus_write(0)
 
     def __to_mt12505_devices(self, devs):
@@ -61,7 +61,12 @@ class mt12505(base):
     def __init__(self, terminal, opts):
         # Lazy-init FT232. 
         # On windows systems, if D2XX drivers are not installed
-        import ft232
+        try:
+            import ft232
+        except:
+            print("ERROR: Failed to load pyft232")
+            print("ERROR: Is D2XX/libftdi installed?")
+            sys.exit(1)
         # HACK: On some linux systems (debian buster) we can't free libftdi context
         # HACK: or things will segfault
         # HACK: This hack causes intentional memory leak, but prevents segfault
