@@ -26,3 +26,14 @@ after_test:
 artifacts:
   - path: "*.zip"
 
+deploy:
+  description: 'Release version v$(APPVEYOR_REPO_TAG_NAME)'
+  provider: GitHub
+  auth_token:
+    secure: R2zEjDNRq2HLt+v9fwQvNVV6FDkxBmF7AD4GEqRepr8NjZRRDUBGcaimr+tkeAlO
+  artifact: /.*\.zip/
+  draft: false
+  prerelease: false
+  on:
+    branch: master                 # release from master branch only
+    APPVEYOR_REPO_TAG: true
