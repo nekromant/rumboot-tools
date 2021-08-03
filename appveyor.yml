@@ -18,6 +18,7 @@ test_script:
   - "%PYTHON%\\python.exe -m pip install ."
 
 after_test:
+  - "echo %PYTHON%\\python.exe scripts\\winpackage.py"
   - "%PYTHON%\\python.exe scripts\\winpackage.py"
 
 artifacts:
