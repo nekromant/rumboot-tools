@@ -19,4 +19,4 @@ build: off
 #  - "%PYTHON%\\python.exe setup.py bdist_wheel"
 
 artifacts:
-  - path: *.zip
+  - path: "*.zip"
