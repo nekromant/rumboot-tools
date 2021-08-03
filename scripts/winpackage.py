@@ -15,14 +15,15 @@ if os.path.exists(packagedir):
     print("Cleaning up...")
     shutil.rmtree(packagedir)
 os.mkdir(packagedir)
-os.mkdir(f"{packagedir}\wheels")
+os.mkdir(f"{packagedir}\wheelhouse")
 
 print("Building windows packages...")
 os.system("pip wheel .")
+
 script = open(f"{packagedir}/install.cmd", "w+")
 for f in glob.glob("*.whl"):
-    os.rename(f, f"{packagedir}\wheels\\{f}")
-    script.write(f"pip install wheels\\{f}\n\r")
+    os.rename(f, f"{packagedir}\wheelhouse\\{f}")
+    script.write(f"pip install --no-index --no-deps wheelhouse\\{f}\n\r")
 script.close()
 
 
