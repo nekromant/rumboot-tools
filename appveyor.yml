@@ -18,7 +18,7 @@ test_script:
   - "py %PYTHON% -m pip install ."
 
 after_test:
-  - "py %PYTHON% -m scripts\\winpackage.py"
+  - py %PYTHON% scripts\\winpackage.py"
 
 artifacts:
   - path: "*.zip"
