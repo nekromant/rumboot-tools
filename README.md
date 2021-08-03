@@ -79,38 +79,44 @@ Some old chips have an invalid IP set as 192.168.0.0. The OS will discard ARP re
 ### IP clash bug and workarounds 
 
 Okay, so despite the warning above, you want to use several different chips in the same LAN and noticed that different chips (e.g. mm7705 and oi10) have the same IP, though MACs are unique. There's a special flag called 
---force-static-arp that make xrun/xflash always drop arp existing records (if any) and add proper ones.
-Just note that this usage case is 'officially' unsupported. 
-
-## Requirements
-
-* Python 3.7 or above
-
-* pyserial
-
-* pyft232 
-
-* parse
-
-* xmodem
-
-* tqdm
-
-* pyyaml
-
-* pyusb
-
-* gdbgui
-
-* arpreq
-
-* netifaces
-
-* netaddr
-
-* getmac
+--force-static-arp that make xrun/xflash always drop existing arp records (if any) and add proper ones.
+Just note that this usage case is not 'officially' supported and can cause confusion of you don't fully understand what's happening. 
 
 ## Installation
+### From pypi (Recommended for Linux)
+
+This is the simplest way. Just type:
+
+```
+    pip3 install rumboot-tools
+```
+
+or 
+
+```
+    pip3 install rumboot-tools
+```
+
+And you're all set. 
+
+_WARNING_: Windows installations need Visual Studio Build Tools installed. It’s a huge download, but it’s
+needed. Grab it at [Microsoft download
+site](https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2017). 
+
+_HINT_: We provide binary offline windows installers for some released versions. The don't need those and are easier to install.
+
+### From a binary release zip (Recommended for Windows)
+
+Grab a zip download from [Github Releases Page](https://github.com/RC-MODULE/rumboot-tools/releases) or directly from the artifacts tab of [Appveyor CI Page](https://ci.appveyor.com/project/nekromant/rumboot-tools)
+
+The zip must match the python version currently installed. Unzip the archive and run either install_system.cmd or install_venv.cmd
+
+- install_system.cmd installs rumboot-tools and all dependencies into system directories and they are accessible immediately after installation.
+
+- install_venv.cmd installs rumboot-tools and all dependencies into 'venv' directory (will be created). Add venv\Scripts to your %PATH% to run tools from the command line.
+### From source (Linux, Windows)
+
+This is pretty much as simple as it is. Just run the following:
 
 ```
     pip3 install .
@@ -123,6 +129,12 @@ or
 ```
 
 P.S. Make sure you have a proper internet connection, or pip will fail to fetch dependencies.
+
+_WARNING_: Windows installations need Visual Studio Build Tools installed. It’s a huge download, but it’s
+needed. Grab it at [Microsoft download
+site](https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2017). 
+
+_HINT_: We provide binary offline installers for some released versions. The don't need those and are easier to install.
 
 ## Tool descriptions
 
