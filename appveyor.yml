@@ -2,24 +2,23 @@ image: Visual Studio 2019
 version: '{branch}-{build}'
 environment:
   matrix:
-    - PYTHON: "C:\\Python37"
-    - PYTHON: "C:\\Python37-x64"
-    - PYTHON: "C:\\Python38"
-    - PYTHON: "C:\\Python38-x64"
-    - PYTHON: "C:\\Python39"
-    - PYTHON: "C:\\Python39-x64"
+    - PY: "-3.7"
+    - PY: "-3.7-x64"
+    - PY: "-3.8"
+    - PY: "-3.8-x64"
+    - PY: "-3.9"
+    - PY: "-3.9-x64"
 
 install:
-  - "%PYTHON%\\python.exe -m pip install parse"
+  - "py %PYTHON% -m pip install parse"
 
 build: off
 
 test_script:
-  - "%PYTHON%\\python.exe -m pip install ."
+  - "py %PYTHON% -m pip install ."
 
 after_test:
-  - "echo %PYTHON%\\python.exe scripts\\winpackage.py"
-  - "%PYTHON%\\python.exe scripts\\winpackage.py"
+  - "py %PYTHON% -m pip scripts\\winpackage.py"
 
 artifacts:
   - path: "*.zip"
