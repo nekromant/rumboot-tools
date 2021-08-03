@@ -152,7 +152,7 @@ usage: rumboot-packimage [-h] -f FILE [-i] [-c] [-C] [-r] [-R relocation] [-Z]
                          [--set-data offset value] [-g key] [-s key value]
                          [-e] [-w WRAP]
 
-rumboot-packimage 0.9.15 - Universal RumBoot Image Manipulation Tool
+rumboot-packimage 0.9.16 - Universal RumBoot Image Manipulation Tool
 
 (C) 2018-2021 Andrew Andrianov <andrew@ncrmnt.org>, RC Module
 https://module.ru
@@ -260,15 +260,14 @@ This tool directly uploads a binary to the target board, executes it and provide
 ~# rumboot-xrun --help
 [!] Using configuration file: /home/necromant/.rumboot.yaml
 usage: rumboot-xrun [-h] [-f FILE] [-c chip_id] [-l LOG] [-p port] [-b speed]
-                    [-e] [--force-static-arp] [-r method]
-                    [--apc-host APC_HOST] [--apc-user APC_USER]
-                    [--apc-pass APC_PASS] [--apc-outlet APC_OUTLET] [-S value]
-                    [-P value] [--pl2303-invert] [--redd-port REDD_PORT]
-                    [--redd-relay-id REDD_RELAY_ID]
-                    [-A [PLUSARGS [PLUSARGS ...]]] [-R] [-I]
+                    [-e] [--force-static-arp] [--edcl-ip EDCL_IP]
+                    [--edcl-mac EDCL_MAC] [--edcl-timeout EDCL_TIMEOUT]
+                    [-r method] [--mt12505-serial MT12505_SERIAL]
+                    [--pl2303-invert-reset] [--pl2303-invert-power]
+                    [--pl2303-swap] [-A [PLUSARGS [PLUSARGS ...]]] [-R] [-I]
                     [--replay-no-exit]
 
-rumboot-xrun 0.9.15 - RumBoot X-Modem execution tool
+rumboot-xrun 0.9.16 - RumBoot X-Modem execution tool
 
 (C) 2018-2021 Andrew Andrianov <andrew@ncrmnt.org>, RC Module
 https://module.ru
@@ -293,35 +292,27 @@ Connection Settings:
                         Serial line speed
   -e, --edcl            Use edcl for data uploads (when possible)
   --force-static-arp    Always add static ARP entries
+  --edcl-ip EDCL_IP     Use specific EDCL IP address (default - from chip id)
+  --edcl-mac EDCL_MAC   Use specific EDCL MAC address (default - from chip id)
+  --edcl-timeout EDCL_TIMEOUT
+                        Use specific EDCL MAC address (default - from chip id)
 
 Reset Sequence options:
   These options control how the target board will be reset
 
   -r method, --reset method
-                        Reset sequence to use (apc base mt12505 pl2303
-                        powerhub redd)
-
-apc reset sequence options:
-  --apc-host APC_HOST   APC IP Address/hostname
-  --apc-user APC_USER   APC IP username
-  --apc-pass APC_PASS   APC IP username
-  --apc-outlet APC_OUTLET
-                        APC power outlet to use
+                        Reset sequence to use (base mt12505 pl2303)
 
 mt12505 reset sequence options:
-  -S value, --ft232-serial value
-                        FT232 serial number for MT125.05
+  --mt12505-serial MT12505_SERIAL
+                        FT232RL serial number to use
 
 pl2303 reset sequence options:
-  -P value, --pl2303-port value
-                        PL2303 physical port
-  --pl2303-invert       Invert all pl2303 gpio signals
-
-redd reset sequence options:
-  --redd-port REDD_PORT
-                        Redd serial port (e.g. /dev/ttyACM1)
-  --redd-relay-id REDD_RELAY_ID
-                        Redd Relay Id (e.g. A)
+  --pl2303-invert-reset
+                        Invert pl2303 reset signal
+  --pl2303-invert-power
+                        Invert pl2303 power signal
+  --pl2303-swap         Swap pl2303 reset and power mapping
 
 Plusargs parser options:
   
@@ -636,14 +627,14 @@ This tool allows you to quickly program different flashes attached to the target
 ~# rumboot-xflash --help
 [!] Using configuration file: /home/necromant/.rumboot.yaml
 usage: rumboot-xflash [-h] [-f FILE] [-c chip_id] [-l LOG] [-p port]
-                      [-b speed] [-e] [--force-static-arp] [-v] -m memory
-                      [-z SPL_PATH] [-r method] [--apc-host APC_HOST]
-                      [--apc-user APC_USER] [--apc-pass APC_PASS]
-                      [--apc-outlet APC_OUTLET] [-S value] [-P value]
-                      [--pl2303-invert] [--redd-port REDD_PORT]
-                      [--redd-relay-id REDD_RELAY_ID]
+                      [-b speed] [-e] [--force-static-arp] [--edcl-ip EDCL_IP]
+                      [--edcl-mac EDCL_MAC] [--edcl-timeout EDCL_TIMEOUT] [-v]
+                      -m memory [-z SPL_PATH] [-r method]
+                      [--mt12505-serial MT12505_SERIAL]
+                      [--pl2303-invert-reset] [--pl2303-invert-power]
+                      [--pl2303-swap]
 
-rumboot-xflash 0.9.15 - RumBoot X-Modem firmware update tool
+rumboot-xflash 0.9.16 - RumBoot X-Modem firmware update tool
 
 (C) 2018-2021 Andrew Andrianov <andrew@ncrmnt.org>, RC Module
 https://module.ru
@@ -669,35 +660,27 @@ Connection Settings:
                         Serial line speed
   -e, --edcl            Use edcl for data uploads (when possible)
   --force-static-arp    Always add static ARP entries
+  --edcl-ip EDCL_IP     Use specific EDCL IP address (default - from chip id)
+  --edcl-mac EDCL_MAC   Use specific EDCL MAC address (default - from chip id)
+  --edcl-timeout EDCL_TIMEOUT
+                        Use specific EDCL MAC address (default - from chip id)
 
 Reset Sequence options:
   These options control how the target board will be reset
 
   -r method, --reset method
-                        Reset sequence to use (apc base mt12505 pl2303
-                        powerhub redd)
-
-apc reset sequence options:
-  --apc-host APC_HOST   APC IP Address/hostname
-  --apc-user APC_USER   APC IP username
-  --apc-pass APC_PASS   APC IP username
-  --apc-outlet APC_OUTLET
-                        APC power outlet to use
+                        Reset sequence to use (base mt12505 pl2303)
 
 mt12505 reset sequence options:
-  -S value, --ft232-serial value
-                        FT232 serial number for MT125.05
+  --mt12505-serial MT12505_SERIAL
+                        FT232RL serial number to use
 
 pl2303 reset sequence options:
-  -P value, --pl2303-port value
-                        PL2303 physical port
-  --pl2303-invert       Invert all pl2303 gpio signals
-
-redd reset sequence options:
-  --redd-port REDD_PORT
-                        Redd serial port (e.g. /dev/ttyACM1)
-  --redd-relay-id REDD_RELAY_ID
-                        Redd Relay Id (e.g. A)
+  --pl2303-invert-reset
+                        Invert pl2303 reset signal
+  --pl2303-invert-power
+                        Invert pl2303 power signal
+  --pl2303-swap         Swap pl2303 reset and power mapping
 
 ```
 ```
@@ -803,16 +786,15 @@ rumboot-flashrom -p /dev/ttyUSB1 -c basis -- --read img.bin
 ~# rumboot-flashrom --help
 [!] Using configuration file: /home/necromant/.rumboot.yaml
 usage: rumboot-flashrom [-h] [-l LOG] [-p port] [-b speed] [-e]
-                        [--force-static-arp] [-v] -m memory [-z SPL_PATH]
-                        [-f FLASHROM_PATH] -c CHIP_ID [-r method]
-                        [--apc-host APC_HOST] [--apc-user APC_USER]
-                        [--apc-pass APC_PASS] [--apc-outlet APC_OUTLET]
-                        [-S value] [-P value] [--pl2303-invert]
-                        [--redd-port REDD_PORT]
-                        [--redd-relay-id REDD_RELAY_ID]
+                        [--force-static-arp] [--edcl-ip EDCL_IP]
+                        [--edcl-mac EDCL_MAC] [--edcl-timeout EDCL_TIMEOUT]
+                        [-v] -m memory [-z SPL_PATH] [-f FLASHROM_PATH] -c
+                        CHIP_ID [-r method] [--mt12505-serial MT12505_SERIAL]
+                        [--pl2303-invert-reset] [--pl2303-invert-power]
+                        [--pl2303-swap]
                         ...
 
-rumboot-flashrom 0.9.15 - flashrom wrapper tool
+rumboot-flashrom 0.9.16 - flashrom wrapper tool
 
 (C) 2018-2021 Andrew Andrianov <andrew@ncrmnt.org>, RC Module
 https://module.ru
@@ -841,35 +823,27 @@ Connection Settings:
                         Serial line speed
   -e, --edcl            Use edcl for data uploads (when possible)
   --force-static-arp    Always add static ARP entries
+  --edcl-ip EDCL_IP     Use specific EDCL IP address (default - from chip id)
+  --edcl-mac EDCL_MAC   Use specific EDCL MAC address (default - from chip id)
+  --edcl-timeout EDCL_TIMEOUT
+                        Use specific EDCL MAC address (default - from chip id)
 
 Reset Sequence options:
   These options control how the target board will be reset
 
   -r method, --reset method
-                        Reset sequence to use (apc base mt12505 pl2303
-                        powerhub redd)
-
-apc reset sequence options:
-  --apc-host APC_HOST   APC IP Address/hostname
-  --apc-user APC_USER   APC IP username
-  --apc-pass APC_PASS   APC IP username
-  --apc-outlet APC_OUTLET
-                        APC power outlet to use
+                        Reset sequence to use (base mt12505 pl2303)
 
 mt12505 reset sequence options:
-  -S value, --ft232-serial value
-                        FT232 serial number for MT125.05
+  --mt12505-serial MT12505_SERIAL
+                        FT232RL serial number to use
 
 pl2303 reset sequence options:
-  -P value, --pl2303-port value
-                        PL2303 physical port
-  --pl2303-invert       Invert all pl2303 gpio signals
-
-redd reset sequence options:
-  --redd-port REDD_PORT
-                        Redd serial port (e.g. /dev/ttyACM1)
-  --redd-relay-id REDD_RELAY_ID
-                        Redd Relay Id (e.g. A)
+  --pl2303-invert-reset
+                        Invert pl2303 reset signal
+  --pl2303-invert-power
+                        Invert pl2303 power signal
+  --pl2303-swap         Swap pl2303 reset and power mapping
 
 ```
 ```
@@ -1085,7 +1059,7 @@ _rumboot-combine_ is a simple to tool to compose a chain of several image file. 
 ~# rumboot-combine --help
 usage: rumboot-combine [-h] -i INPUT -o OUTPUT [-a ALIGN]
 
-rumboot-combine 0.9.15 - RumBoot Image Merger Tool
+rumboot-combine 0.9.16 - RumBoot Image Merger Tool
 
 (C) 2018-2021 Andrew Andrianov <andrew@ncrmnt.org>, RC Module
 https://module.ru
