@@ -21,6 +21,7 @@ print("Building windows packages...")
 os.system("pip wheel .")
 
 script = open(f"{packagedir}/install_system.cmd", "w+")
+script.write("@echo off\n\r")
 wheels = glob.glob("*.whl")
 for f in wheels:
     os.rename(f, f"{packagedir}\wheelhouse\\{f}")
@@ -28,10 +29,12 @@ for f in wheels:
 script.close()
 
 script = open(f"{packagedir}/install_venv.cmd", "w+")
-script.write("python -m venv venv")
-script.write("venv\\Scripts\\activate.bat")
-for f in wheels:
-    script.write(f"pip install --no-index --no-deps wheelhouse\\{f}\n\r")
+script.write("@echo off\n\r")
+script.write("python -m venv venv\n\r")
+script.write("venv\\Scripts\\activate.bat\n\r")
+script.write("install_system.cmd\n\r")
+script.write("echo rumboot-tools are installed into a virtual environment\n\r")
+script.write("echo add venv\\Scripts to your $PATH to use them directly\n\r")
 script.close()
 
 def zipdir(path, ziph):
