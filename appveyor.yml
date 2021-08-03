@@ -9,7 +9,8 @@ install:
   - "%PYTHON%\\python.exe -m pip install parse"
   - "%PYTHON%\\python.exe -m pip install wheel . -v"
 
-build: off
+build: 
+  - "%PYTHON%\\python.exe scripts\\winpackage.py"
 
 #test_script:
 #  - "%PYTHON%\\python.exe test.py"
@@ -18,4 +19,4 @@ build: off
 #  - "%PYTHON%\\python.exe setup.py bdist_wheel"
 
 artifacts:
-  - path: dist\*
+  - path: *.zip
