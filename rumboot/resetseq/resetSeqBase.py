@@ -46,15 +46,17 @@ class base:
     def power(self, on):
         self["POWER"] = on
 
-#Reset is assumed active-HIGH (like on chips)
-#Power is assumed active-HIGH (like on most DC-DC)
+# Power and reset
+# POWER: 1 - active, 0 - offline
+# RESET: 1 - active, device is in reset, 0 - normal operation 
     def reset(self):
-        self["RESET"] = 1
-        self["POWER"] = 1
+        self["POWER"] = 0 #Disable power
+        self["RESET"] = 1 #Assert reset
         time.sleep(1)
-        self["RESET"] = 0
-        self["POWER"] = 0
-
+        self["POWER"] = 1 #Enable power
+        time.sleep(0.2)
+        self["RESET"] = 0 #Remove reset
+ 
     def resetToHost(self, flags = []):
         self["HOST"] = 1
         self.reset()

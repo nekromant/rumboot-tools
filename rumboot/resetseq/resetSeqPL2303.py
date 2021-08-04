@@ -30,7 +30,10 @@ class pl2303(base):
 
     def __setitem__(self, key, value):
         super().__setitem__(key, value)
-        if self.invert_power and key == "POWER":
+
+        # We have power inverted on all boards compared to base
+        # so let's make sure it works with default options
+        if not self.invert_power and key == "POWER":
             value = not value
         if self.invert_reset and key == "RESET":
             value = not value
