@@ -12,7 +12,7 @@ micro = sys.version_info.micro
 if sys.maxsize > 2**32:
     arch="win64"
 else:
-    arch="win86"
+    arch="win32"
 
 packagedir=f"rumboot-tools-{__version__}-python{major}.{minor}.{micro}-{arch}"
 
