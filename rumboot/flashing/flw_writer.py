@@ -173,7 +173,7 @@ class FlashDeviceFLW(FlashDeviceBase):
 
     def _write_xmodem(self, fd, offset, length, cb):
         self.writer.cmd(f"program X {offset:x} {length:x}", "completed", timeout=120)
-        self.terminal.xfer.write(0, data)
+        self.terminal.xfer.write(0, fd, cb)
 
     def _write_edcl(self, fd, offset, length, cb):
         self.writer.cmd(f"program E {offset:x} {length:x}", "completed", timeout=120)
@@ -181,7 +181,7 @@ class FlashDeviceFLW(FlashDeviceBase):
 
     def _write(self, fd, offset, length, cb = None):
         if self.terminal.xfer.how == "xmodem":
-            return self._write_xmodem(fd, offset, length)
+            return self._write_xmodem(fd, offset, length, cb)
         elif self.terminal.xfer.how == "edcl":
             return self._write_edcl(fd, offset, length, cb) 
 
@@ -210,6 +210,13 @@ class FlasherFlwSF(PartitionBase, FlashDeviceFLW):
 
 class FlasherFlwNOR(PartitionBase, FlashDeviceFLW):
     device = "nor{}"
+    protocol = "flashwriter"
+    def __init__(self, terminal, device):
+        PartitionBase.__init__(self, terminal)
+        FlashDeviceFLW.__init__(self, terminal, device)
+
+class FlasherFlwI2C(PartitionBase, FlashDeviceFLW):
+    device = "i2c{:d}-{:x}"
     protocol = "flashwriter"
     def __init__(self, terminal, device):
         PartitionBase.__init__(self, terminal)

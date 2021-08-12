@@ -98,7 +98,7 @@ class PartitionBase():
         if length == -1 or length > maxsize:
             partitions[name].size = maxsize
         else:
-            partitions[name].size = size
+            partitions[name].size = length
 
         if partitions[name].size % self.erase_size:
             raise Exception(f"FATAL: Partition {name} size is not aligned by erase_size boundary")
