@@ -65,6 +65,9 @@ class PartitionBase():
         
         initial_pos = fd.tell()
 
+        if not ln > 0:
+            raise Exception(f"FATAL: Length can't be {ln}")
+        
         return self._write(fd, self.offset + offset, ln, cb)
 
     def read(self, fd, offset, length = -1, cb = None):

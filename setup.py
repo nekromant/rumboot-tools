@@ -36,7 +36,7 @@ setup(
         "console_scripts": [
             "rumboot-packimage = rumboot_packimage.frontend:cli",
             "rumboot-xrun = rumboot_xrun.frontend:cli",
-            "rumboot-xflash = rumboot_xflash.frontend:cli",
+            "rumboot-xflash = rumboot.flashing:rumboot_start_flashing",
             "rumboot-daemon = rumboot_daemon.frontend:cli",
             "rumboot-combine = rumboot_combine.frontend:cli",
             "rumboot-flashrom = rumboot_flashrom.frontend:cli",
