@@ -184,7 +184,11 @@ class edcl():
 
     def write(self, address, data, callback = None):
         length = len(data)
-        for l in range (0, length, self.maxpayload):
+        if length > 4:
+            start = 4
+        else:
+            start = 0
+        for l in range (start, length, self.maxpayload):
             if (length - l > self.maxpayload):
                 towrite = self.maxpayload
             else:
@@ -192,7 +196,11 @@ class edcl():
 
             self._write_raw(address + l, data[l:l+towrite])
             if callback:
-                callback(len, l + towrite, towrite)
+                callback(length, l + towrite, towrite)
+        #HACK: If we're writing an image, we have to write magic
+        #HACK: at the very end
+        if start > 0:
+            self._write_raw(address, data[0:4])
 
     def reconnect(self, params = None):
         if params != None:

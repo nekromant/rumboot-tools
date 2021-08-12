@@ -261,8 +261,7 @@ class xferManager():
             raise Exception("Failed to connect transport")
 
         self.term.progress_start(desc, self.stream_size(stream))
-        self.from_file(destaddr + 4, stream, offset = 4, callback=prg)
-        self.from_file(destaddr, stream, length = 4)
+        self.from_file(destaddr, stream, offset = 0, callback=prg)
         self.term.progress_end()
         if needclose:
             stream.close()
