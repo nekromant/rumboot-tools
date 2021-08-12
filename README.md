@@ -8,7 +8,7 @@ This repository contains several tools
 
 * _rumboot-packimage_ - Adds/prints/updates checksums in image files
 * _rumboot-xrun_ - Directly executes images via serial line or network
-* _rumboot-xflash_ - Write on-board memories via serial line or network (Simple interface)
+* _rumboot-xflash_ - Write on-board memories via serial line or network
 * _rumboot-flashrom_ - Wrapper around flashrom tool for advanced SPI flash programming
 * _rumboot-daemon_ - Provides network shared access to different boards
 
@@ -63,18 +63,20 @@ to send huge files (e.g. linux kernel, initrd, etc.) Starting with version 0.9.4
 
 EDCL stands for 'Ethernet communications debug link'. It provides a way to access physical memory via a special protocol over UDP. It exists in all RC Module's chips (except 'basis' platform). The protocol has *NO* security at all, so please disable edcl in a production enviroment. If you didn't get it, I'll write it in *bold*:
 
-*NEVER ENABLE EDCL IN A PRODUCTION ENVIRONMENT* 
+*NEVER EVER ENABLE EDCL IN A PRODUCTION ENVIRONMENT OR YOU'LL MAKE EASY PREY FOR HAX0RS!!! *
 
-### Seting up
+### Setting up network for EDCL
 
 EDCL IP and MAC adresses are hardcoded in silicon. Therefore putting several same chips in one LAN is not likely to work. The recommended setup is a dedicated network interface directly connected to the target board.
-the interface should have an IP _192.168.0.1_ netmask _255.255.0.0_
 
-After the interface setup is done, just add _-e_ option for xrun/xflash and enjoy
+IP: _192.168.0.1_ 
+NetMask _255.255.0.0_
+
+After the interface setup is done, just add _-e_ option for xrun/xflash and enjoy the speedup
 
 ### ARP Bugs and workarounds
 
-Some old chips have an invalid IP set as 192.168.0.0. The OS will discard ARP replies as invalid. However since EDCL only checks mac, we can set a static ARP record. The xrun does that automatically when needed using sudo/runas on linux/windows respectively. If a static record exists, no static record is added.
+Some old chips have an invalid IP set as 192.168.0.0. The OS will discard ARP replies as invalid. However since EDCL only checks mac, we can set a static ARP record. The xrun does that automatically when needed using sudo/runas on linux/windows respectively. If a static record exists, no static record is added. When this hack is needed - you'll see UAC request in windows. In linux sudo will ask you for a password.
 
 ### IP clash bug and workarounds 
 
@@ -152,7 +154,7 @@ usage: rumboot-packimage [-h] -f FILE [-i] [-c] [-C] [-r] [-R relocation] [-Z]
                          [--set-data offset value] [-g key] [-s key value]
                          [-e] [-w WRAP]
 
-rumboot-packimage 0.9.17 - Universal RumBoot Image Manipulation Tool
+rumboot-packimage 0.9.18 - Universal RumBoot Image Manipulation Tool
 
 (C) 2018-2021 Andrew Andrianov <andrew@ncrmnt.org>, RC Module
 https://module.ru
@@ -262,12 +264,14 @@ This tool directly uploads a binary to the target board, executes it and provide
 usage: rumboot-xrun [-h] [-f FILE] [-c chip_id] [-l LOG] [-p port] [-b speed]
                     [-e] [--force-static-arp] [--edcl-ip EDCL_IP]
                     [--edcl-mac EDCL_MAC] [--edcl-timeout EDCL_TIMEOUT]
-                    [-r method] [--mt12505-serial MT12505_SERIAL]
-                    [--pl2303-invert-reset] [--pl2303-invert-power]
-                    [--pl2303-swap] [-A [PLUSARGS [PLUSARGS ...]]] [-R] [-I]
+                    [-r method] [--apc-host APC_HOST] [--apc-user APC_USER]
+                    [--apc-pass APC_PASS] [--apc-outlet APC_OUTLET]
+                    [--mt12505-serial MT12505_SERIAL] [--pl2303-invert-reset]
+                    [--pl2303-invert-power] [--pl2303-swap]
+                    [-A [PLUSARGS [PLUSARGS ...]]] [-R] [-I]
                     [--replay-no-exit]
 
-rumboot-xrun 0.9.17 - RumBoot X-Modem execution tool
+rumboot-xrun 0.9.18 - RumBoot X-Modem execution tool
 
 (C) 2018-2021 Andrew Andrianov <andrew@ncrmnt.org>, RC Module
 https://module.ru
@@ -301,7 +305,14 @@ Reset Sequence options:
   These options control how the target board will be reset
 
   -r method, --reset method
-                        Reset sequence to use (base mt12505 pl2303)
+                        Reset sequence to use (apc base mt12505 pl2303)
+
+apc reset sequence options:
+  --apc-host APC_HOST   APC IP Address/hostname
+  --apc-user APC_USER   APC Username
+  --apc-pass APC_PASS   APC Password
+  --apc-outlet APC_OUTLET
+                        APC Outlet Number
 
 mt12505 reset sequence options:
   --mt12505-serial MT12505_SERIAL
@@ -620,7 +631,19 @@ rumboot-xrun provides a mechanism to decode runtime stack traces. To use this fu
 #### Description
 
 This tool allows you to quickly program different flashes attached to the target chip. It is done by uploading a precompiled stub that implements the programming protocol of the target flash media and accepts an xmodem payload. Pre-compiled stubs are shipped with rumboot-tools.
+For most chips these are heavily hacked u-boot spls. They run fully in internal on-chip SRAM, therefore don't care what DDR/SDRAM memories you have attached.
 
+The tool provides users currently with two transports for programming: EDCL and SERIAL (XMODEM). 
+
+*EDCL* is generally faster, but requires a direct connection between you PC and the target board via ethernet. Some legacy bootroms only support EDCL for initial upload. 
+
+*Serial* (xmodem) is always present on newer chips. Some newer chips lack the edcl ip core (basis)
+
+The transport for actual programming is serial by default, edcl can be selected by adding _-e_ switch. 
+
+Writing will always be about twice slower than reading, since readback is usually integrated in the SPL doing all the work. 
+
+*PRO TIP:* You can just write the image to SD Card by popping it into your PC. That would usually be waaay faster. 
 #### Options 
 
 ```
@@ -629,12 +652,15 @@ This tool allows you to quickly program different flashes attached to the target
 usage: rumboot-xflash [-h] [-f FILE] [-c chip_id] [-l LOG] [-p port]
                       [-b speed] [-e] [--force-static-arp] [--edcl-ip EDCL_IP]
                       [--edcl-mac EDCL_MAC] [--edcl-timeout EDCL_TIMEOUT] [-v]
-                      -m memory [-z SPL_PATH] [-r method]
+                      [-m memory] [-z SPL_PATH] [-o OFFSET] [-L LENGTH] [-R]
+                      [-W] [-r method] [--apc-host APC_HOST]
+                      [--apc-user APC_USER] [--apc-pass APC_PASS]
+                      [--apc-outlet APC_OUTLET]
                       [--mt12505-serial MT12505_SERIAL]
                       [--pl2303-invert-reset] [--pl2303-invert-power]
                       [--pl2303-swap]
 
-rumboot-xflash 0.9.17 - RumBoot X-Modem firmware update tool
+rumboot-xflash 0.9.18 - RumBoot firmware updater tool
 
 (C) 2018-2021 Andrew Andrianov <andrew@ncrmnt.org>, RC Module
 https://module.ru
@@ -648,6 +674,13 @@ optional arguments:
                         Memory program. Help for a list of memories
   -z SPL_PATH, --spl-path SPL_PATH
                         Path for SPL writers (Debug only)
+  -o OFFSET, --offset OFFSET
+                        Memory offset for read/write operations
+  -L LENGTH, --length LENGTH
+                        How many bytes to read/write (defaults to whole
+                        file/flash)
+  -R, --read            Read flash to file
+  -W, --write           Write flash from file
 
 File Handling:
   -c chip_id, --chip_id chip_id
@@ -669,7 +702,14 @@ Reset Sequence options:
   These options control how the target board will be reset
 
   -r method, --reset method
-                        Reset sequence to use (base mt12505 pl2303)
+                        Reset sequence to use (apc base mt12505 pl2303)
+
+apc reset sequence options:
+  --apc-host APC_HOST   APC IP Address/hostname
+  --apc-user APC_USER   APC Username
+  --apc-pass APC_PASS   APC Password
+  --apc-outlet APC_OUTLET
+                        APC Outlet Number
 
 mt12505 reset sequence options:
   --mt12505-serial MT12505_SERIAL
@@ -683,83 +723,96 @@ pl2303 reset sequence options:
   --pl2303-swap         Swap pl2303 reset and power mapping
 
 ```
-```
-~# rumboot-xflash -m help -c basis
-Memory        i2c0-0x50: rumboot-basis-PostProduction-updater-i2c0-0x50.bin
-Memory        i2c0-0x51: rumboot-basis-PostProduction-updater-i2c0-0x51.bin
-Memory        i2c0-0x52: rumboot-basis-PostProduction-updater-i2c0-0x52.bin
-Memory        i2c0-0x53: rumboot-basis-PostProduction-updater-i2c0-0x53.bin
-Memory  spi0-gpio0_5-cs: rumboot-basis-PostProduction-updater-spi0-gpio0_5-cs.bin
-Memory spi0-internal-cs: rumboot-basis-PostProduction-updater-spi0-internal-cs.bin
-Memory spi1-internal-cs: rumboot-basis-PostProduction-updater-spi1-internal-cs.bin
-```
 
-Or you can just specify the file you are going to flash instead.
+You can find what memories attached to the chip can be programmed by specifying chip name.
 
 ```
-~# rumboot-xflash -m help -f ../build-test/oi10-PostProduction/rumboot-oi10-PostProduction-simple-iram-hello.bin 
-Memory spi0-internal-cs: rumboot-oi10-PostProduction-updater-spi-flash-0.bin
-Memory              nor: rumboot-oi10-PostProduction-updater-nor-mt150.04.bin
-Memory      nor-bootrom: rumboot-oi10-PostProduction-updater-nor-mt150.04-brom.bin
-```
-
-##### Write image to flash
-
-```
-~# rumboot-xflash -m spi0-gpio0_5-cs -f rumboot-basis-PostProduction-simple-iram-hello-iram.bin
-
-Detected chip:    basis (1888ВС048)
-Reset method:     None
-Baudrate:         115200 bps
-Port:             /dev/ttyUSB0
-Sending stream: 100%|███████████████████████████████| 13.6k/13.6k [00:21<00:00, 650B/s]
-Writing image: 100%|████████████████████████████████| 62.9k/62.9k [01:29<00:00, 717B/s]
+~# rumboot-xflash -m help -c mm7705
+[!] Using configuration file: /home/necromant/.rumboot.yaml
+Available memories for chip 'mm7705'
+    mmc0: SD/MMC Card
+    sf00: SPI Flash
+     nor: NOR memory
+    nand: NAND memory
 
 ```
 
-##### Write image to flash, reset automatically via pl2303
+Or you can just specify the file you are going to flash instead, the tool will find out chip id from it. 
+The file must have the relevant header (See rumboot-packimage for header manipulation)
 
 ```
-~# rumboot-xflash -m spi0-gpio0_5-cs -f rumboot-basis-PostProduction-simple-iram-hello-iram.bin -r pl2303
+~# rumboot-xflash -m help -f rumboot-mm7705-Production-irq-irq-atomics.bin 
+[!] Using configuration file: /home/necromant/.rumboot.yaml
+Available memories for chip 'mm7705'
+    mmc0: SD/MMC Card
+    sf00: SPI Flash
+     nor: NOR memory
+    nand: NAND memory
+```
 
-Detected chip:    basis (1888ВС048)
-Reset method:     None
-Baudrate:         115200 bps
-Port:             /dev/ttyUSB0
-Sending stream: 100%|███████████████████████████████| 13.6k/13.6k [00:21<00:00, 650B/s]
-Writing image: 100%|████████████████████████████████| 62.9k/62.9k [01:29<00:00, 717B/s]
+##### Print information about attached flash device
+
+```
+~# rumboot-xflash -c mm7705 -m nand
+[!] Using configuration file: /home/necromant/.rumboot.yaml
+Detected chip:    mm7705 (1888TX018)
+Reset method:               None
+Baudrate:                   1000000 bps
+Port:                       /dev/ttyUSB0
+Preferred data transport:   xmodem
+WARN: Reset method doesn't support HOST mode switching
+WARN: If things don't work - check jumpers!
+Please, power-cycle board
+WARNING: Bootloader doesn't support xmodem, forcing edcl upload
+Static ARP record already exists, good
+Connected: mm7705 (Greth 1Gbit #1)
+Sending stream: 100%|████████████████████████████████████████████████████████████████████████████████████████▉| 183k/183k [00:00<00:00, 1.17MB/s]
+Device: nand0 part: NAND 128MiB 3,3V 8-bit size: 256.0MiB erase_size: 128.0KiB write_size: 128.0KiB
+```
+
+##### Write image to flash via serial
+
+```
+~# rumboot-xflash -c mm7705 -m sf00 -f pattern.bin --write
+[!] Using configuration file: /home/necromant/.rumboot.yaml
+Detected chip:    mm7705 (1888TX018)
+pl2303 /dev/ttyUSB0
+Reset method:               PL2303HX
+Baudrate:                   1000000 bps
+Port:                       /dev/ttyUSB0
+Preferred data transport:   edcl
+WARN: Reset method doesn't support HOST mode switching
+WARN: If things don't work - check jumpers!
+WARNING: Bootloader doesn't support xmodem, forcing edcl upload
+Static ARP record already exists, good
+Connected: mm7705 (Greth 1Gbit #1)
+Sending stream: 100%|████████████████████████████████████████████████████████████████████████████████████████▉| 174k/174k [00:00<00:00, 1.22MB/s]
+Device: sf00 part: m25p32 size: 4.0MiB erase_size: 64.0KiB write_size: 64.0KiB
+Writing sf00: 100%|█████████████████████████████████████████████████████████████████████████████████████████| 1.00M/1.00M [00:23<00:00, 44.6kB/s]
 
 ```
 
-##### Write raw data to flash, overriding chip id
+##### Write image to flash via edcl, reset automatically via pl2303
 
 ```
-~# rumboot-xflash -c basis -m spi0-gpio0_5-cs -f raw.bin
-
-Detected chip:    basis (1888ВС048)
-Reset method:     None
-Baudrate:         115200 bps
-Port:             /dev/ttyUSB0
-Sending stream: 100%|███████████████████████████████| 13.6k/13.6k [00:21<00:00, 650B/s]
-Writing image: 100%|████████████████████████████████| 62.9k/62.9k [01:29<00:00, 717B/s]
-
-```
-
-
-##### Write raw data to flash over network
-
-```
-~# rumboot-xflash -c basis -m spi0-gpio0_5-cs -f raw.bin -p socket://10.7.11.59:10001
-
-Detected chip:    basis (1888ВС048)
-Reset method:     None
-Baudrate:         115200 bps
-Port:             socket://10.7.11.59:10001
-Sending stream: 100%|███████████████████████████████| 13.6k/13.6k [00:21<00:00, 650B/s]
-Writing image: 100%|████████████████████████████████| 62.9k/62.9k [01:29<00:00, 717B/s]
+~# rumboot-xflash -c mm7705 -m sf00 -r pl2303 -f pattern.bin --write -e
+[!] Using configuration file: /home/necromant/.rumboot.yaml
+Detected chip:    mm7705 (1888TX018)
+pl2303 /dev/ttyUSB0
+Reset method:               PL2303HX
+Baudrate:                   1000000 bps
+Port:                       /dev/ttyUSB0
+Preferred data transport:   edcl
+WARN: Reset method doesn't support HOST mode switching
+WARN: If things don't work - check jumpers!
+WARNING: Bootloader doesn't support xmodem, forcing edcl upload
+Static ARP record already exists, good
+Connected: mm7705 (Greth 1Gbit #1)
+Sending stream: 100%|████████████████████████████████████████████████████████████████████████████████████████▉| 174k/174k [00:00<00:00, 1.22MB/s]
+Device: sf00 part: m25p32 size: 4.0MiB erase_size: 64.0KiB write_size: 64.0KiB
+Writing sf00: 100%|█████████████████████████████████████████████████████████████████████████████████████████| 1.00M/1.00M [00:23<00:00, 44.6kB/s]
 
 ```
-
 ### rumboot-flashrom
 #### Description
 
@@ -784,66 +837,6 @@ rumboot-flashrom -p /dev/ttyUSB1 -c basis -- --read img.bin
 
 ```
 ~# rumboot-flashrom --help
-[!] Using configuration file: /home/necromant/.rumboot.yaml
-usage: rumboot-flashrom [-h] [-l LOG] [-p port] [-b speed] [-e]
-                        [--force-static-arp] [--edcl-ip EDCL_IP]
-                        [--edcl-mac EDCL_MAC] [--edcl-timeout EDCL_TIMEOUT]
-                        [-v] -m memory [-z SPL_PATH] [-f FLASHROM_PATH] -c
-                        CHIP_ID [-r method] [--mt12505-serial MT12505_SERIAL]
-                        [--pl2303-invert-reset] [--pl2303-invert-power]
-                        [--pl2303-swap]
-                        ...
-
-rumboot-flashrom 0.9.17 - flashrom wrapper tool
-
-(C) 2018-2021 Andrew Andrianov <andrew@ncrmnt.org>, RC Module
-https://module.ru
-https://github.com/RC-MODULE
-
-positional arguments:
-  remaining             Flashrom arguments
-
-optional arguments:
-  -h, --help            show this help message and exit
-  -v, --verbose         Print serial debug messages during preload phase
-  -m memory, --memory memory
-                        SPI bus to use. Names match '-m help' of rumboot-
-                        xflash
-  -z SPL_PATH, --spl-path SPL_PATH
-                        Path for SPL writers (Debug only)
-  -f FLASHROM_PATH, --flashrom-path FLASHROM_PATH
-                        Path to flashrom binary
-  -c CHIP_ID, --chip_id CHIP_ID
-                        Chip Id (numeric or name)
-
-Connection Settings:
-  -l LOG, --log LOG     Log terminal output to file
-  -p port, --port port  Serial port to use
-  -b speed, --baud speed
-                        Serial line speed
-  -e, --edcl            Use edcl for data uploads (when possible)
-  --force-static-arp    Always add static ARP entries
-  --edcl-ip EDCL_IP     Use specific EDCL IP address (default - from chip id)
-  --edcl-mac EDCL_MAC   Use specific EDCL MAC address (default - from chip id)
-  --edcl-timeout EDCL_TIMEOUT
-                        Use specific EDCL MAC address (default - from chip id)
-
-Reset Sequence options:
-  These options control how the target board will be reset
-
-  -r method, --reset method
-                        Reset sequence to use (base mt12505 pl2303)
-
-mt12505 reset sequence options:
-  --mt12505-serial MT12505_SERIAL
-                        FT232RL serial number to use
-
-pl2303 reset sequence options:
-  --pl2303-invert-reset
-                        Invert pl2303 reset signal
-  --pl2303-invert-power
-                        Invert pl2303 power signal
-  --pl2303-swap         Swap pl2303 reset and power mapping
 
 ```
 ```
@@ -1059,7 +1052,7 @@ _rumboot-combine_ is a simple to tool to compose a chain of several image file. 
 ~# rumboot-combine --help
 usage: rumboot-combine [-h] -i INPUT -o OUTPUT [-a ALIGN]
 
-rumboot-combine 0.9.17 - RumBoot Image Merger Tool
+rumboot-combine 0.9.18 - RumBoot Image Merger Tool
 
 (C) 2018-2021 Andrew Andrianov <andrew@ncrmnt.org>, RC Module
 https://module.ru
