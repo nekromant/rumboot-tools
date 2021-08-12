@@ -1,5 +1,5 @@
 import sys
-import rumboot_xflash.frontend
+from rumboot.flashing import rumboot_start_flashing
 
 if __name__ == "__main__":
-    sys.exit(rumboot_xflash.frontend.cli())
+    sys.exit(rumboot_start_flashing())
