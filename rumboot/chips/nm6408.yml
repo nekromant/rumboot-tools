@@ -6,11 +6,6 @@ chip_rev: 1
 welcome: host
 baudrate: 115200
 spl_address: 0
-warning: >
-  This chip has a legacy ROM bootloader.
-  RumBoot is flashed onto SPI flash and executed from internal memory
-  to provide additional functionality
-  Please be careful not wipe it! Recovery will be only possible via JTAG
 dumps: {}
 memories:
   spi0-cs0: "rumboot-nm6408-PostProduction-updater-spi0-cs0.bin"

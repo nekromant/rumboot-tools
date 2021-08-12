@@ -6,11 +6,6 @@ chip_rev: 1
 welcome: host
 baudrate: 38400
 spl_address: 0x00100000
-warning: >
-  This chip has a legacy ROM bootloader.
-  RumBoot is flashed onto NAND flash and executed from internal memory
-  to provide additional functionality
-  Please be careful not wipe it! Recovery will be only possible via JTAG/EDCL
 memories: {}
 dumps: {}
 hacks:

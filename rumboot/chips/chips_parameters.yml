@@ -5,7 +5,6 @@ required:
   - chip_id
   - chip_rev
   - baudrate
-  - warning
   - memories
   - dumps
   - hacks

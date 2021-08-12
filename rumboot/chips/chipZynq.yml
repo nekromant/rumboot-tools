@@ -5,7 +5,6 @@ chip_id: 255
 chip_rev: 1
 welcome: "Zynq> "
 baudrate: 115200
-warning: ~
 memories: {}
 dumps: {}
 spl_address:  0x100

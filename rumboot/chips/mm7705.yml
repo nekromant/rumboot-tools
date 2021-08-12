@@ -6,14 +6,32 @@ chip_rev: 1
 baudrate: 1000000
 skipsync: True
 spl_address: 0x48000
-warning: >
-  This chip has a RumBoot V1 bootloader.
-  RumBootV2 may be flashed onto SPI flash and executed from internal memory
-  to provide additional functionality, e.g. xmodem loading
-  Please be careful not wipe it! Recovery will be only possible via JTAG/EDCL
 welcome: host
 memories:
-  spi: "rumboot-mm7705-PostProduction-updater-spiflash.bin"
+  mmc0:
+      spl: "mm7705/u-boot-spl-dtb-sf-nor-mmc.rbi"
+      device: "mmc0"
+      comment: "SD/MMC Card"
+      protocol: flashwriter
+      offset: 0
+  sf00: 
+      spl: "mm7705/u-boot-spl-dtb-sf-nor-mmc.rbi"
+      device: "sf00"
+      comment: "SPI Flash"
+      protocol: flashwriter
+      offset: 0
+  nor: 
+      spl: "mm7705/u-boot-spl-dtb-sf-nor-mmc.rbi"
+      device: "nor0"
+      comment: "NOR memory"
+      protocol: flashwriter
+      offset: 0
+  nand:
+      spl: "mm7705/u-boot-spl-dtb-sf-nand-mmc.rbi"
+      device: "nand0"
+      comment: "NAND memory"
+      protocol: flashwriter
+      offset: 0
 dumps: {}
 hacks:
   skipsync: True  # Doesn't Send U\r\n\r\n at the start.

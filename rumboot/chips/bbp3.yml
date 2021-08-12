@@ -6,7 +6,6 @@ chip_rev: 1
 baudrate: 115200
 welcome: host
 spl_address: 0x8000
-warning: ~
 memories:
   spi0-cs0: "rumboot-bbp3-PostProduction-updater-spi0-cs0.bin"
 romdump: "bbp3-v1.dmp"

@@ -7,7 +7,6 @@ welcome: host
 baudrate: 115200
 romdump: "oi10-v1.dmp"
 spl_address: 0xC0000000
-warning: ~
 memories: {}
 dumps: {}
 hacks:
