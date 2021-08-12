@@ -95,16 +95,18 @@ def rumboot_start_flashing(partmap=None):
 
     opts = parser.parse_args()
 
-    chip, term, reset = helper.create_core_stuff_from_options(opts)
+    chip = helper.detect_chip_type(opts, chips, formats)
     if not chip:
         return 1
 
     mem = opts.memory
     if mem == "help":
-        print(f"Available memories for this {chip.name}")
+        print(f"Available memories for chip '{chip.name}'")
         for mem,cfg in chip.memories.items():
             print("%8s: %s" % (mem, cfg["comment"]))
         return 1
+
+    chip, term, reset = helper.create_core_stuff_from_options(opts)
 
     if opts.read and opts.write:
         print("Please select either --read or --write, not both")
@@ -149,12 +151,11 @@ def rumboot_start_flashing(partmap=None):
     term.xfer.connect(chip)
     partition.dump()
 
-    if len(opts.file) > 1:
+    if opts.file and len(opts.file) > 1:
         print("ERROR: Only one file may be specified") 
         return 1
 
-    if len(opts.file) == 0:
-        print("ERROR: Please specify a file") 
+    if opts.file and len(opts.file) == 0:
         return 1
 
     def prg(total_bytes, position, increment):
