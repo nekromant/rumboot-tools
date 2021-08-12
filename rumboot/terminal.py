@@ -198,6 +198,12 @@ class terminal:
                     break
                 c1 = c2
 
+        def write(self, *args, **kwargs):
+            return self.ser.write(*args, **kwargs)
+
+        def read(self, *args, **kwargs):
+            return self.ser.read(*args, **kwargs)
+
         def hack(self, name):
             if name in self.chip.hacks and self.chip.hacks[name]:
                 return True
@@ -220,13 +226,16 @@ class terminal:
             self.tqdm(disable=True)
 
         def wait(self, format, timeout=1000):
+            lines = []
             while True:
                 line = self.ser.read_until()
                 line = line.decode(errors="replace").rstrip()
                 self.log(False, line, end='\n')
                 ret = parse(format, line)
                 if ret != None:
-                    return ret
+                    return ret, lines
+                else:
+                    lines.append(line)
 
         def shell_mode(self, prompt):
             self.shell_prompt = prompt

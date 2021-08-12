@@ -163,8 +163,8 @@ class edcl():
         return self._write_raw_(address, data)
 
     def read32(self, address):
-        data = _read_raw(self, address, 4)
-        return struct.unpack_from("=I",data)
+        data = self._read_raw(address, 4)
+        return struct.unpack_from("=I",data)[0]
 
     def write32(self, address, data):
         data = struct.pack("=I",  data)
@@ -193,54 +193,6 @@ class edcl():
             self._write_raw(address + l, data[l:l+towrite])
             if callback:
                 callback(len, l + towrite, towrite)
-
-
-    def send_from_file(self, address, fl, callback = None, offset = 0, length = -1):
-        if type(fl) == str:
-            fl = open(fl, "rb")
-
-        if length == -1:
-            fl.seek(0, 2)
-            length = fl.tell() - offset
-
-        fl.seek(offset)
-        chunksize = self.maxpayload * 10
-        def wrapcb(total, position, lastwrite):
-            if callback:
-                callback(length, position, lastwrite)
-
-        while True:
-            toread = chunksize
-            if toread > length:
-                toread = length
-            chunk = fl.read(length)
-            if len(chunk) == 0:
-                break
-            self.write(address, chunk, wrapcb)
-            address = address + chunksize
-            length -= toread
-            if length == 0:
-                break
-#        print(self.stats)
-        
-    def recv_to_file(self, address, length, fl, callback = None):
-        if type(fl) == str:
-            fl = open(fl, "wb+")
-            needclose = True
-        else:
-            needclose = False
-        chunksize = self.maxpayload * 10
-        def wrapcb(total, position, lastwrite):
-            if callback:
-                callback(length, position, lastwrite)
-        rd = 0
-        while rd < length:
-            chunk = self.read(address + rd, chunksize, wrapcb)
-            fl.write(chunk)
-            rd = rd + chunksize
-        if needclose:
-            fl.close()
-#        print(self.stats)
 
     def reconnect(self, params = None):
         if params != None:

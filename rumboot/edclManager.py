@@ -158,10 +158,6 @@ class edclmanager(object):
             self.dropARP(chip, params)
         self.addARP(chip, params)
 
-    def smartupload(self, address, image, callback = None):
-        self.edcl.send_from_file(address + 4, image, callback, 4)
-        self.edcl.send_from_file(address    , image, None, 0, 4)
-
     def connect_once(self, chip, params = None):
         if "edcl_ip" in params and "edcl_mac" in params:
             params = {

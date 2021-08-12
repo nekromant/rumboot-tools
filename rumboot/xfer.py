@@ -1,9 +1,12 @@
+import io
 from rumboot.edclManager import edclmanager
 from xmodem import XMODEM
 
 class xferBase():
     connected = False
     chip = None
+    maxpayload = 1
+
     def __init__(self, terminal, params = {}):
         self.term = terminal
         self.params = params
@@ -23,82 +26,140 @@ class xferBase():
         stream.seek(0)
         return len
 
+    def write8(self, address, data):
+        raise Exception("write32 not implemented")
+
+    def read8(self, address):
+        raise Exception("read32 not implemented")
+
+    def write16(self, address, data):
+        raise Exception("write32 not implemented")
+
+    def read16(self, address):
+        raise Exception("read32 not implemented")
+
     def write32(self, address, data):
         raise Exception("write32 not implemented")
 
     def read32(self, address):
         raise Exception("read32 not implemented")
 
-    def _send(self, stream, destaddr, desc="Sending stream"):
-        pass
+    def write64(self, address, data):
+        raise Exception("write32 not implemented")
 
-    def send(self, stream, destaddr, desc="Sending stream"):
-        if type(stream) is str:
-            stream = open(stream, 'rb')
+    def read64(self, address):
+        raise Exception("read32 not implemented")
+
+    def _write(self, buffer, destaddr, cb = None):
+        raise Exception("FATAL: NOT IMPLEMENTED")        
+
+    def _read(self, srcaddr, length, callback = None):
+        raise Exception("FATAL: NOT IMPLEMENTED")        
+
+    def read_tlb(self):
+        raise Exception("read_tlb not implemented")
+
+    def write_tlb(self, data):
+        raise Exception("write_tlb not implemented")
+
+    def write(self, data, destaddr, callback = None):
         if self.connected:
-            return self._send(stream, destaddr, desc)
+            return self._write(data, destaddr, callback)
         else:
             raise Exception("Transport not connected")
 
-    def _recv(self, stream, srcaddr, total, desc="Sending stream"):
-        print("FATAL: NOT IMPLEMENTED")        
-        pass
-
-    def recv(self, stream, srcaddr, total, desc="Receiving stream"):
-        if type(stream) is str:
-            stream = open(stream, 'wb')
+    def read(self, srcaddr, length, callback = None):
         if self.connected:
-            return self._recv(stream, srcaddr, total, desc=desc)
+            return self._read(srcaddr, length, callback)
         else:
             raise Exception("Failed to enable transport")
+
+    def from_file(self, address, fl, callback = None, offset = 0, length = -1):
+        if type(fl) == str:
+            fl = open(fl, "rb")
+
+        if length == -1:
+            fl.seek(0, 2)
+            length = fl.tell() - offset
+
+        fl.seek(offset)
+        chunksize = self.maxpayload * 10
+        def wrapcb(total, position, lastwrite):
+            if callback:
+                callback(length, position, lastwrite)
+
+        while True:
+            toread = chunksize
+            if toread > length:
+                toread = length
+            chunk = fl.read(length)
+            if len(chunk) == 0:
+                break
+            self.write(address, chunk, wrapcb)
+            address = address + chunksize
+            length -= toread
+            if length == 0:
+                break
+
+    def to_file(self, address, length, fl, callback = None):
+        if type(fl) == str:
+            fl = open(fl, "wb+")
+            needclose = True
+        else:
+            needclose = False
+        chunksize = self.maxpayload * 10
+        def wrapcb(total, position, lastwrite):
+            if callback:
+                callback(length, position, lastwrite)
+        rd = 0
+        while rd < length:
+            chunk = self.read(address + rd, chunksize, wrapcb)
+            fl.write(chunk)
+            rd = rd + chunksize
+        if needclose:
+            fl.close()
 
     def close(self):
         pass
 
 class xferXmodem(xferBase):
+    maxpayload = 8 * 1024 * 1024
     increment = 128
+    last_ok = 0
     mode = "xmodem"
 
     def __init__(self, terminal, params = {}):
         super().__init__(terminal, params)
 
     def connect(self, chip):
-        ser = self.term.ser
         def getc(size, timeout=10):
-            ret = ser.read(size)
+            ret = self.term.read(size)
             return ret or None
         def putc(data, timeout=10):
-            return ser.write(data)  # note that this ignores the timeout
+            return self.term.write(data)  # note that this ignores the timeout
         self.modem = XMODEM(getc, putc, mode=self.mode)
         return super().connect(chip)
 
-    def _send(self, stream, destaddr, desc="Sending stream"):
-        total = self.stream_size(stream)
-        terminal = self.term
-        increment = self.increment
-        terminal.progress_start(desc, total)
-        self.last_ok = 0
+    def _write(self, destaddr, buffer, callback = None):
+        def wrap_callback(total_packets, success_count, error_count):
+            if self.last_ok != success_count and success_count != 0:
+                if callback:
+                    callback(total_packets * self.increment, success_count * self.increment, self.increment)
+            self.last_ok = success_count
+        if not isinstance(buffer, io.IOBase):
+            buffer = io.BytesIO(buffer)
+
+        ln = self.stream_size(buffer)
+        return self.modem.send(buffer, retry=128, callback=wrap_callback)
+
+    def _read(self, srcaddr, length, callback = None):
         def callback(total_packets, success_count, error_count):
             if self.last_ok != success_count and success_count != 0:
-                terminal.progress_update(total_packets * increment, success_count * increment, increment)
-            self.last_ok = success_count
-        ret = self.modem.send(stream, retry=128, callback=callback)
-        terminal.progress_end()
-        return ret
- 
-    def _recv(self, stream, srcaddr, total, desc='Receiving stream'):
-        terminal = self.term
-        increment = self.increment
-        #terminal.progress_start(desc, total)
-        self.last_ok = 0
-        def callback(total_packets, success_count, error_count):
-            if self.last_ok != success_count and success_count != 0:
-                terminal.progress_update(total_packets * increment, success_count * increment, increment)
-            self.last_ok = success_count
-        #FixMe: modem.recv doesn't support callback mechanism
-        ret = self.modem.recv(stream, crc_mode=0, retry=128)
-        #terminal.progress_end()
-        return ret
+                #terminal.progress_update(total_packets * increment, success_count * increment, increment)
+                self.last_ok = success_count
+        stream = io.BytesIO()
+        self.modem.recv(stream, crc_mode=0, retry=128)
+        return stream.getvalue()
 
 class xferXmodem1k(xferXmodem):
     mode = "xmodem1k"
@@ -116,12 +177,14 @@ class xferEdcl(xferBase):
             if not self.edcl.connect(chip, self.params):
                 print("ERROR: Failed to establish edcl connection")
                 return False
+            self.maxpayload = self.edcl.maxpayload
         return super().connect(chip)
         
-    def _recv(self, stream, srcaddr, total, desc="Sending stream"):
-        def prg(total_bytes, position, increment):
-            self.term.progress_update(total_bytes, position, increment) 
-        return self.edcl.recv_to_file(srcaddr, total, stream, callback=prg)
+    def _write(self, destaddr, buffer, callback = None):
+        return self.edcl.write(destaddr, buffer, callback)
+
+    def _read(self, srcaddr, length, callback = None):
+        return self.edcl.read(srcaddr, length, callback)
 
     def reconnect(self):
         if self.edcl != None:
@@ -133,17 +196,6 @@ class xferEdcl(xferBase):
     def read32(self, address):
         return self.edcl.read32(address)
 
-    def _send(self, stream, destaddr, desc='Sending stream'):
-        terminal = self.term
-        total = self.stream_size(stream)
-        terminal.progress_start(desc, total)
-        def prg(total_bytes, position, increment):
-            terminal.progress_update(total_bytes, position, increment) 
-        self.edcl.smartupload(destaddr, stream, callback=prg)
-        terminal.progress_end()
-        return True
-
-
 # Params is a dict:
 #   default: "xmodem"
 #   edcl_ip: "192.168.0.1"
@@ -151,13 +203,15 @@ class xferEdcl(xferBase):
 #   edcl_timeout: 7.0
 #   force_static_arp: True/False
 #
-class xferManager(xferBase):
+class xferManager():
     xfers = {}
     xfer = None
     how = "xmodem"
     params = None
 
     def __init__(self, terminal, params = {}):
+        self.term = terminal
+        self.params = params
         if params == None:
             params = {}
         if not "default" in params:
@@ -165,46 +219,57 @@ class xferManager(xferBase):
         if not "force_static_arp" in params:
             params["force_static_arp"] = False
 
-        super().__init__(terminal)
         self.xfers["xmodem"] = xferXmodem1k(terminal, params)
         self.xfers["xmodem-128"] = xferXmodem(terminal, params)
         self.xfers["edcl"] = xferEdcl(terminal, params)
+        #self.xfers["ubootmx"] = xferUbooMX(terminal, params)
         self.how = params["default"]
         self.xfer = self.xfers[self.how]
 
     def setChip(self, chip):
         self.chip = chip
-
-    def write32(self, address, data):
-        return self.xfer.write32(address, data)
-
-    def read32(self, address):
-        return self.xfer.read32(address)
-    
+   
     def selectTransport(self, how):
         self.how = how
         if not how in self.xfers:
             raise Exception("Unknown xfer method: %s" % how)
         self.xfer = self.xfers[how]
 
+    #Forward API calls to selected transport
+    def __getattr__(self, name):
+        return getattr(self.xfer, name)
+
+    #TODO: This logic needs heavy refactor
     def push(self, address):
         binary = self.term.next_binary()
-        return self.term.xfer.send(binary, address, "Sending binary")
+        self.send(address, binary)
+        return True
 
-    def send(self, stream, destaddr, desc='Sending stream'):
-        if self.xfer.connect(self.chip):
-            return self.xfer.send(stream, destaddr, desc=desc)
-        else:
+    def send(self, destaddr, stream, desc='Sending stream'):
+        needclose = False
+        if type(stream) == str:
+            stream = open(stream, "rb")
+            needclose = True
+        elif not isinstance(stream, io.IOBase):
+            stream = io.BytesIO(stream)
+            needclose = True
+
+        def prg(total_bytes, position, increment):
+            self.term.progress_update(total_bytes, position, increment)
+
+        if not self.xfer.connect(self.chip):
             raise Exception("Failed to connect transport")
+
+        self.term.progress_start(desc, self.stream_size(stream))
+        self.from_file(destaddr + 4, stream, offset = 4, callback=prg)
+        self.from_file(destaddr, stream, length = 4)
+        self.term.progress_end()
+        if needclose:
+            stream.close()
+        return True
 
     def recv(self, stream, srcaddr, total, desc="Receiving data"):
-        if self.xfer.connect(self.chip):
-            return self.xfer.recv(stream, srcaddr, total, desc=desc)
-        else:
+        if not self.xfer.connect(self.chip):
             raise Exception("Failed to connect transport")
 
-    def reconnect(self):
-        self.xfer.reconnect()
-
-    def close(self):
-        self.xfer.close()
+        return self.to_file(srcaddr, total, stream)
