@@ -7,13 +7,53 @@ welcome: host
 baudrate: 115200
 spl_address: 0x40000
 memories:
-  i2c0-0x50: "rumboot-basis-PostProduction-updater-i2c0-0x50.bin"
-  i2c0-0x51: "rumboot-basis-PostProduction-updater-i2c0-0x51.bin"
-  i2c0-0x52: "rumboot-basis-PostProduction-updater-i2c0-0x52.bin"
-  i2c0-0x53: "rumboot-basis-PostProduction-updater-i2c0-0x53.bin"
-  spi0-gpio0_5-cs: "rumboot-basis-PostProduction-updater-spi0-gpio0_5-cs.bin"
-  spi0-internal-cs: "rumboot-basis-PostProduction-updater-spi0-internal-cs.bin"
-  spi1-internal-cs: "rumboot-basis-PostProduction-updater-spi1-internal-cs.bin"
+#SPL Probes all I2C busse and addrs. 
+#If the required is missing, just add to the config 
+  i2c0@50:
+    spl: "basis/u-boot-spl-dtb-i2c-sf.rbi"
+    device: "i2c0-50"
+    comment: "I2C EEPROM @ 0x50"
+    protocol: flashwriter
+    offset: 0
+  i2c0@51:
+    spl: "basis/u-boot-spl-dtb-i2c-sf.rbi"
+    device: "i2c0-50"
+    comment: "I2C EEPROM @ 0x51"
+    protocol: flashwriter
+    offset: 0
+  i2c0@52:
+    spl: "basis/u-boot-spl-dtb-i2c-sf.rbi"
+    device: "i2c0-50"
+    comment: "I2C EEPROM @ 0x52"
+    protocol: flashwriter
+    offset: 0
+  i2c0@53:
+    spl: "basis/u-boot-spl-dtb-i2c-sf.rbi"
+    device: "i2c0-50"
+    comment: "I2C EEPROM @ 0x53"
+    protocol: flashwriter
+    offset: 0
+  spi0-gpio0_5-cs:
+    spl: "basis/u-boot-spl-dtb-i2c-sf.rbi"
+    device: "sf00"
+    comment: "SPI Flash @ SPI0 CS GPIO0_5"
+    protocol: flashwriter
+    offset: 0
+  mmc0:
+    spl: "basis/u-boot-spl-dtb-i2c-mmc.rbi"
+    device: "mmc0"
+    comment: "SD Card @ SDIO0"
+    protocol: flashwriter
+    offset: 0
+  mmc1:
+    spl: "basis/u-boot-spl-dtb-i2c-mmc.rbi"
+    device: "mmc1"
+    comment: "SD Card @ SDIO1"
+    protocol: flashwriter
+    offset: 0
+
+
+
 dumps: {}
 flashrom:
   spi0-gpio0_5-cs: "rumboot-basis-PostProduction-serprog-spi0-gpio0_5-cs.bin"
