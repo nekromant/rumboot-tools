@@ -180,7 +180,8 @@ class arghelper():
             formats = ImageFormatDb("rumboot.images")
             chips   = ChipDb("rumboot.chips")
             c = self.detect_chip_type(opts, chips, formats)
-
+            if not c:
+                return None, None, None
             print("Detected chip:    %s (%s)" % (c.name, c.part))
 
             if c == None:

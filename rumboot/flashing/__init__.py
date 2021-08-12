@@ -29,7 +29,6 @@ from rumboot.terminal import terminal
 
 import os
 import argparse
-import rumboot_xflash
 import rumboot_packimage
 from parse import *
 import rumboot
@@ -97,6 +96,8 @@ def rumboot_start_flashing(partmap=None):
     opts = parser.parse_args()
 
     chip, term, reset = helper.create_core_stuff_from_options(opts)
+    if not chip:
+        return 1
 
     mem = opts.memory
     if mem == "help":
