@@ -27,7 +27,9 @@ setup(
         "getmac",
         "heatshrink2",
         "pyqt5",
-        "pygpiotools"
+        "pygpiotools",
+        "argcomplete",
+        "humanfriendly"
         ],
 
     extras_require = {
