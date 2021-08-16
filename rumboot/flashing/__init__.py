@@ -90,6 +90,11 @@ def rumboot_start_flashing(partmap=None):
                         default=False,
                         action='store_true',
                         required=False)
+    parser.add_argument("-U", "--upload-baudrate",
+                        help="Change baudrate for uploads",
+                        default=0,
+                        type=int,
+                        required=False)
 
     helper.add_resetseq_options(parser, resets)
 
@@ -148,7 +153,6 @@ def rumboot_start_flashing(partmap=None):
     flasher = flashers[mem](term, mem)
 
     partition = flasher.add_partition(mem, opts.offset, opts.length)
-    term.xfer.connect(chip)
     partition.dump()
 
     if opts.file and len(opts.file) > 1:
@@ -160,6 +164,16 @@ def rumboot_start_flashing(partmap=None):
 
     def prg(total_bytes, position, increment):
         term.progress_update(total_bytes, position, increment)
+
+    if opts.upload_baudrate == 0 and hasattr(chip, "flashbaudrate"):
+         opts.upload_baudrate = chip.flashbaudrate
+
+    if opts.upload_baudrate > 0:
+        print(f"WARN: Changing baudrate to {opts.upload_baudrate} bps")
+        print( "WARN: If everything freezes - try a different setting via -U / --upload-baudrate")
+        partition.switchbaud(opts.upload_baudrate)
+
+    term.xfer.connect(chip)
 
     if opts.write:
         fl = open(opts.file[0][0], "rb")

@@ -12,6 +12,7 @@ required:
   - spl_address
 
 optional:
+  - flashbaudrate
   - welcome
   - stub
   - skipsync

@@ -157,6 +157,10 @@ class FlashDeviceFLW(FlashDeviceBase):
             setattr(self, key, value)
         self.writer.select(self.name)
 
+    def switchbaud(self, newbaud):
+        self.writer.cmd(f"baudrate {newbaud:d}", "Baudrate: current={:d},new={:d}")
+        self.terminal.reopen(speed=newbaud)
+
     def _read_edcl(self, fd, offset, length, cb):
         self.writer.cmd(f"duplicate E {offset:x} {length:x}", "ready", timeout=120)
         return self.writer.edcl_read_data(fd, length, cb)

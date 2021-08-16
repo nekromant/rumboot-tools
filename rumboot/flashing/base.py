@@ -144,3 +144,6 @@ class FlashDeviceBase():
 
     def _erase(self, offset=0, length=-1, cb = None):
         raise Exception("NOT IMPLEMENTED")
+
+    def switchbaud(self, newbaud):
+        raise Exception("Not implemented")
