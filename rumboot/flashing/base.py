@@ -1,4 +1,5 @@
 import io
+import re
 import copy
 
 class PartitionBase():
@@ -88,6 +89,7 @@ class PartitionBase():
         partitions = self.partitions
         partitions[name]        = copy.copy(self)
         partitions[name].name   = name
+
         if offset < 0:
             offset = self.size - offset
 
@@ -134,6 +136,10 @@ class PartitionBase():
     def dump(self):
         print(f"Device: {self.name} part: {self.part} size: {self.sizeof_fmt(self.size)} erase_size: {self.sizeof_fmt(self.erase_size)} write_size: {self.sizeof_fmt(self.write_size)}")
 
+    def dump_parts(self):
+        for k,v in self.partitions.items():
+            v.dump()
+            
 #Basic flash device with access functions
 class FlashDeviceBase():
     def _read(self, fd, offset, length, cb = None):

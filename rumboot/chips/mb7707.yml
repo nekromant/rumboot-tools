@@ -6,7 +6,13 @@ chip_rev: 1
 welcome: host
 baudrate: 38400
 spl_address: 0x00100000
-memories: {}
+memories:
+  nand:
+    spl: "mb7707/mboot-signed.bin"
+    device: "nand"
+    comment: "NAND Flash memory"
+    protocol: legacy_edcl
+    offset: 0
 dumps: {}
 hacks:
   skipsync: True  # Doesn't Send U\r\n\r\n at the start. All legacy stuff

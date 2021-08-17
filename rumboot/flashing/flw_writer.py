@@ -113,14 +113,9 @@ class WriterFLW():
     def __getitem__(self, key):
         self.select(key)
         return self.devices[key]
-
-    def cmd(self, cmd, response, timeout=15):
-        data = cmd + "\r\n"
-        self.terminal.write(data.encode("ascii"))
-        return self.terminal.wait(response, timeout=timeout)
     
     def select(self, device):
-        return self.cmd(f"select {device}", "Device {} selected")
+        return self.terminal.cmd(f"select {device}", "Device {} selected")
 
     def discover(self):
         devices = {}

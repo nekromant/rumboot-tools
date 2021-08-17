@@ -258,6 +258,11 @@ class terminal:
                     break
             return data
 
+        def cmd(self, cmd, response, timeout=15, endline = "\r\n"):
+            data = cmd + endline
+            self.write(data.encode("ascii"))
+            return self.wait(response, timeout=timeout)
+    
         def shell_cmd(self, cmd, timeout=10, initial=False):
             if initial:
                 self.wait_prompt(initial)
