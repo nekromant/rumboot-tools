@@ -31,17 +31,17 @@ Sounds like too much? How you are you expected to use them in your app?
 rumboot-tools use IDs to identify chips. Every supported chip has it's own id. 
 
 
-Platform Name  | Part Number             | Endianess | #Cores | ChipID | ChipRev | Image Format 
--------------- | ----------------------- | --------- | ------ | ------ | ------- | ------------
-mm7705         | 1888ТХ018               | big       | 2      | 1      | 1       | RumBoot V1
-mb7707         | К1879ХБ1YA              | little    | -      | 2      | 1       | Legacy K1879XB1YA
-basis          | 1888ВС048               | little    | 1      | 3      | 1       | RumBoot V2
-oi10           | 1888ВМ018(A)/1888ВМ01H4 | big       | 1      | 4      | 1       | RumBoot V2
-bbp3           | 1888ВС058               | little    | 1      | 5      | 1       | RumBoot V2
-nm6408         | 1888ВС058               | little    | 1      | 6      | 1       | Legacy NM6408
--------------- | ----------------------- | --------- | ------ | ------ | ------- | -------------
-zed            | Zed Board / Tang Hex    | little    | 2      | 255    | 1       | Other
-rpi4           | BCM2711 (Raspberry Pi 4)| little    | 4      | 255    | 2       | Other
+Platform Name | Part Number              | EDCL | Endianess | #Cores | ChipID | ChipRev | Image Format
+--------------|--------------------------|------|-----------|--------|--------|---------|------------------
+mm7705        | 1888ТХ018                | Yes  | big       | 2      | 1      | 1       | RumBoot V1
+mb7707        | К1879ХБ1YA               | Yes  | little    | -      | 2      | 1       | Legacy K1879XB1YA
+basis         | 1888ВС048                | No   | little    | 1      | 3      | 1       | RumBoot V2
+oi10          | 1888ВМ018(A)/1888ВМ01H4 | Yes  | big       | 1      | 4      | 1       | RumBoot V2
+bbp3          | 1888ВС058                | Yes  | little    | 1      | 5      | 1       | RumBoot V2
+nm6408        | 1888ВС058                | Yes  | little    | 1      | 6      | 1       | Legacy NM6408
+              |                          |      |           |        |        |         |
+zed           | Zed Board / Tang Hex     | No   | little    | 2      | 255    | 1       | Other
+rpi4          | BCM2711 (Raspberry Pi 4) | No   | little    | 4      | 255    | 2       | Other
 
 Since different chips have different ROM loaders, default baudrates, flash memories and etc., some tools require you either set ChipId explicitly (via -c option) or try their best to guess it from image file header. Only newer (rumboot V2 and later) image formats have a dedicated field called chip_id. 
 
