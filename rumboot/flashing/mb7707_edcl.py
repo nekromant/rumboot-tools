@@ -100,12 +100,10 @@ class FlashDeviceMB7707(FlashDeviceBase):
         self.name = device
         super().__init__()
         self.magic(0xdeadc0de) # Enable slave mode
-        print("mb7707_edcl: Waiting for board to respond...")
         
         self.wait_nmagic(0xdeadc0de);
         self.cmdaddr = self.magic()
 
-        print(f"mb7707_edcl: cmd cell found at 0x{self.cmdaddr:x}, good")
         layout = self.extract_nand_info()
         for key, value in layout.items():
             setattr(self, key, value)
@@ -166,11 +164,7 @@ class FlashDeviceMB7707(FlashDeviceBase):
         self.magic(0)
         self.wait_nmagic(0)
 
-    def _read(self, fd, offset, length, cb = None):
-        self.commit()
-
-        offset += self.get_real_offset()
-
+    def get_bad_blocks(self):
         self.mboot_cmd("mtd bad; version")
         self.terminal.wait("MTD mnand bad blocks:")
         ret, lines = self.terminal.wait("mboot-{}")
@@ -180,22 +174,28 @@ class FlashDeviceMB7707(FlashDeviceBase):
                 bads.append(int(l, 16))
             except:
                 pass
-        
-        maxchunksize = 1 * 1024 * 1024
+        return bads
+
+    def _read(self, fd, offset, length, cb = None):
+        self.commit()
+        bads = self.get_bad_blocks()
+        maxchunksize = self.erase_size
         total = length
         while length > 0:
             if length > maxchunksize:
                 chunk = maxchunksize
             else:
                 chunk = length
-
-            self.mboot_cmd(f"mtd read 0x40100000 0x{offset:x} 0x{chunk:x}")
-            data = self.terminal.xfer.read(0x40100000, chunk)
-            fd.write(data)
-            length -= len(data)
-            offset += len(data)
-            if cb:
-                cb(total, total - length, chunk)
+            if not offset in bads:
+                self.mboot_cmd(f"mtd read 0x40100000 0x{offset:x} 0x{chunk:x}")
+                data = self.terminal.xfer.read(0x40100000, chunk)
+                fd.write(data)
+                length -= len(data)
+                offset += len(data)
+                if cb:
+                    cb(total, total - length, chunk)
+            else:
+                offset += self.erase_size
 
     def _erase(self, offset=0, length=-1, cb = None):
         if length == -1:
