@@ -119,13 +119,13 @@ class WriterFLW():
 
     def discover(self):
         devices = {}
-        ret,lines = self.cmd("bufptr", "buffers {:x} {:x} sync {:x} ack {:x} length {:x}")
+        ret,lines = self.terminal.cmd("bufptr", "buffers {:x} {:x} sync {:x} ack {:x} length {:x}")
         self.addr_buffers = [ ret[0], ret[1] ]
         self.addr_sync = ret[2]
         self.addr_sync_ack = ret[3]
         self.buffer_length = ret[4]
 
-        ret, lines = self.cmd("list", "completed")
+        ret, lines = self.terminal.cmd("list", "completed")
         for l in lines:
             ret = parse("id: {} part: {} size: {:x} erasesize: {:x} writesize: {:x}", l)
             if ret:
@@ -153,15 +153,15 @@ class FlashDeviceFLW(FlashDeviceBase):
         self.writer.select(self.name)
 
     def switchbaud(self, newbaud):
-        self.writer.cmd(f"baudrate {newbaud:d}", "Baudrate: current={:d},new={:d}")
+        self.terminal.cmd(f"baudrate {newbaud:d}", "Baudrate: current={:d},new={:d}")
         self.terminal.reopen(speed=newbaud)
 
     def _read_edcl(self, fd, offset, length, cb):
-        self.writer.cmd(f"duplicate E {offset:x} {length:x}", "ready", timeout=120)
+        self.terminal.cmd(f"duplicate E {offset:x} {length:x}", "ready", timeout=120)
         return self.writer.edcl_read_data(fd, length, cb)
 
     def _read_xmodem(self, fd, offset, length, cb):
-        self.writer.cmd(f"duplicate X {offset:x} {length:x}", "ready", timeout=120)
+        self.terminal.cmd(f"duplicate X {offset:x} {length:x}", "ready", timeout=120)
         return self.terminal.xfer.to_file(0, length, fd)
 
     def _read(self, fd, offset, length, cb):
@@ -171,11 +171,11 @@ class FlashDeviceFLW(FlashDeviceBase):
             return self._read_edcl(fd, offset, length, cb) 
 
     def _write_xmodem(self, fd, offset, length, cb):
-        self.writer.cmd(f"program X {offset:x} {length:x}", "completed", timeout=120)
+        self.terminal.cmd(f"program X {offset:x} {length:x}", "completed", timeout=120)
         self.terminal.xfer.write(0, fd, cb)
 
     def _write_edcl(self, fd, offset, length, cb):
-        self.writer.cmd(f"program E {offset:x} {length:x}", "completed", timeout=120)
+        self.terminal.cmd(f"program E {offset:x} {length:x}", "completed", timeout=120)
         self.writer.edcl_send_data(fd, length, cb)
 
     def _write(self, fd, offset, length, cb = None):
@@ -185,7 +185,7 @@ class FlashDeviceFLW(FlashDeviceBase):
             return self._write_edcl(fd, offset, length, cb) 
 
     def _erase(self, offset, length):
-        self.writer.cmd(f"erase {offset:x} {length:x}", "Erase: address {},size {}...completed")
+        self.terminal.cmd(f"erase {offset:x} {length:x}", "Erase: address {},size {}...completed")
 
     def __str__(self):
         return f'FlashWriter Device {self.name} part: {self.part} size {self.size} erase_size: {self.erase_size} write_size: {self.write_size}'
