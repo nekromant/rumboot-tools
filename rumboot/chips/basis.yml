@@ -60,7 +60,6 @@ flashrom:
 romdump: "basis-v1.dmp"
 hacks:
   skipsync: False  # Doesn't Send U\r\n\r\n at the start. All legacy stuff
-  edclArpBug: False  # EDCL doesn't have a valid IP, needs a static ARP entry (mb7707)
   silentRom: False  # Bootrom is totally silent
   noxmodem: False  # Chip lacks xmodem implementation
   noedcl: True  # Chip lacks edcl implementation

@@ -10,7 +10,6 @@ class chipBase:
     dumps = {}
     hacks = {
         "skipsync"   : False, # Doesn't Send U\r\n\r\n at the start. All legacy stuff
-        "edclArpBug" : False, # EDCL doesn't have a valid IP, needs a static ARP entry (mb7707)
         "silentRom"  : False, # Bootrom is totally silent
         "noxmodem"   : False,  # Chip lacks xmodem implementation
         "noedcl"     : False  # Chip lacks edcl implementation

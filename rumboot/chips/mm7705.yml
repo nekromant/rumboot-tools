@@ -41,7 +41,6 @@ memories:
 dumps: {}
 hacks:
   skipsync: True  # Doesn't Send U\r\n\r\n at the start.
-  edclArpBug: False
   silentRom: False  # Bootrom is totally silent
   noxmodem: False  # Chip lacks xmodem implementation
   noedcl: False

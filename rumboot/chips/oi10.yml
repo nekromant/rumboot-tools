@@ -7,11 +7,23 @@ welcome: host
 baudrate: 115200
 romdump: "oi10-v1.dmp"
 spl_address: 0xC0000000
-memories: {}
+memories:
+  mmc0:
+      spl: "oi10/u-boot-spl-dtb-mmc.rbi"
+      device: "mmc0"
+      comment: "SD/MMC Card"
+      protocol: flashwriter
+      offset: 0
+  sf00:
+      spl: "oi10/u-boot-spl-dtb-sf.rbi"
+      device: "sf00"
+      comment: "SPI Flash"
+      protocol: flashwriter
+      offset: 0
+
 dumps: {}
 hacks:
   skipsync: False  # Doesn't Send U\r\n\r\n at the start. All legacy stuff
-  edclArpBug: False  # EDCL doesn't have a valid IP, needs a static ARP entry (mb7707)
   silentRom: False  # Bootrom is totally silent
   noxmodem: False  # Chip lacks xmodem implementation
   noedcl: False  # Chip lacks edcl implementation

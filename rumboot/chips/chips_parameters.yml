@@ -22,7 +22,6 @@ optional:
 
 hacks:
   - skipsync
-  - edclArpBug
   - silentRom
   - noxmodem
   - noedcl
