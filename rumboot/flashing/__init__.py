@@ -151,7 +151,7 @@ def rumboot_start_flashing(partmap=None):
 
     flashers = FlashAlgoFactory("rumboot.flashing", config["protocol"])
     flasher = flashers[mem](term, mem)
-
+    # ------------------------
     partition = flasher.add_partition(mem, opts.offset, opts.length)
     partition.dump()
 
@@ -178,6 +178,9 @@ def rumboot_start_flashing(partmap=None):
     if opts.write:
         fl = open(opts.file[0][0], "rb")
         size = partition.stream_size(fl)
+        if size > partition.size:
+            print("WARN: File too big and will be truncated")
+            size = partition.size
         term.progress_start(f"Writing {mem}", size)
         partition.write(fl, 0, size, cb=prg)
         term.progress_end()
