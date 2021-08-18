@@ -107,7 +107,10 @@ class xferBase():
             needclose = True
         else:
             needclose = False
-        chunksize = self.maxpayload * 10
+        if self.maxpayload > 0:
+            chunksize = self.maxpayload * 10
+        else:
+            chunksize = length # Just one big chunk-o-data
         def wrapcb(total, position, lastwrite):
             if callback:
                 callback(length, position, lastwrite)
@@ -123,7 +126,7 @@ class xferBase():
         pass
 
 class xferXmodem(xferBase):
-    maxpayload = 8 * 1024 * 1024
+    maxpayload = -1 # Don't care
     increment = 128
     last_ok = 0
     mode = "xmodem"
@@ -153,12 +156,14 @@ class xferXmodem(xferBase):
         return self.modem.send(buffer, retry=128, callback=wrap_callback)
 
     def _read(self, srcaddr, length, callback = None):
-        def callback(total_packets, success_count, error_count):
+        def wrap_callback(total_packets, success_count, error_count, packet_size):
             if self.last_ok != success_count and success_count != 0:
-                #terminal.progress_update(total_packets * increment, success_count * increment, increment)
-                self.last_ok = success_count
+                if callback:
+                    callback(length, success_count * packet_size, packet_size)
+            self.last_ok = success_count
+
         stream = io.BytesIO()
-        self.modem.recv(stream, crc_mode=0, retry=128)
+        self.modem.recv(stream, crc_mode=0, retry=128, callback=wrap_callback)
         return stream.getvalue()
 
 class xferXmodem1k(xferXmodem):

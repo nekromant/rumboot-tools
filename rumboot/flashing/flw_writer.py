@@ -162,7 +162,7 @@ class FlashDeviceFLW(FlashDeviceBase):
 
     def _read_xmodem(self, fd, offset, length, cb):
         self.terminal.cmd(f"duplicate X {offset:x} {length:x}", "ready", timeout=120)
-        return self.terminal.xfer.to_file(0, length, fd)
+        return self.terminal.xfer.to_file(0, length, fd, callback = cb)
 
     def _read(self, fd, offset, length, cb):
         if self.terminal.xfer.how == "xmodem":
