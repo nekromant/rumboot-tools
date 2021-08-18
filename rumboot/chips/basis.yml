@@ -34,10 +34,28 @@ memories:
     comment: "I2C EEPROM @ 0x53"
     protocol: flashwriter
     offset: 0
-  spi0-gpio0_5-cs:
+  sf00:
     spl: "basis/u-boot-spl-dtb-i2c-sf.rbi"
     device: "sf00"
     comment: "SPI Flash @ SPI0 CS GPIO0_5"
+    protocol: flashwriter
+    offset: 0
+  sf01:
+    spl: "basis/u-boot-spl-dtb-i2c-sf.rbi"
+    device: "sf01"
+    comment: "SPI Flash @ SPI0 Internal CS "
+    protocol: flashwriter
+    offset: 0
+  sf10:
+    spl: "basis/u-boot-spl-dtb-i2c-sf.rbi"
+    device: "sf10"
+    comment: "SPI Flash @ SPI1 CS GPIO0_6"
+    protocol: flashwriter
+    offset: 0
+  sf11:
+    spl: "basis/u-boot-spl-dtb-i2c-sf.rbi"
+    device: "sf11"
+    comment: "SPI Flash @ SPI1 Internal CS "
     protocol: flashwriter
     offset: 0
   mmc0:
