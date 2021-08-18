@@ -1,5 +1,6 @@
 #Newer FlashWriter SPL thingie
 import io
+import time
 from parse import parse
 from .base import PartitionBase, FlashDeviceBase
 
@@ -94,7 +95,6 @@ class WriterFLW():
                 self.terminal.xfer.write32(self.addr_sync, self.swap32(value))
                 tmp = self.terminal.xfer.read32(self.addr_sync_ack)
                 tmp = self.swap32(tmp)
-                self.dumpuart()
                 if tmp == value:
                     self.terminal.xfer.write32(self.addr_sync_ack, 0)                    
                     break
@@ -103,11 +103,11 @@ class WriterFLW():
 
     def edcl_sync_wait(self, val, tout=5):
         value = 0
-        for i in range(tout*5000):
+        start = time.monotonic()
+        while time.monotonic() - start < 15:
             value = self.edcl_sync()
             if  value == val:
                 return
-            self.dumpuart()
         raise Exception(f"EDCL Sync timeout, last value {value:x}, want {val:x}")
 
     def __getitem__(self, key):
