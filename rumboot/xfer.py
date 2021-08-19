@@ -1,6 +1,7 @@
 import io
 from rumboot.edclManager import edclmanager
 from xmodem import XMODEM
+import inspect
 
 class xferBase():
     connected = False
@@ -163,7 +164,14 @@ class xferXmodem(xferBase):
             self.last_ok = success_count
 
         stream = io.BytesIO()
-        self.modem.recv(stream, crc_mode=0, retry=128, callback=wrap_callback)
+        #HACK: Check if this stuff is merged: https://github.com/tehmaze/xmodem/pull/53
+        spec = inspect.getargspec(self.modem.recv)
+        if "callback" in spec.args:
+            self.modem.recv(stream, crc_mode=0, retry=128, callback=wrap_callback)
+        else:
+            print("WARN: No progressbar will be shown, because xmodem library is too old")
+            print("WARN: Please update (pip install --upgrade xmodem) to see progressbar during readdout")
+            self.modem.recv(stream, crc_mode=0, retry=128)
         return stream.getvalue()
 
 class xferXmodem1k(xferXmodem):
