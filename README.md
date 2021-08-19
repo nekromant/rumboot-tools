@@ -1,6 +1,7 @@
 # RumBoot Loader Tools
 
 [![Build status](https://ci.appveyor.com/api/projects/status/srn9x0xrp2st9nns/branch/master?svg=true)](https://ci.appveyor.com/project/nekromant/rumboot-tools/branch/master)
+[![Total alerts](https://img.shields.io/lgtm/alerts/g/RC-MODULE/rumboot-tools.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/RC-MODULE/rumboot-tools/alerts/)
 ## Summary
 This repository is home to a set of tools to create, update and run rumboot v1, v2 and other images
 This repository contains several tools
