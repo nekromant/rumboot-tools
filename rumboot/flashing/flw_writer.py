@@ -172,7 +172,7 @@ class FlashDeviceFLW(FlashDeviceBase):
 
     def _write_xmodem(self, fd, offset, length, cb):
         self.terminal.cmd(f"program X {offset:x} {length:x}", "completed", timeout=120)
-        self.terminal.xfer.from_file(0, fd, cb, offset, length)
+        self.terminal.xfer.from_file(0, fd, cb, -1, length)
 
     def _write_edcl(self, fd, offset, length, cb):
         self.terminal.cmd(f"program E {offset:x} {length:x}", "completed", timeout=120)

@@ -75,15 +75,19 @@ class xferBase():
         else:
             raise Exception("Failed to enable transport")
 
-    def from_file(self, address, fl, callback = None, offset = 0, length = -1):
+    def from_file(self, address, fl, callback = None, file_offset = -1, length = -1):
         if type(fl) == str:
             fl = open(fl, "rb")
 
+        if file_offset >= 0:
+            fl.seek(file_offset)
+        else:
+            file_offset = 0
+
         if length == -1:
             fl.seek(0, 2)
-            length = fl.tell() - offset
+            length = fl.tell() - file_offset
 
-        fl.seek(offset)
         chunksize = self.maxpayload * 10
         def wrapcb(total, position, lastwrite):
             if callback:
