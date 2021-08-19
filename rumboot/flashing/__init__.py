@@ -108,7 +108,7 @@ def rumboot_start_flashing(partmap=None):
     if mem == "help":
         print(f"Available memories for chip '{chip.name}'")
         for mem,cfg in chip.memories.items():
-            print("%8s: %s" % (mem, cfg["comment"]))
+            print("%16s: %s" % (mem, cfg["comment"]))
         return 1
 
     chip, term, reset = helper.create_core_stuff_from_options(opts)
@@ -152,6 +152,14 @@ def rumboot_start_flashing(partmap=None):
     flashers = FlashAlgoFactory("rumboot.flashing", config["protocol"])
     flasher = flashers[mem](term, mem)
     # ------------------------
+    offset = opts.offset
+    length = -1
+
+    if "offset" in config:
+        offset += config["offset"]
+    if "size" in config:
+        flasher.size = config["size"]
+
     partition = flasher.add_partition(mem, opts.offset, opts.length)
     partition.dump()
 
