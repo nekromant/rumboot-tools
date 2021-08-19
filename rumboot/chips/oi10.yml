@@ -44,7 +44,20 @@ memories:
       comment: "SPI Flash @ SPI1, Internal CS"
       protocol: flashwriter
       offset: 0
-
+  buggynor: 
+      spl: "oi10/rumboot-oi10-PostProduction-updater-nor-mt150.04.bin"
+      device: "dumb"
+      comment: "NOR Flash (Buggy MT150.04 V0)"
+      protocol: dumb
+      offset: 0
+      size: 4194304
+  buggynor-bootrom: 
+      spl: "oi10/rumboot-oi10-PostProduction-updater-nor-mt150.04-brom.bin"
+      device: "dumb"
+      comment: "NOR Flash (Buggy MT150.04 V0), bootrom section "
+      protocol: dumb
+      offset: 0
+      size: 65536
 dumps: {}
 hacks:
   skipsync: False  # Doesn't Send U\r\n\r\n at the start. All legacy stuff
