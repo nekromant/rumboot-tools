@@ -7,7 +7,13 @@ baudrate: 115200
 welcome: host
 spl_address: 0x8000
 memories:
-  spi0-cs0: "rumboot-bbp3-PostProduction-updater-spi0-cs0.bin"
+  sf00: 
+      spl: "bbp3/rumboot-bbp3-PostProduction-updater-spi0-cs0.bin"
+      device: "dumb"
+      protocol: dumb
+      comment: "SPI Flash (dumb flasher) at CS0"
+      offset: 0
+      size: 4194304
 romdump: "bbp3-v1.dmp"
 dumps: {}
 hacks:
