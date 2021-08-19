@@ -115,7 +115,7 @@ class terminal:
 
         def hack_enable_serial_delay(self, delay):
             if hasattr(self.ser,"__write_orig"):
-                raise("INTERNAL ERROR: serial delay hack already applied")
+                raise Exception("INTERNAL ERROR: serial delay hack already applied")
 
             def write_delayed(data):
                 data = to_bytes(data)

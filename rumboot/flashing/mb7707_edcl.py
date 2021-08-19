@@ -11,7 +11,7 @@ class PartitionMboot(PartitionBase):
     partitions_synced = False
 
     def __init__(self, terminal, name, size=None):
-        self.terminal = terminal
+        super().__init__(terminal)
         self.name = name
 
         #Let's register internal partitions

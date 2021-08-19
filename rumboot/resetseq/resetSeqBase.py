@@ -37,8 +37,8 @@ class base:
     def get_options(self):
         return {}
 
-    def add_argparse_options(this, parser):
-        for key,opts in this.get_options(this).items():
+    def add_argparse_options(self, parser):
+        for key,opts in self.get_options().items():
             parser.add_argument("--" + key,
                     **opts)
 
