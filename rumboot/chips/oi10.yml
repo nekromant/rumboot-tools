@@ -11,13 +11,37 @@ memories:
   mmc0:
       spl: "oi10/u-boot-spl-dtb-mmc.rbi"
       device: "mmc0"
-      comment: "SD/MMC Card"
+      comment: "SD/MMC Card at SDIO0"
+      protocol: flashwriter
+      offset: 0
+  mmc1:
+      spl: "oi10/u-boot-spl-dtb-mmc.rbi"
+      device: "mmc1"
+      comment: "SD/MMC Card at SDIO1"
       protocol: flashwriter
       offset: 0
   sf00:
       spl: "oi10/u-boot-spl-dtb-sf.rbi"
       device: "sf00"
-      comment: "SPI Flash"
+      comment: "SPI Flash @ SPI0, GPIO0_3 CS"
+      protocol: flashwriter
+      offset: 0
+  sf01:
+      spl: "oi10/u-boot-spl-dtb-sf.rbi"
+      device: "sf01"
+      comment: "SPI Flash @ SPI0, Internal CS"
+      protocol: flashwriter
+      offset: 0
+  sf10:
+      spl: "oi10/u-boot-spl-dtb-sf.rbi"
+      device: "sf10"
+      comment: "SPI Flash @ SPI1, GPIO1_0 CS"
+      protocol: flashwriter
+      offset: 0
+  sf11:
+      spl: "oi10/u-boot-spl-dtb-sf.rbi"
+      device: "sf00"
+      comment: "SPI Flash @ SPI1, Internal CS"
       protocol: flashwriter
       offset: 0
 
