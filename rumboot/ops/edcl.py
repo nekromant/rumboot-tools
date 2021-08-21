@@ -28,8 +28,11 @@ class dumb_chips_uploader(basic_uploader):
         #HACK: Old chips don't print anything via uart
         #HACK: edcl is the only way to bring 'em up
         #HACK: We do the lucky guess by looking at the image header
-        def prg(total_bytes, position, increment):
-                self.term.progress.update(increment)     
+
+
+        #No edcl, no fun
+        if self.term.hack("noedcl"):
+            return None       
 
         tp = self.term.formats.guess(self.term.runlist[0])
         if self.term.hack("silentRom"):
