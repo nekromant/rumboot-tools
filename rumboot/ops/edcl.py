@@ -29,7 +29,6 @@ class dumb_chips_uploader(basic_uploader):
         #HACK: edcl is the only way to bring 'em up
         #HACK: We do the lucky guess by looking at the image header
 
-
         #No edcl, no fun
         if self.term.hack("noedcl"):
             return None       
