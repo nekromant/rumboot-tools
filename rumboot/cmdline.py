@@ -182,7 +182,7 @@ class arghelper():
             c = self.detect_chip_type(opts, chips, formats)
             if not c:
                 return None, None, None
-            print("Detected chip:    %s (%s)" % (c.name, c.part))
+            print("Detected chip:              %s (%s)" % (c.name, c.part))
 
             if c == None:
                 raise Exception("ERROR: Failed to auto-detect chip type")
