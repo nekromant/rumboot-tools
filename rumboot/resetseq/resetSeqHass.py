@@ -9,7 +9,7 @@ from requests import post
 class hass(base):
     name = "HomeAssistant Switch"
     swap   = False
-    supported = ["POWER", "RESET"]
+    supported = ["POWER", "RESET", "HOST"]
     mapping = {
         #defaults to a test switch
         "POWER" : None,
