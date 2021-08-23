@@ -19,6 +19,7 @@ optional:
   - romdump
   - flashrom
   - mt12505
+  - vendor
 
 hacks:
   - skipsync
