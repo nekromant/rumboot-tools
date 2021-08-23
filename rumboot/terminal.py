@@ -139,6 +139,8 @@ class terminal:
             self.progress = tqdm(*args, **kwargs)
 
         def add_binaries(self, path):
+            if type(path) is str:
+                path = open(path, "rb")
             if type(path) is list:
                 for p in path:
                     self.runlist.append(p[0])
