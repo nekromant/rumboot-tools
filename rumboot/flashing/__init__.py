@@ -71,6 +71,11 @@ def rumboot_start_flashing(partmap=None):
                         help="Path for SPL writers (Debug only)",
                         type=str,
                         required=False)
+    parser.add_argument("--no-spl",
+                        help="Do not upload spl, assume it boots on it's own (Debug only)",
+                        action="store_true",
+                        default=False,
+                        required=False)
     parser.add_argument("-o", "--offset",
                         help="Memory offset for read/write operations",
                         type=int,
@@ -136,7 +141,8 @@ def rumboot_start_flashing(partmap=None):
     spl = spl_path + config["spl"]
 
     term.verbose = opts.verbose
-    term.add_binaries(spl)
+    if not opts.no_spl:
+        term.add_binaries(spl)
     if opts.edcl and chip.edcl != None:
         term.xfer.selectTransport("edcl")
 
