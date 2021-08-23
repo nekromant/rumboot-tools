@@ -8,7 +8,7 @@ baudrate: 115200
 spl_address: 0
 memories:
   sf00:
-    spl: "thirparty/hi3518ev300/u-boot.bin"
+    spl: "thirdparty/hi3518ev300/u-boot.bin"
     device: "hisisf00"
     comment: "SPI Flash"
     protocol: uboot
