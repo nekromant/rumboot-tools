@@ -4,10 +4,10 @@ import pkgutil
 class classLoader():
     iteratable = []
 
-    def __init__(self, objectpath):
+    def __init__(self, objectpath, flt=object):
         self.opath = objectpath
         self.classes = dict()
-        self.load(objectpath)
+        self.load(objectpath, flt)
 
     def __iter__(self):
         iteratable = []
@@ -29,7 +29,7 @@ class classLoader():
             if type(value).__name__ == key:
                 return c            
 
-    def load(self, path):
+    def load(self, path, flt=None):
         p = __import__(path, fromlist=['object'])
         for mod in pkgutil.iter_modules(p.__path__):
             nm = p.__name__ + "." + mod.name
@@ -40,4 +40,5 @@ class classLoader():
                 p = __import__(obj.__name__, fromlist=['object'])
                 for name, cl in inspect.getmembers(p):
                     if inspect.isclass(cl):
-                        self.classes[name] = cl
+                        if flt is None or issubclass(cl, flt):
+                            self.classes[name] = cl

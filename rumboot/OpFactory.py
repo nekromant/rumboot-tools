@@ -1,10 +1,10 @@
 from rumboot.classLoader import classLoader
 from parse import *
-
+from .ops.base import base
 class OpFactory(classLoader):
     objects = dict()
     def __init__(self, objectpath, terminal):
-        super().__init__(objectpath)
+        super().__init__(objectpath, base)
         self.term = terminal
         for name,cl in self.classes.items():
             self.objects[name] = cl(terminal)
