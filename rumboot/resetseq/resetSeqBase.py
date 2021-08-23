@@ -17,6 +17,7 @@ class base:
         if opts["port"].find("socket") != -1:
             self.silent = True
         self._states = {}
+        self.terminal = terminal
 
     def __getitem__(self, key):
         if not key in self.supported:
