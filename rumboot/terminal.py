@@ -6,7 +6,6 @@ import time
 import io
 from tqdm import tqdm
 from rumboot.OpFactory import OpFactory
-from rumboot.chips.base import chipBase
 from rumboot.ImageFormatDb import ImageFormatDb
 from rumboot.xfer import xferManager
 from serial.serialutil import to_bytes
@@ -27,7 +26,7 @@ class terminal:
         initial_loop_done = False
         runlist = []
         formats = ImageFormatDb("rumboot.images")
-        chip = chipBase()
+        chip = None
         dumps = {}
         curbin = "bootrom"
         progress = tqdm(disable=True)
