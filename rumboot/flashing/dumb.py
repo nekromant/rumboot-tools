@@ -8,20 +8,20 @@ class FlashDeviceDumb(FlashDeviceBase):
         self.part = "dumb flash device"
         super().__init__()
 
-    def _read(self, fd, offset, length, cb = None):
+    def _read(self, fd, offset, length, callback = None):
         raise Exception("DUMB SPLs DO NOT SUPPORT READBACK")
 
-    def _write(self, fd, offset, length, cb = None):
+    def _write(self, fd, offset, length, callback = None):
         if offset != 0:
             raise Exception(f"DUMB SPLs DO NOT SUPPORT OFFSET != 0 (current is {offset}")
         self.terminal.wait("boot: Press 'X' and send me the image")
         self.terminal.write("X".encode("ascii"))
         if self.terminal.xfer.how != "xmodem" and self.terminal.xfer.how != "xmodem1k":
             raise Exception("Dumb spls only support xmodem")
-        return self.terminal.xfer.from_file(0, fd, cb, offset, length)
+        return self.terminal.xfer.from_file(0, fd, callback, offset, length)
 
-    def _erase(self, offset=0, length=-1, cb = None):
-        raise Exception(f"DUMB SPLs DO NOT SUPPORT ERASING")
+    def _erase(self, offset=0, length=-1, callback = None):
+        pass
 
     def switchbaud(self, newbaud):
         raise Exception("Not implemented")

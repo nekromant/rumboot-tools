@@ -19,7 +19,7 @@ class PartitionBase():
     def __getitem__(self, key):
         return self.partitions[key]
 
-    def erase(self, offset=0, length=-1):
+    def erase(self, offset=0, length=-1, callback=None):
         off = 0
         if length < 0:
             length = self.size
@@ -31,17 +31,9 @@ class PartitionBase():
         if offset % self.erase_size > 0:
             raise Exception(f"FATAL: Erase offset is not aligned by erase_size boundary")
 
-        if not self.supports_batch_erase:
-            self.terminal.progress_start(f"Erasing {self.name}", length)
-            while off < length:
-                self.terminal.progress_update(ln, off, self.erase_size)
-                self._erase(self.offset + offset + off, self.erase_size)
-                off = off + self.erase_size
-            self.terminal.progress_end()
-        else:
-            self._erase(self.offset + offset, length)
+        self._erase(self.offset + offset, length, callback=callback)
 
-    def write(self, fd, offset, length = -1, cb = None):
+    def write(self, fd, offset, length = -1, callback = None):
         if length < 0:
             ln = self.stream_size(fd)
         else:
@@ -53,7 +45,7 @@ class PartitionBase():
 
         #TODO: Do we really have to handle padding here?
         if pad > 0:
-            print("WARNING: padding data, it eats up ram")
+            #print("WARNING: padding data, it eats up ram")
             fd = fd.read()
             while pad > 0:
                 fd +=b"\x00"
@@ -69,18 +61,21 @@ class PartitionBase():
         if not ln > 0:
             raise Exception(f"FATAL: Length can't be {ln}")
         
-        return self._write(fd, self.offset + offset, ln, cb)
+        return self._write(fd, self.offset + offset, ln, callback)
 
-    def read(self, fd, offset, length = -1, cb = None):
+    def read(self, fd, offset, length = -1, callback = None):
         if offset + self.offset % self.read_size:
             raise Exception("Misaligned read")
+
+        if length % self.read_size:
+            raise Exception("Misaligned read size")
 
         if length < 0:
             ln = self.size - self.offset - offset
         else:
             ln = length
 
-        return self._read(fd, self.offset + offset, ln, cb)
+        return self._read(fd, self.offset + offset, ln, callback)
 
     def add_partition(self, name, offset = 0, length=-1):
         if offset % self.erase_size:
@@ -142,13 +137,13 @@ class PartitionBase():
             
 #Basic flash device with access functions
 class FlashDeviceBase():
-    def _read(self, fd, offset, length, cb = None):
+    def _read(self, fd, offset, length, callback = None):
         raise Exception("NOT IMPLEMENTED")
 
-    def _write(self, fd, offset, length, cb = None):
+    def _write(self, fd, offset, length, callback = None):
         raise Exception("NOT IMPLEMENTED")
 
-    def _erase(self, offset=0, length=-1, cb = None):
+    def _erase(self, offset=0, length=-1, callback = None):
         raise Exception("NOT IMPLEMENTED")
 
     def switchbaud(self, newbaud):

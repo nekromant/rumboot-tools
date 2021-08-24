@@ -145,7 +145,7 @@ class FlashDeviceMB7707(FlashDeviceBase):
         while self.terminal.ser.inWaiting():
             print(self.terminal.ser.readline())
  
-    def _write(self, fd, offset, length, cb = None):
+    def _write(self, fd, offset, length, callback = None):
         self.commit()
         self.mboot_cmd(f"eupgrade 0x{offset:x} 0x{length:x}")
         es = self.magic()
@@ -159,8 +159,8 @@ class FlashDeviceMB7707(FlashDeviceBase):
             sent = len(data)
             length -= sent
             self.magic(0xa1)
-            if cb:
-                cb(total, total - length, sent)
+            if callable(callback):
+                callback(total, total - length, sent)
         self.magic(0)
         self.wait_nmagic(0)
 
@@ -176,7 +176,7 @@ class FlashDeviceMB7707(FlashDeviceBase):
                 pass
         return bads
 
-    def _read(self, fd, offset, length, cb = None):
+    def _read(self, fd, offset, length, callback = None):
         self.commit()
         bads = self.get_bad_blocks()
         maxchunksize = self.erase_size
@@ -192,12 +192,12 @@ class FlashDeviceMB7707(FlashDeviceBase):
                 fd.write(data)
                 length -= len(data)
                 offset += len(data)
-                if cb:
-                    cb(total, total - length, chunk)
+                if callback(callback):
+                    callback(total, total - length, chunk)
             else:
                 offset += self.erase_size
 
-    def _erase(self, offset=0, length=-1, cb = None):
+    def _erase(self, offset=0, length=-1, callback = None):
         if length == -1:
             length = self.size
         self.terminal.cmd(f"mtd scrub 0x{offset:x} {length:x}")

@@ -203,7 +203,7 @@ def rumboot_start_flashing(partmap=None):
         partition.erase(0, erase_size, callback=prg)
         term.progress_end()
         term.progress_start(f"Writing {mem}", size)
-        partition.write(fl, 0, size, cb=prg)
+        partition.write(fl, 0, size, callback=prg)
         term.progress_end()
         fl.close()
         return 0
@@ -211,7 +211,7 @@ def rumboot_start_flashing(partmap=None):
     if opts.read:
         fl = open(opts.file[0][0], "wb")
         term.progress_start(f"Reading {mem}", partition.size)
-        partition.read(fl, 0, partition.size, cb=prg)
+        partition.read(fl, 0, partition.size, callback=prg)
         term.progress_end()
         fl.close()
         return 0

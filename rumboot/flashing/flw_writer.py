@@ -142,7 +142,7 @@ class FlashDeviceFLW(FlashDeviceBase):
     writer = None
     supports_batch_erase = True
     def __init__(self, terminal, device):
-        self.name = device
+        self.name = device["device"]
         super().__init__()
         self.writer = WriterFLW(terminal)
         devices = self.writer.discover()
@@ -178,13 +178,13 @@ class FlashDeviceFLW(FlashDeviceBase):
         self.terminal.cmd(f"program E {offset:x} {length:x}", "completed", timeout=120)
         self.writer.edcl_send_data(fd, length, cb)
 
-    def _write(self, fd, offset, length, cb = None):
+    def _write(self, fd, offset, length, callback = None):
         if self.terminal.xfer.how == "xmodem":
-            return self._write_xmodem(fd, offset, length, cb)
+            return self._write_xmodem(fd, offset, length, callback)
         elif self.terminal.xfer.how == "edcl":
-            return self._write_edcl(fd, offset, length, cb) 
+            return self._write_edcl(fd, offset, length, callback) 
 
-    def _erase(self, offset, length):
+    def _erase(self, offset, length, callback = None):
         self.terminal.cmd(f"erase {offset:x} {length:x}", "Erase: address {},size {}...completed")
 
     def __str__(self):

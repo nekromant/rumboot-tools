@@ -205,6 +205,9 @@ class terminal:
         def read(self, *args, **kwargs):
             return self.ser.read(*args, **kwargs)
 
+        def readline(self, *args, **kwargs):
+            return self.ser.readline(*args, **kwargs).rstrip()
+
         def hack(self, name):
             if name in self.chip.hacks and self.chip.hacks[name]:
                 return True
@@ -226,7 +229,7 @@ class terminal:
         def progress_end(self):
             self.tqdm(disable=True)
 
-        def wait(self, format, timeout=1000):
+        def wait(self, format, timeout=1000, callback = None):
             lines = []
             while True:
                 line = self.ser.read_until()
@@ -237,6 +240,8 @@ class terminal:
                     return ret, lines
                 else:
                     lines.append(line)
+                    if callable(callback):
+                        callback(line)
 
         def shell_mode(self, prompt):
             self.shell_prompt = prompt
@@ -259,10 +264,10 @@ class terminal:
                     break
             return data
 
-        def cmd(self, cmd, response, timeout=15, endline = "\r\n"):
+        def cmd(self, cmd, response, timeout=15, endline = "\r\n", callback = None):
             data = cmd + endline
             self.write(data.encode("ascii"))
-            return self.wait(response, timeout=timeout)
+            return self.wait(response, timeout=timeout, callback=callback)
     
         def shell_cmd(self, cmd, timeout=10, initial=False):
             if initial:

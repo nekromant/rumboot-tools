@@ -51,7 +51,7 @@ class xferBase():
     def read64(self, address):
         raise Exception("read32 not implemented")
 
-    def _write(self, buffer, destaddr, cb = None):
+    def _write(self, buffer, destaddr, callback = None):
         raise Exception("FATAL: NOT IMPLEMENTED")        
 
     def _read(self, srcaddr, length, callback = None):
@@ -79,14 +79,14 @@ class xferBase():
         if type(fl) == str:
             fl = open(fl, "rb")
 
-        if file_offset >= 0:
-            fl.seek(file_offset)
-        else:
+        if file_offset < 0:
             file_offset = 0
 
         if length == -1:
             fl.seek(0, 2)
             length = fl.tell() - file_offset
+
+        fl.seek(file_offset)
 
         chunksize = self.maxpayload * 10
         def wrapcb(total, position, lastwrite):
@@ -278,7 +278,7 @@ class xferManager():
             raise Exception("Failed to connect transport")
 
         self.term.progress_start(desc, self.stream_size(stream))
-        self.from_file(destaddr, stream, offset = 0, callback=prg)
+        self.from_file(destaddr, stream, file_offset = 0, callback=prg)
         self.term.progress_end()
         if needclose:
             stream.close()
