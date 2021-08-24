@@ -156,7 +156,7 @@ def rumboot_start_flashing(partmap=None):
     term.loop(break_after_uploads=True)
 
     flashers = FlashAlgoFactory("rumboot.flashing", config["protocol"])
-    flasher = flashers[mem](term, mem)
+    flasher = flashers[mem](term, config)
     # ------------------------
     offset = opts.offset
     length = -1
@@ -195,6 +195,13 @@ def rumboot_start_flashing(partmap=None):
         if size > partition.size:
             print("WARN: File too big and will be truncated")
             size = partition.size
+        erase_size = size
+        if erase_size % partition.erase_size:
+            erase_size += partition.erase_size - (erase_size % partition.erase_size)
+
+        term.progress_start(f"Erasing {mem}", size)
+        partition.erase(0, erase_size, callback=prg)
+        term.progress_end()
         term.progress_start(f"Writing {mem}", size)
         partition.write(fl, 0, size, cb=prg)
         term.progress_end()
