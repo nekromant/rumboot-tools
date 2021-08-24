@@ -10,6 +10,7 @@ class base:
     name = "None"
     silent = False
     resetdelay = 1
+    warned = False
     supported = ["POWER", "RESET"]
     chip = None
 
@@ -29,8 +30,9 @@ class base:
             raise Exception(f"Control {key} in unknown")
         self._states[key] = value
         
-        if self.name == "None" and not self.silent:
-            print("Please, power-cycle board")
+        if self.name == "None" and not self.silent and not self.warned:
+            print("Please, power-cycle board...")
+            self.warned = True #Show it only once
 
     def set_chip(self, chip):
         self.chip = chip
