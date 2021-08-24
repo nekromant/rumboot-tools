@@ -123,13 +123,13 @@ class FlashDeviceUbootBase(FlashDeviceBase):
                     break
         self.check_env()
 
-    def _read(self, fd, offset, length, cb = None):
+    def _read(self, fd, offset, length, callback = None):
         total = length
         for pos in range(offset, offset + length, self.chunk_size):
             self.block_to_scratch(pos, self.chunk_size)
             self.scratch_to_host(fd, self.chunk_size)
-            if cb is not None:
-                cb(total, pos, self.chunk_size)
+            if callable(callback):
+                callback(total, pos, self.chunk_size)
 
     def _erase(self, offset=0, length=-1, callback = None):
         self._erase_lastpos = offset
@@ -143,8 +143,8 @@ class FlashDeviceUbootBase(FlashDeviceBase):
         if callable(callback): #One last callback
             callback(length, length, length - self._erase_lastpos) 
 
-    def _write(self, fd, offset, length, cb = None):
-        self.host_to_scratch(fd, length, cb)
+    def _write(self, fd, offset, length, callback = None):
+        self.host_to_scratch(fd, length, callback)
         self.scratch_to_block(offset, length)   
 
 class FlashDeviceUbootSF(PartitionBase, FlashDeviceUbootBase, UbootBlockTransportSF, UbootHostTransportXMODEM):
