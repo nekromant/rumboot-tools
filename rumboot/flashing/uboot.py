@@ -4,7 +4,6 @@ import humanfriendly
 import parse
 import binascii
 
-
 class UbootBlockTransportBase():
     required = []
 
@@ -12,16 +11,13 @@ class UbootBlockTransportBase():
         self.terminal = terminal
         self.scratch_addr = scratch
 
-    def erase_region(self, offset, length):
-        raise Exception("Implement me!")
-
     def block_to_scratch(self, offset, length):
         raise Exception("Implement me!")
 
     def scratch_to_block(self, offset, length):
         raise Exception("Implement me!")
 
-class UBootHostTransportBase():
+class UbootHostTransportBase():
     required = []
 
     def __init__(self, terminal, scratch):
@@ -49,27 +45,17 @@ class UBootHostTransportBase():
 ##################################
 
 class UbootBlockTransportSF(UbootBlockTransportBase):
-    info_formats = [
-        'hifmc_spi_nor_probe({}): Block:{erase_size} hifmc_spi_nor_probe({}): Chip:{size} hifmc_spi_nor_probe({}): Name:"{part}"'
-    ]
-
     def __init__(self, terminal, scratch):
-        super().__init__(terminal, scratch)
         self.required += ["sf"]
-
-#    def parse_info(self, line):
-#        for f in self.info_formats:
-
-    def erase_region(self, offset, length):
-        self.terminal.cmd(f"sf erase {offset:x} {length:x}", "SF: {} bytes @ {} Erased: OK")
+        super().__init__(terminal, scratch)
 
     def block_to_scratch(self, offset, length):
-        self.terminal.cmd(f"sf read {self.scratch_addr:x} {pos:x} {self.read_size:x}", "SF: {} bytes @ {} Read: OK")
+        self.terminal.cmd(f"sf read {self.scratch_addr:x} {offset:x} {self.chunk_size:x}", "SF: {} bytes @ {} Read: OK")
 
     def scratch_to_block(self, offset, length):
         self.terminal.cmd(f"sf write {self.scratch_addr:x} {offset:x} {length:x}", "SF: {} bytes @ {} Written: OK")
 
-class UBootHostTransportMDW(UBootHostTransportBase):
+class UbootHostTransportMDW(UbootHostTransportBase):
     def __init__(self, terminal, scratch):
         super().__init__(terminal, scratch)
         self.required += ["crc32", "mw", "md"]
@@ -80,10 +66,10 @@ class UBootHostTransportMDW(UBootHostTransportBase):
 
     def scratch_to_host(self, fd, length):
         while True:
-            ret, lines = self.terminal.cmd(f"crc32 {self.scratch_addr:x} {self.read_size:x}", "crc32 for {:x} ... {:x} ==> {:x}")
+            ret, lines = self.terminal.cmd(f"crc32 {self.scratch_addr:x} {self.chunk_size:x}", "crc32 for {:x} ... {:x} ==> {:x}")
             crc32_other = ret[2]
             chunk = b""
-            ret, lines = self.terminal.cmd(f"md.b {self.scratch_addr:x} {self.read_size:x}; printenv tmp", "tmp=OK")
+            ret, lines = self.terminal.cmd(f"md.b {self.scratch_addr:x} {self.chunk_size:x}; printenv tmp", "tmp=OK")
             for l in lines:
                 data = parse.parse("{}: {:x} {:x} {:x} {:x} {:x} {:x} {:x} {:x} {:x} {:x} {:x} {:x} {:x} {:x} {:x} {:x} {}", l)
                 if data is None:
@@ -96,9 +82,9 @@ class UBootHostTransportMDW(UBootHostTransportBase):
                 fd.write(chunk)
                 break
 
-class UbootHostTransportXMODEM(UbootTransportMDW):
-    def __init__(self):
-        super().__init__()
+class UbootHostTransportXMODEM(UbootHostTransportMDW):
+    def __init__(self, terminal, scratch):
+        super().__init__(terminal, scratch)
         self.required += ["sf", "loadx"]
 
     def host_to_scratch(self, fd, length, cb):
@@ -106,100 +92,91 @@ class UbootHostTransportXMODEM(UbootTransportMDW):
         data = fd.read(length)
         self.terminal.xfer.write(self.scratch_addr, data, cb)
 
-#######################################################
 class FlashDeviceUbootBase(FlashDeviceBase):
-    pass
-
-class FlashDeviceUbootSF(FlashDeviceBase, UbootBlockTransportSF, UbootHostTransportXMODEM):
-    pass
-
-class FlashDeviceUbootBase(FlashDeviceBase):
-    flash_info_formats = [
-        'hifmc_spi_nor_probe(1723): Block:{erase_size} hifmc_spi_nor_probe(1724): Chip:{size} hifmc_spi_nor_probe(1725): Name:"{part}"',
+    prompt = [
+        ['Net:{}', b"\x03\n\r\n\r"]
     ]
 
-    prompt_formats = [
-        ['Net:{}', "\n\r"]
-    ]
+    def check_env(self):
+        print("Checking uboot capabilities...")
+        self.terminal.write("setenv tmp OK\n\r".encode())
+        ret, lines = self.terminal.cmd("help; printenv tmp", "tmp=OK")
+        supported = []
+        for l in lines:
+            data = parse.parse("{} - {}", l)
+            if data is not None:
+                supported += [ data[0].rstrip() ]
+        for cmd in self.required:
+            if not cmd in self.required:
+                raise Exception(f"FATAL: u-boot doesn't support required command {cmd}")
 
-    flash_info_format = 'hifmc_spi_nor_probe({}): Block:{erase_size} hifmc_spi_nor_probe({}): Chip:{size} hifmc_spi_nor_probe({}): Name:"{part}"'
-
-    prompt_format = 'Net:{}' 
-    stop_sequence = b"\x03" 
-    scratch_addr = 0x42000000
-
-class FlashDeviceUbootMDW(FlashDeviceUbootBase):
-    def parse_flash_info(self, fmt, lines):
-        self.part = fmt["part"]
-        self.erase_size = humanfriendly.parse_size(fmt["erase_size"].replace("KB", "KiB"))
-        self.size = humanfriendly.parse_size(fmt["size"].replace("MB", "MiB"))
-        self.write_size = 512
-        self.read_size  = 512
-
-    def __init__(self):
-        if not self.flash_info_format is None:
-            fmt, lines = self.terminal.wait(self.flash_info_format)
-            self.parse_flash_info(fmt, lines)
-
-        self.terminal.wait(self.prompt_format)
-        for i in range(0,10):
-            self.terminal.write(self.stop_sequence)
-            time.sleep(0.1)
-        self.terminal.write("sf probe\r\n".encode("ascii"))
-        self.terminal.write("setenv tmp OK\r\n".encode("ascii"))
-
-        super().__init__()
+    def __init__(self, terminal):
+        self.required += ["setenv"]
+        FlashDeviceBase.__init__(self)
+        fmt = None
+        while fmt is None:
+            line = terminal.readline().decode("ascii", errors="replace")
+            for p in self.prompt:
+                fmt = parse.parse(p[0], line)
+                if fmt is not None:
+                    terminal.write(p[1])
+                    break
+        self.check_env()
 
     def _read(self, fd, offset, length, cb = None):
-        #TODO: Move chunked read to base.py
         total = length
-        for pos in range(offset, offset + length, self.read_size):
-            while True:
-                self.terminal.cmd(f"sf read {self.scratch_addr:x} {pos:x} {self.read_size:x}", "SF: {} bytes @ {} Read: OK")
-                ret, lines = self.terminal.cmd(f"crc32 {self.scratch_addr:x} {self.read_size:x}", "crc32 for {:x} ... {:x} ==> {:x}")
-                crc32_other = ret[2]
-                chunk = b""
-                ret, lines = self.terminal.cmd(f"md.b {self.scratch_addr:x} {self.read_size:x}; printenv tmp", "tmp=OK")
-                for l in lines:
-                    data = parse.parse("{}: {:x} {:x} {:x} {:x} {:x} {:x} {:x} {:x} {:x} {:x} {:x} {:x} {:x} {:x} {:x} {:x} {}", l)
-                    if data is None:
-                        continue
-                    for p in range(1,17):
-                        byte = data[p].to_bytes(1, byteorder="big")
-                        chunk += byte
-                crc32 = binascii.crc32(chunk) & 0xffffffff
-                if crc32 == crc32_other:
-                    fd.write(chunk)
-                    break
+        for pos in range(offset, offset + length, self.chunk_size):
+            self.block_to_scratch(pos, self.chunk_size)
+            self.scratch_to_host(fd, self.chunk_size)
+            if cb is not None:
+                cb(total, pos, self.chunk_size)
 
-            if cb:
-                handled = pos - offset
-                cb(total, handled, self.read_size)
+    def _erase(self, offset=0, length=-1, callback = None):
+        self._erase_lastpos = offset
+        def linecb(line):
+            ret = parse.parse("Erasing at {off:x} -- {} complete.", line)
+            if not ret is None and callable(callback):
+                pos = ret["off"]
+                callback(length, pos, pos - self._erase_lastpos) 
+                self._erase_lastpos = pos
+        self.terminal.cmd(f"sf erase {offset:x} {length:x}", "SF: {} bytes @ {} Erased: OK", callback=linecb)
+        if callable(callback): #One last callback
+            callback(length, length, length - self._erase_lastpos) 
 
     def _write(self, fd, offset, length, cb = None):
-        erase_length = length
-        if length % self.erase_size > 0:
-            erase_length += self.erase_size - (length % self.erase_size)
-        print("+++", length, erase_length)
-        self.terminal.cmd(f"sf erase {offset:x} {erase_length:x}", "SF: {} bytes @ {} Erased: OK")
-        self.terminal.cmd(f"loadx {self.scratch_addr:x}", "## Ready for binary ({}) download to {} at {} bps...")
-        data = fd.read(length)
-        self.terminal.xfer.write(self.scratch_addr, data, cb)
-        self.terminal.cmd(f"sf write {self.scratch_addr:x} {offset:x} {length:x}", "SF: {} bytes @ {} Written: OK")
+        self.host_to_scratch(fd, length, cb)
+        self.scratch_to_block(offset, length)   
 
-    def _erase(self, offset=0, length=-1, cb = None):
-        self.terminal.cmd(f"sf erase {offset:x} {length:x}", "SF: {} bytes @ {} Erased: OK")
-
-    def switchbaud(self, newbaud):
-        raise Exception("Not implemented")
-
-class FlasherUbootSFHiSi(PartitionBase, FlashDeviceUbootMDW):
+class FlashDeviceUbootSF(PartitionBase, FlashDeviceUbootBase, UbootBlockTransportSF, UbootHostTransportXMODEM):
     device = "hisisf{}"
     protocol = "uboot"
 
-    def __init__(self, terminal, device):
-        scratch=terminal.chip.memories[device]["scratch"]
-        print(f"using scratch address 0x{scratch:x}")
-        self.terminal = terminal #We need that early
-        FlashDeviceUbootMDW.__init__(self)
-        PartitionBase.__init__(self, terminal)
+    info_formats = [
+        'hifmc_spi_nor_probe({}): Block:{erase_size} hifmc_spi_nor_probe({}): Chip:{size} hifmc_spi_nor_probe({}): Name:"{part}"'
+    ]
+
+    def parse_info(self, line):
+        for f in self.info_formats:
+            ret = parse.parse(f, line)
+            if ret is not None:
+                return ret
+        return None
+
+    def __init__(self, terminal, config):
+        scratch = config["scratch"]
+        print(f"Using scratch area at 0x{scratch:x}")
+        UbootBlockTransportSF.__init__(self, terminal, scratch)
+        UbootHostTransportXMODEM.__init__(self, terminal, scratch)
+        while True:
+            line = terminal.readline().decode("ascii", errors="replace")
+            fmt = self.parse_info(line)
+            if fmt is not None:
+                break
+        self.part = fmt["part"]
+        self.erase_size = humanfriendly.parse_size(fmt["erase_size"].replace("KB", "KiB"))
+        self.size = humanfriendly.parse_size(fmt["size"].replace("MB", "MiB"))
+        self.chunk_size = 1024
+        self.write_size = 1
+        self.read_size = 16
+        FlashDeviceUbootBase.__init__(self, terminal)
+        self.terminal.write("sf probe\n\r".encode("ascii"))
