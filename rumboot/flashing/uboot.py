@@ -24,18 +24,6 @@ class UbootHostTransportBase():
         self.terminal = terminal
         self.scratch_addr = scratch
 
-    def check_required_cmds(self, clist):
-        supported = self.query_supported_cmds()
-        for l in clist:
-            if not l in supported:
-                raise Exception("Your uboot doesn't support cmd f{l}. Can't do anything for you")
-
-    def query_supported_cmds(self):
-        ret, lines = self.terminal.cmd("help; printenv tmp", "tmp=OK")
-        for l in lines:
-            print(l)
-        return lines
-
     def host_to_scratch(self, fd, length):
         raise Exception("Implement me!")
 
@@ -115,7 +103,7 @@ class FlashDeviceUbootBase(FlashDeviceBase):
         FlashDeviceBase.__init__(self)
         fmt = None
         while fmt is None:
-            line = terminal.readline().decode("ascii", errors="replace")
+            line = terminal.readline()
             for p in self.prompt:
                 fmt = parse.parse(p[0], line)
                 if fmt is not None:
@@ -132,24 +120,68 @@ class FlashDeviceUbootBase(FlashDeviceBase):
                 callback(total, pos, self.chunk_size)
 
     def _erase(self, offset=0, length=-1, callback = None):
-        self._erase_lastpos = offset
+        self._erase_lastpos = 0
         def linecb(line):
-            ret = parse.parse("Erasing at {off:x} -- {} complete.", line)
-            if not ret is None and callable(callback):
-                pos = ret["off"]
+            ret = parse.parse("Erasing at 0x{off:x} --  {} complete.", line)
+            if ret is None:
+                return
+            if callable(callback):
+                pos = ret["off"] - offset
                 callback(length, pos, pos - self._erase_lastpos) 
                 self._erase_lastpos = pos
         self.terminal.cmd(f"sf erase {offset:x} {length:x}", "SF: {} bytes @ {} Erased: OK", callback=linecb)
-        if callable(callback): #One last callback
-            callback(length, length, length - self._erase_lastpos) 
+        if self._erase_lastpos != (offset + length) and callable(callback):
+            callback(length, length, length - self._erase_lastpos)
 
     def _write(self, fd, offset, length, callback = None):
         self.host_to_scratch(fd, length, callback)
         self.scratch_to_block(offset, length)   
 
-class FlashDeviceUbootSF(PartitionBase, FlashDeviceUbootBase, UbootBlockTransportSF, UbootHostTransportXMODEM):
+
+class PartitionUbootBase(PartitionBase):
+    def saveenv(self):
+        self.terminal.cmd("saveenv; printenv tmp", "tmp=OK")
+
+    def env(self, key, value=None):
+        if not value is None:
+            self.terminal.cmd(f"setenv '{key}' '{value}'; printenv tmp", "tmp=OK")
+            newv = self.env(key)
+            if newv.strip() == value.strip():
+                return value
+            else:
+                raise Exception(f"Failed to set u-boot env {key}")
+        else:
+            ret, lines = self.terminal.cmd(f"printenv {key}; printenv tmp", "tmp=OK")
+            for l in lines:
+                ret = parse.parse("%s={}" % key, l)
+                if not ret is None:
+                    return ret[0]
+            return None
+
+class PartitionUbootMTDPARTS(PartitionUbootBase):
+    def save_partitions(self):
+        ba = self.env("bootargs") + "  "
+        rt = parse.parse("{} mtdparts={dev}:{parts} {}", ba)
+        if rt is None: 
+            raise Exception("Failed to read current mtdparts")
+        fmt=''
+
+        for name,p in self.partitions.items():
+            sz = int(p.size / 1024)
+            fmt = f"{fmt}{sz}k({p.name}),"
+        fmt = fmt.rstrip(",")
+        ba = ba.replace(rt["parts"], fmt)
+        self.env("bootargs", ba)
+        self.saveenv()
+
+    def load_partitions(self):
+        raise Exception(f"FATAL: Loading partition table is not implemented for this device")
+
+
+class FlashDeviceUbootSF(PartitionUbootMTDPARTS, FlashDeviceUbootBase, UbootBlockTransportSF, UbootHostTransportXMODEM):
     device = "hisisf{}"
     protocol = "uboot"
+    name = "SPI Flash"
 
     info_formats = [
         'hifmc_spi_nor_probe({}): Block:{erase_size} hifmc_spi_nor_probe({}): Chip:{size} hifmc_spi_nor_probe({}): Name:"{part}"'
@@ -164,11 +196,11 @@ class FlashDeviceUbootSF(PartitionBase, FlashDeviceUbootBase, UbootBlockTranspor
 
     def __init__(self, terminal, config):
         scratch = config["scratch"]
-        print(f"Using scratch area at 0x{scratch:x}")
+        PartitionUbootMTDPARTS.__init__(self, terminal)
         UbootBlockTransportSF.__init__(self, terminal, scratch)
         UbootHostTransportXMODEM.__init__(self, terminal, scratch)
         while True:
-            line = terminal.readline().decode("ascii", errors="replace")
+            line = terminal.readline()
             fmt = self.parse_info(line)
             if fmt is not None:
                 break
