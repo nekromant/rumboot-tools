@@ -206,7 +206,8 @@ class terminal:
             return self.ser.read(*args, **kwargs)
 
         def readline(self, *args, **kwargs):
-            return self.ser.readline(*args, **kwargs).rstrip()
+            line = self.ser.readline(*args, **kwargs).decode().strip()
+            return line.replace("\r","")
 
         def hack(self, name):
             if name in self.chip.hacks and self.chip.hacks[name]:
@@ -232,8 +233,7 @@ class terminal:
         def wait(self, format, timeout=1000, callback = None):
             lines = []
             while True:
-                line = self.ser.read_until()
-                line = line.decode(errors="replace").rstrip()
+                line = self.readline()
                 self.log(False, line, end='\n')
                 ret = parse(format, line)
                 if ret != None:
