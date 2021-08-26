@@ -255,10 +255,7 @@ class bootdownload(object):
         f = open(filename, "rb")
         data = f.read()
         f.close()
-
-        print('Sending', filename, '...')
         self.send_data(data)
-        print('Done\n')
 
 
 class hisi_chips_uploader(basic_uploader):
