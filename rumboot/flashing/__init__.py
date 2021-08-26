@@ -7,6 +7,8 @@ import time
 import copy
 import io
 import random
+import humanfriendly
+import yaml
 
 from parse import *
 
@@ -18,7 +20,6 @@ from rumboot.terminal import terminal
 import rumboot_xrun
 import rumboot
 
-from .flw_writer import FlasherFlwMMC, FlasherFlwSF, FlasherFlwNOR, FlasherFlwNAND
 from .base import PartitionBase, FlashDeviceBase
 
 from rumboot.chipDb import ChipDb
@@ -47,6 +48,78 @@ class FlashAlgoFactory(classLoader):
                 rt = parse(v.device, key)
                 if rt and self.protocol == v.protocol:
                     return v
+
+def execute_runlist(term, spl, runlist):
+    def prg(total_bytes, position, increment):
+        term.progress_update(total_bytes, position, increment)
+
+    for item in runlist:
+        partition = item["partition"]
+        mem = partition.name
+        fl = item['file']
+
+        if item["action"] == "write":
+            fl = fl.replace("@SPL", spl)
+            fl = open(fl, "rb")
+            size = partition.stream_size(fl)
+            if size > partition.size:
+                print("WARN: File too big and will be truncated")
+                size = partition.size
+
+            term.progress_start(f"Erasing {mem}", size)
+            partition.erase(0, partition.size, callback=prg)
+            term.progress_end()
+
+            term.progress_start(f"Writing {mem}", size)
+            partition.write(fl, 0, size, callback=prg)
+            term.progress_end()
+            fl.close()
+
+        if item["action"] == "erase":
+            term.progress_start(f"Erasing {mem}", partition.size)
+            partition.erase(0, partition.size, callback=prg)
+            term.progress_end()
+
+        if item["action"] == "read":
+            fl = item["file"]
+            fl = open(fl, "wb")
+            term.progress_start(f"Reading {mem}", partition.size)
+            partition.read(fl, 0, partition.size, callback=prg)
+            term.progress_end()
+            fl.close()
+    
+
+
+def parse_firmware_file(file, flasher):
+    cnf = yaml.load(file, Loader=yaml.FullLoader)
+    ret = []
+    for name,data in cnf["partitions"].items():
+        if type(data["size"]) == str:
+            size = humanfriendly.parse_size(data["size"])
+        else:
+            size = data["size"]            
+
+        fl = None
+        offset = None
+        if "offset" in data:
+            offset =  data["offset"]
+        if "file" in data:
+            fl =  data["file"]
+            action = "write"
+        if "action" in data:
+            action = data["action"]
+        part = flasher.add_partition(name, offset, size)
+        item = {
+            "partition" : part,
+            "action"    : action,
+            "file"      : fl
+        }
+        ret.append(item)
+
+    for key, value in cnf["environment"].items():
+        flasher.env(key, value)
+
+    return ret
 
 def rumboot_start_flashing(partmap=None):
     resets  = ResetSeqFactory("rumboot.resetseq")
@@ -94,6 +167,16 @@ def rumboot_start_flashing(partmap=None):
                         help="Write flash from file",
                         default=False,
                         action='store_true',
+                        required=False)
+    parser.add_argument("-E", "--erase",
+                        help="Erase flash",
+                        default=False,
+                        action='store_true',
+                        required=False)
+    parser.add_argument("-F", "--firmware-file",
+                        help="Write firmware from configuration file",
+                        type=argparse.FileType("r"),
+                        default=None,
                         required=False)
     parser.add_argument("-U", "--upload-baudrate",
                         help="Change baudrate for uploads",
@@ -166,8 +249,7 @@ def rumboot_start_flashing(partmap=None):
     if "size" in config:
         flasher.size = config["size"]
 
-    partition = flasher.add_partition(mem, opts.offset, opts.length)
-    partition.dump()
+    flasher.dump()
 
     if opts.file and len(opts.file) > 1:
         print("ERROR: Only one file may be specified") 
@@ -176,45 +258,51 @@ def rumboot_start_flashing(partmap=None):
     if opts.file and len(opts.file) == 0:
         return 1
 
-    def prg(total_bytes, position, increment):
-        term.progress_update(total_bytes, position, increment)
-
     if opts.upload_baudrate == 0 and hasattr(chip, "flashbaudrate"):
          opts.upload_baudrate = chip.flashbaudrate
 
     if opts.upload_baudrate > 0:
         print(f"WARN: Changing baudrate to {opts.upload_baudrate} bps")
         print( "WARN: If everything freezes - try a different setting via -U / --upload-baudrate")
-        partition.switchbaud(opts.upload_baudrate)
+        flasher.switchbaud(opts.upload_baudrate)
 
     term.xfer.connect(chip)
 
-    if opts.write:
-        fl = open(opts.file[0][0], "rb")
-        size = partition.stream_size(fl)
-        if size > partition.size:
-            print("WARN: File too big and will be truncated")
-            size = partition.size
-        erase_size = size
-        if erase_size % partition.erase_size:
-            erase_size += partition.erase_size - (erase_size % partition.erase_size)
+    runlist = []
+    if opts.firmware_file is None:
+        part = flasher.add_partition(mem, opts.offset, opts.length)
+        if opts.write:
+            action = {
+                "partition" : part,
+                "action"    : "write",
+                "file"      : opts.file[0][0]
+            }
+            runlist.append(action)
 
-        term.progress_start(f"Erasing {mem}", size)
-        partition.erase(0, erase_size, callback=prg)
-        term.progress_end()
-        term.progress_start(f"Writing {mem}", size)
-        partition.write(fl, 0, size, callback=prg)
-        term.progress_end()
-        fl.close()
-        return 0
+        if opts.read:
+            action = {
+                "partition" : part,
+                "action"    : "read",
+                "file"      : opts.file[0][0]
+            }
+            runlist.append(action)
 
-    if opts.read:
-        fl = open(opts.file[0][0], "wb")
-        term.progress_start(f"Reading {mem}", partition.size)
-        partition.read(fl, 0, partition.size, callback=prg)
-        term.progress_end()
-        fl.close()
-        return 0
+        if opts.erase:
+            action = {
+                "partition" : part,
+                "action"    : "erase",
+                "file"      : None
+            }
+            runlist.append(action)
+    else:
+        runlist = parse_firmware_file(opts.firmware_file, flasher)
+
+    execute_runlist(term, spl, runlist)
+
+    if opts.firmware_file or opts.write:
+        print("Saving environment and partition information")
+        flasher.save_partitions()
+        flasher.saveenv()
 
     return 1
 
