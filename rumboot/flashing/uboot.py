@@ -168,7 +168,14 @@ class PartitionUbootMTDPARTS(PartitionUbootBase):
 
         for name,p in self.partitions.items():
             sz = int(p.size / 1024)
-            fmt = f"{fmt}{sz}k({p.name}),"
+            sz = f"{sz}k"
+
+            #If the last partition covers all flash, make it flexible
+            if p.offset + p.size == self.size:
+                sz = "-"
+
+            fmt = f"{fmt}{sz}({p.name}),"
+
         fmt = fmt.rstrip(",")
         ba = ba.replace(rt["parts"], fmt)
         self.env("bootargs", ba)
