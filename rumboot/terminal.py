@@ -206,7 +206,7 @@ class terminal:
             return self.ser.read(*args, **kwargs)
 
         def readline(self, *args, **kwargs):
-            line = self.ser.readline(*args, **kwargs).decode().strip()
+            line = self.ser.readline(*args, **kwargs).decode("utf-8", errors="replace").strip()
             return line.replace("\r","")
 
         def hack(self, name):
