@@ -66,9 +66,10 @@ def execute_runlist(term, spl, runlist):
                 print("WARN: File too big and will be truncated")
                 size = partition.size
 
-            term.progress_start(f"Erasing {mem}", size)
-            partition.erase(0, partition.size, callback=prg)
-            term.progress_end()
+            if not partition.skip_erase_before_write:
+                term.progress_start(f"Erasing {mem}", size)
+                partition.erase(0, partition.size, callback=prg)
+                term.progress_end()
 
             term.progress_start(f"Writing {mem}", size)
             partition.write(fl, 0, size, callback=prg)

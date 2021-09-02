@@ -9,8 +9,6 @@ class PartitionBase():
     write_size = 0
     size = 0
     offset = 0
-    supports_batch_erase = False
-    supports_batch_write = False
     partitions = {}
     last_added_partition_end = 0
 
@@ -153,6 +151,8 @@ class PartitionBase():
             
 #Basic flash device with access functions
 class FlashDeviceBase():
+    skip_erase_before_write = False
+
     def _read(self, fd, offset, length, callback = None):
         raise Exception("NOT IMPLEMENTED")
 
