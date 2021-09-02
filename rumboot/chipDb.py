@@ -5,11 +5,12 @@ from os.path import join, isfile, dirname
 
 class ChipDb:
 
-    chips = {}
+    chips_by_name = {}
+    chips_by_id = {}
     params_cfg_name = "chips_parameters.yml"
 
     def __init__(self, path):
-        if len(self.chips) == 0:
+        if len(self.chips_by_name) == 0 or len(self.chips_by_id) == 0:
             path = path.split(".")
             root = dirname(dirname(__file__))
             path = join(root, *path)
@@ -25,41 +26,43 @@ class ChipDb:
                 with open(join(path, yml), 'r') as f:
                     chips = yaml.load_all(f, Loader = yaml.SafeLoader)
                     for chip in chips:
-                        if chip.chip_id in self.chips and \
-                            self.chips[chip.chip_id].chip_rev == chip.chip_rev:
-                            raise MultipleChipConfigError(chip.chip_id, yml)
+                        excess_attrs = \
+                            set(chip.__dict__) - set(params['required'] + params['optional'])
+                        if excess_attrs:
+                            raise ExcessAttrsError(excess_attrs, chip.chip_id, yml)
+
+                        missing_attrs = \
+                            set(params['required']).difference(set(chip.__dict__))
+                        if missing_attrs:
+                            raise MissingAttrsError(missing_attrs, chip.chip_id, yml)
+
+                        excess_hacks = set(chip.hacks) - set(params['hacks'])
+                        if excess_hacks:
+                            raise ExcessHacksError(excess_hacks, chip.chip_id, yml)
+
+                        missing_hacks = set(params['hacks']).difference(set(chip.hacks))
+                        if missing_hacks:
+                            raise MissingHacksError(missing_hacks, chip.chip_id, yml)
+
+                        if chip.name in self.chips_by_name:
+                            raise MultipleChipConfigError(chip.name, chip.chip_id, yml)
+                        self.chips_by_name[chip.name] = chip
+
+                        if chip.chip_id in self.chips_by_id:
+                            self.chips_by_id[chip.chip_id].append(chip)
                         else:
-                            excess_attrs = \
-                                set(chip.__dict__) - set(params['required'] + params['optional'])
-                            if excess_attrs:
-                                raise ExcessAttrsError(excess_attrs, chip.chip_id, yml)
-
-                            missing_attrs = \
-                                set(params['required']).difference(set(chip.__dict__))
-                            if missing_attrs:
-                                raise MissingAttrsError(missing_attrs, chip.chip_id, yml)
-
-                            excess_hacks = set(chip.hacks) - set(params['hacks'])
-                            if excess_hacks:
-                                raise ExcessHacksError(excess_hacks, chip.chip_id, yml)
-
-                            missing_hacks = set(params['hacks']).difference(set(chip.hacks))
-                            if missing_hacks:
-                                raise MissingHacksError(missing_hacks, chip.chip_id, yml)
-
-                            self.chips[chip.chip_id] = chip
+                            self.chips_by_id[chip.chip_id] = [chip]
 
     def __getitem__(self, key):
         try:
             key = int(key)
-        except:
-            pass
-        if key in self.chips:
-            return self.chips[key]
-        for chip in self.chips.values():
-            if chip.name == key:
-                return chip
-        return None
+        except ValueError:
+            return self.chips_by_name[key]
+        else:
+            chips = self.chips_by_id[key]
+            if len(chips) > 1:
+                raise ChipsWithSameIDError(key)
+            return chips[0]
 
 
 class Chip(yaml.YAMLObject):
@@ -68,9 +71,16 @@ class Chip(yaml.YAMLObject):
 
 
 class MultipleChipConfigError(Exception):
-    def __init__(self, chip_id, filename):
+    def __init__(self, name, chip_id, filename):
         super().__init__(
-            f"Found duplicate config [{filename}] for chip with ID [{chip_id}]"
+            f"Found duplicate config [{filename}] for chip with name [{name}] and ID [{chip_id}]"
+        )
+
+
+class ChipsWithSameIDError(Exception):
+    def __init__(self, ID):
+        super().__init__(
+            f"Found multiple chips for given ID [{ID}]"
         )
 
 
