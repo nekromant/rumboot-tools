@@ -13,6 +13,9 @@ class basic:
         self.fd = open(outfile + ".appending", "wb+")
 
     def append(self, infile):
+        if self.fd.tell() and self.align > 1:
+            self.fd.write(b'\00' * self.align)
+
         opos = self.fd.tell()
         while opos % self.align > 0:
             self.fd.write(b'\00')
