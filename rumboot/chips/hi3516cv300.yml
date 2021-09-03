@@ -1,0 +1,103 @@
+--- !Chip
+name: hi3516cv300
+part: Hi3516XXXX300
+chip_id: 0
+chip_rev: 0
+welcome: host
+baudrate: 115200
+spl_address: 0
+memories:
+  sf00:
+    spl: "thirdparty/hi3516cv300/u-boot.bin"
+    device: "hisisf00"
+    comment: "SPI Flash"
+    protocol: uboot
+    scratch: 0x42000000
+    offset: 0
+dumps: {}
+romdump: ~
+hacks:
+  skipsync: True  # Doesn't Send U\r\n\r\n at the start. All legacy stuff
+  silentRom: True  # Bootrom is totally silent
+  noxmodem: True  # Chip lacks xmodem implementation
+  noedcl: True  # Chip lacks edcl implementation
+edcl: ~
+vendor:
+  bootprotocol: "hi3xxx"
+  ADDRESS:
+    - '0x04013000'
+    - '0x04010500'
+    - '0x81000000'
+  DDRSTEP0:
+    - 4
+    - 224
+    - 45
+    - 229
+    - 36
+    - 0
+    - 159
+    - 229
+    - 36
+    - 16
+    - 159
+    - 229
+    - 0
+    - 16
+    - 128
+    - 229
+    - 32
+    - 0
+    - 159
+    - 229
+    - 32
+    - 16
+    - 159
+    - 229
+    - 4
+    - 16
+    - 128
+    - 228
+    - 0
+    - 224
+    - 128
+    - 229
+    - 4
+    - 240
+    - 157
+    - 228
+    - 239
+    - 190
+    - 173
+    - 222
+    - 239
+    - 190
+    - 173
+    - 222
+    - 239
+    - 190
+    - 173
+    - 222
+    - 60
+    - 1
+    - 2
+    - 18
+    - 120
+    - 86
+    - 52
+    - 18
+    - 64
+    - 1
+    - 2
+    - 18
+    - 117
+    - 106
+    - 105
+    - 122
+  FILELEN:
+    - '0x0040'
+    - '0x4f00'
+  STEPLEN:
+    - '0x0040'
+    - '0x0090'
+  name: hi3516cv300
+...
