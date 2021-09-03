@@ -9,15 +9,20 @@ class PartitionBase():
     write_size = 0
     size = 0
     offset = 0
-    supports_batch_erase = False
-    supports_batch_write = False
     partitions = {}
+    last_added_partition_end = 0
 
     def __init__(self, terminal):
         self.terminal = terminal
 
     def __getitem__(self, key):
         return self.partitions[key]
+
+    def save_partitions(self):
+        raise Exception(f"FATAL: Saving partition table is not implemented for this device")
+
+    def load_partitions(self):
+        raise Exception(f"FATAL: Loading partition table is not implemented for this device")
 
     def erase(self, offset=0, length=-1, callback=None):
         off = 0
@@ -77,16 +82,23 @@ class PartitionBase():
 
         return self._read(fd, self.offset + offset, ln, callback)
 
+    # offset: positive - byte offset from start of device
+    #         negative - byte offset from the end of device
+    #         None     - make it follow last added partition
+
     def add_partition(self, name, offset = 0, length=-1):
-        if offset % self.erase_size:
-            raise Exception(f"FATAL: Partition {name} offset is not aligned by erase_size boundary")
 
         partitions = self.partitions
         partitions[name]        = copy.copy(self)
         partitions[name].name   = name
 
-        if offset < 0:
+        if offset is None:
+            offset = self.last_added_partition_end
+        elif offset < 0:
             offset = self.size - offset
+
+        if offset % self.erase_size:
+            raise Exception(f"FATAL: Partition {name} offset is not aligned by erase_size boundary")
 
         partitions[name].offset = offset
 
@@ -99,6 +111,8 @@ class PartitionBase():
 
         if partitions[name].size % self.erase_size:
             raise Exception(f"FATAL: Partition {name} size is not aligned by erase_size boundary")
+        
+        self.last_added_partition_end = offset + partitions[name].size
 
         return partitions[name]
 
@@ -137,6 +151,8 @@ class PartitionBase():
             
 #Basic flash device with access functions
 class FlashDeviceBase():
+    skip_erase_before_write = False
+
     def _read(self, fd, offset, length, callback = None):
         raise Exception("NOT IMPLEMENTED")
 
@@ -147,4 +163,10 @@ class FlashDeviceBase():
         raise Exception("NOT IMPLEMENTED")
 
     def switchbaud(self, newbaud):
+        raise Exception("Not implemented")
+
+    def saveenv(self):
+        raise Exception("Not implemented")
+
+    def env(self, key, value=None):
         raise Exception("Not implemented")

@@ -140,7 +140,7 @@ class WriterFLW():
 
 class FlashDeviceFLW(FlashDeviceBase):
     writer = None
-    supports_batch_erase = True
+    skip_erase_before_write = True
     def __init__(self, terminal, device):
         self.name = device["device"]
         super().__init__()
@@ -185,7 +185,7 @@ class FlashDeviceFLW(FlashDeviceBase):
             return self._write_edcl(fd, offset, length, callback) 
 
     def _erase(self, offset, length, callback = None):
-        self.terminal.cmd(f"erase {offset:x} {length:x}", "Erase: address {},size {}...completed")
+        self.terminal.cmd(f"erase {offset:x} {length:x}", "completed")
 
     def __str__(self):
         return f'FlashWriter Device {self.name} part: {self.part} size {self.size} erase_size: {self.erase_size} write_size: {self.write_size}'
